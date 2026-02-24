@@ -8,4 +8,3 @@ CREATE TABLE Teams {
   
   }
 
-Create Table thung

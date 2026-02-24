@@ -7,3 +7,5 @@ CREATE TABLE Teams {
   CONSTRAINT PK_Teams PRIMARY KEY (TeamID)
   
   }
+
+Create Table thung

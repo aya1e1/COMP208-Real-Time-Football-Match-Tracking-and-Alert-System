@@ -18,7 +18,7 @@ CREATE TABLE Teams (
 CREATE TABLE Seasons (
   SeasonID INT PRIMARY KEY,
   LeagueID INT NOT NULL,
-  Name VARCHAR(50),
+  Name VARCHAR(50), -- idk if we need name here bc league already has a name
   StartDate DATE,
   EndDate DATE,
   CONSTRAINT FK_Seasons_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID)

@@ -1,15 +1,17 @@
 import responses
 import requests
 import json
+from pathlib import Path
 
 def get_json_from_file(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
 
+directory = Path(__file__).absolute().parent
 
 def register_mocks():
-    mock_team_39 = get_json_from_file("backend/dummy/output_team_39.json")
-    mock_leagues = get_json_from_file("backend/dummy/output_leagues.json")
+    mock_team_39 = get_json_from_file(directory / "output_team_39.json")
+    mock_leagues = get_json_from_file(directory / "output_leagues.json")
 
     responses.add(
         method=responses.GET,

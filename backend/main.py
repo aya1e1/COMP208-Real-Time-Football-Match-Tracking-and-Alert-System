@@ -33,17 +33,23 @@ def get(request):
 
 
 def process_league(data):
-    for i1, data in enumerate(data["response"]):
+     
+    ## add sql command to check if the league exists, if not then add into League table and seasons
+    for data in data["response"]:
         leagueid = data["league"]["id"]
         seasons = data["seasons"]
         if data["country"]["name"] == "England" and leagueid < 42:
-            for i2, season in enumerate(seasons):
+            for season in seasons:
                 Name = data["league"]["name"]
                 SeasonID = season["year"]
                 StartDate = season["start"]
                 EndDate = season["end"]
+                print(leagueid)
                 print(Name)
                 print(SeasonID)
+                print(StartDate)
+                print(EndDate)
+
 
 def init_db():
     try:

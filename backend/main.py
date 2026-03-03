@@ -33,23 +33,52 @@ def get(request):
 
 
 def process_league(data):
-     
-    ## add sql command to check if the league exists, if not then add into League table and seasons
-    for data in data["response"]:
-        leagueid = data["league"]["id"]
-        seasons = data["seasons"]
-        if data["country"]["name"] == "England" and leagueid < 42:
-            for season in seasons:
-                Name = data["league"]["name"]
-                SeasonID = season["year"]
-                StartDate = season["start"]
-                EndDate = season["end"]
-                print(leagueid)
-                print(Name)
-                print(SeasonID)
-                print(StartDate)
-                print(EndDate)
+    if not data or "response" not in data:
+        print("No league data found.")
+        return
 
+    for item in data["response"]:
+        save_league_and_seasons(item)
+
+    conn.commit()
+    print("Leagues + seasons saved.")
+
+def save_league_and_seasons(item):
+    """
+    Saves 1 league + its seasons into the DB.
+    Uses INSERT OR IGNORE to avoid duplicates.
+    """
+    country = item.get("country", {}).get("name")
+    league = item.get("league", {})
+    seasons = item.get("seasons", [])
+
+    if country != "England":
+        return
+
+    league_id = league.get("id")
+    league_name = league.get("name")
+    if not league_id or not league_name:
+        return
+
+    # Insert league once
+    cursor.execute(
+        "INSERT OR IGNORE INTO League (LeagueID, Name) VALUES (?, ?);",
+        (league_id, league_name)
+    )
+
+    # Insert seasons for that league
+    for season in seasons:
+        year = season.get("year")     # eg. 2024
+        start = season.get("start")   
+        end = season.get("end")       
+        if not year:
+            continue
+
+        cursor.execute(
+            """INSERT OR IGNORE INTO Seasons (SeasonID, LeagueID, Name, StartDate, EndDate)
+               VALUES (?, ?, ?, ?, ?);""",
+            (year, league_id, str(year), start, end)
+        )
 
 def init_db():
     try:
@@ -68,16 +97,24 @@ def init_db():
 
 
 if __name__ == "__main__":
-    try: # check if db has been initialised
-        query = "SELECT * FROM Player" 
-        cursor.execute(query) 
-        print(cursor.fetchall())
-    except Exception as e: # if not, initialise db
+    try:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='League';")
+        exists = cursor.fetchone()
+        if not exists:
+            raise Exception("DB not initialised")
+    except Exception as e:
         print(e)
         init_db()
 
-    print("data:")
     league_data = get("/leagues")
     process_league(league_data)
+
+    cursor.execute("SELECT * FROM League;")
+    print("League rows:", cursor.fetchall())
+
+    cursor.execute("SELECT * FROM Seasons LIMIT 10;")
+    print("Season rows:", cursor.fetchall())
+
+    conn.close()
     
     

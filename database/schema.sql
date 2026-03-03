@@ -10,6 +10,7 @@ CREATE TABLE Teams (
   Name VARCHAR(50) NOT NULL,
   Abbreviation VARCHAR(10),
   City VARCHAR(50),
+  Stadium VARCHAR(50),
   LeagueID INT NOT NULL,
   CONSTRAINT FK_Teams_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID)
 );

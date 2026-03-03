@@ -15,12 +15,12 @@ CREATE TABLE Teams (
 
 -- Seasons
 CREATE TABLE Seasons (
-  SeasonID INT,
+  SeasonYear INT,
   LeagueID INT,
   Name VARCHAR(50), -- idk if we need name here bc league already has a name
   StartDate DATE,
   EndDate DATE,
-  PRIMARY KEY (SeasonID, LeagueID)
+  PRIMARY KEY (SeasonYear, LeagueID)
   CONSTRAINT FK_Seasons_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID)
 );
 
@@ -28,11 +28,11 @@ CREATE TABLE Seasons (
 -- SeasonTeams: which teams participate in a given season
 CREATE TABLE SeasonTeams (
   TeamID INT NOT NULL,
-  SeasonID INT NOT NULL,
+  SeasonYear INT NOT NULL,
   LeagueID INT NOT NULL,
-  CONSTRAINT PK_SeasonTeams PRIMARY KEY (SeasonID, TeamID),
+  CONSTRAINT PK_SeasonTeams PRIMARY KEY (SeasonYear, TeamID),
   CONSTRAINT FK_SeasonTeams_Team FOREIGN KEY (TeamID) REFERENCES Teams(TeamID),
-  CONSTRAINT FK_SeasonTeams_Season FOREIGN KEY (SeasonID) REFERENCES Seasons(SeasonID),
+  CONSTRAINT FK_SeasonTeams_Season FOREIGN KEY (SeasonYear) REFERENCES Seasons(SeasonYear),
   CONSTRAINT FK_SeasonTeams_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID)
 );
 

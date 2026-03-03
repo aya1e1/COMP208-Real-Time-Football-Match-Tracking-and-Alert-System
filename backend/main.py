@@ -55,6 +55,8 @@ def init_db():
     try:
         with open(schema_path, 'r') as f: # reads schema
             sql_script = f.read()
+        # ensure foreign keys are enforced in SQLite
+        cursor.execute('PRAGMA foreign_keys = ON;')
         
         cursor.executescript(sql_script)
         conn.commit() # saves

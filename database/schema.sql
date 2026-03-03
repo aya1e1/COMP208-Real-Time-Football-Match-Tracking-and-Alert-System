@@ -93,7 +93,7 @@ CREATE TABLE Events (
 
 -- User (for authentication system)
 CREATE TABLE Users (
-  UserID INT PRIMARY KEY AUTO_INCREMENT,
+  UserID INTEGER PRIMARY KEY AUTOINCREMENT,
   Username VARCHAR(50) NOT NULL UNIQUE,
   Email VARCHAR(100) NOT NULL UNIQUE,
   PasswordHash VARCHAR(255) NOT NULL,
@@ -102,8 +102,8 @@ CREATE TABLE Users (
 
 -- User Notification Preferences
 CREATE TABLE UserNotificationPreferences (
-  PreferenceID INT PRIMARY KEY AUTO_INCREMENT,
-  UserID INT NOT NULL,
+  PreferenceID INTEGER PRIMARY KEY AUTOINCREMENT,
+  UserID INTEGER NOT NULL,
   TeamID INT,
   NotifyGoals BOOLEAN DEFAULT TRUE,
   NotifyCards BOOLEAN DEFAULT TRUE,

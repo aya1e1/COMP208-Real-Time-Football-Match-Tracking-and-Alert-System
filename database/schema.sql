@@ -25,6 +25,16 @@ CREATE TABLE Seasons (
   CONSTRAINT FK_Seasons_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID)
 );
 
+-- SeasonTeams - Link seasons to teams
+CREATE TABLE SeasonTeams (
+  TeamID INT NOT NULL,
+  SeasonID INT NOT NULL,
+  Year INT NOT NULL,
+  CONSTRAINT PK_SeasonTeams PRIMARY KEY (TeamID, SeasonID),
+  CONSTRAINT FK_SeasonTeams_Team FOREIGN KEY (TeamID) REFERENCES Teams(TeamID),
+  CONSTRAINT FK_SeasonTeams_Season FOREIGN KEY (SeasonID) REFERENCES Seasons(SeasonID)
+);
+
 -- LeagueTable
 CREATE TABLE LeagueTable (
   LeagueID INT NOT NULL,

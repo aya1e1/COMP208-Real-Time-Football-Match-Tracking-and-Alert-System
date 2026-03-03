@@ -75,9 +75,9 @@ def save_league_and_seasons(item):
             continue
 
         cursor.execute(
-            """INSERT OR IGNORE INTO Seasons (SeasonID, LeagueID, Name, StartDate, EndDate)
-               VALUES (?, ?, ?, ?, ?);""",
-            (year, league_id, str(year), start, end)
+            """INSERT OR IGNORE INTO Seasons (SeasonYear, LeagueID, StartDate, EndDate)
+               VALUES (?, ?, ?, ?);""",
+            (year, league_id, start, end)
         )
 
 def init_db():
@@ -101,10 +101,16 @@ if __name__ == "__main__":
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='League';")
         exists = cursor.fetchone()
         if not exists:
+            init_db()
             raise Exception("DB not initialised")
+
     except Exception as e:
         print(e)
-        init_db()
+        # init_db()
+
+
+    cursor.execute("SELECT * FROM Seasons;")
+    print("Seasons rows:", cursor.fetchall())
 
     league_data = get("/leagues")
     process_league(league_data)
@@ -112,8 +118,8 @@ if __name__ == "__main__":
     cursor.execute("SELECT * FROM League;")
     print("League rows:", cursor.fetchall())
 
-    cursor.execute("SELECT * FROM Seasons LIMIT 10;")
-    print("Season rows:", cursor.fetchall())
+    # cursor.execute("SELECT * FROM Seasons LIMIT 10;")
+    # print("Season rows:", cursor.fetchall())
 
     conn.close()
     

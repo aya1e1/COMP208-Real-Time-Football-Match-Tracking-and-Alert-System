@@ -17,7 +17,6 @@ CREATE TABLE Teams (
 CREATE TABLE Seasons (
   SeasonYear INT,
   LeagueID INT,
-  Name VARCHAR(50),
   StartDate DATE,
   EndDate DATE,
   PRIMARY KEY (SeasonYear, LeagueID),

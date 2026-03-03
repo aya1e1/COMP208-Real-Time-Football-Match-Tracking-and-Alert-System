@@ -11,8 +11,6 @@ CREATE TABLE Teams (
   Abbreviation VARCHAR(10),
   City VARCHAR(50),
   Stadium VARCHAR(50),
-  LeagueID INT NOT NULL,
-  CONSTRAINT FK_Teams_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID)
 );
 
 -- Seasons
@@ -29,7 +27,6 @@ CREATE TABLE Seasons (
 CREATE TABLE SeasonTeams (
   TeamID INT NOT NULL,
   SeasonID INT NOT NULL,
-  Year INT NOT NULL,
   CONSTRAINT PK_SeasonTeams PRIMARY KEY (TeamID, SeasonID),
   CONSTRAINT FK_SeasonTeams_Team FOREIGN KEY (TeamID) REFERENCES Teams(TeamID),
   CONSTRAINT FK_SeasonTeams_Season FOREIGN KEY (SeasonID) REFERENCES Seasons(SeasonID)

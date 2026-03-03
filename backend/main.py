@@ -60,13 +60,13 @@ def save_league_and_seasons(item):
     if not league_id or not league_name:
         return
 
-    # Insert league once
+    # insert league once
     cursor.execute(
         "INSERT OR IGNORE INTO League (LeagueID, Name) VALUES (?, ?);",
         (league_id, league_name)
     )
 
-    # Insert seasons for that league
+    # innsert seasons for that league
     for season in seasons:
         year = season.get("year")     # eg. 2024
         start = season.get("start")   

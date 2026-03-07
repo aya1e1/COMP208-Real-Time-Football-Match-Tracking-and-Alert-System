@@ -164,3 +164,34 @@ class TestCache(unittest.TestCase):
         self.assertIsNone(c.get("del_me"))
 
 # -- Event Processing Tests --
+def _seed_teams(execute_fn):
+    execute_fn("INSERT INTO League (LeagueID ,Name) VALUES (39, 'Premier League')")
+    execute_fn("INSERT INTO Seasons (SeasonID, LeagueID, Year) VALUES (2024, 39, 2024)")
+    execute_fn("INSERT INTO Teams (TeamID, Name, LeagueID) VALUES (40, 'Liverpool', 39)")
+    execute_fn("INSERT INTO Teams (TeamID, Name, LeagueID) VALUES (42, 'Arsenal', 39)")
+    execute_fn("INSERT INTO Player (PlayerID, Name) VALUES (100, 'Salah')")
+
+def _sample_fixture():
+    return {
+        "fixture": {"id": 1001, "data": "2024_04_20T15:00:00+00:00",
+                    "status": {"short": "FT", "elapsed": 90},
+                    "venue": {"name": "Anfield", "city": "Liverpool"}},
+        "league": {"id": 39, "season": 2024},
+        "teams": {"home": {"id": 40, "name": "Liverpool"},
+                  "away": {"id": 42, "name": "Arsenal"}},
+        "goals": {"home": 2, "away": 1},
+    }
+
+def _sample_events():
+    return [
+        {"type": "Goal", "detail": "Normal Goal", 
+         "time": {"elapsed": 23, "extra": None},
+         "team": {"id": 40}, "player": {"id": 100, "name": "Salah"},
+         "assist": {"id": None, "name": None}},
+        {"type": "Card", "detail": "Yellow Card",
+            "time": {"elapsed": 55, "extra": None},
+            "team": {"id": 42}, "player": {"id": None, "name": ""},
+            "assist": {"id": None, "name": None}} , 
+    ]
+
+class TestEventProcessing(unittest.TestCase):

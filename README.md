@@ -93,7 +93,7 @@ python -m unittest tests.test_all -v
 |------|------|--------|
 | Jacob Daya | ... | @kedachii |
 | Aya El Khayat | ... | @aya1e1 |
-| Tom Sutton | Database / ... | @Thomas-Sutton-0 |
+| Tom Sutton | ... | @Thomas-Sutton-0 |
 | Best Boonthanomwong | ... | @nongbed |
 | Hamza Al Zudi Garcia-Olalla | ... | HAZ-GO |
 | Balqis Binti Abdul Halim | ... | balqishalim |

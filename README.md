@@ -1,13 +1,13 @@
 
-# Real Time Football Match Tracking and Alert System
+# Real-Time Football Match Tracking and Alert System
 
-> COMP208 Group Software Project - Universiti of Liverpool 2025/2026
+> COMP208 Group Software Project - University of Liverpool 2025/2026
 >
-> Team: Hamza Al Zudi Garcia-Olalla . Ziad Azmi . Ziad Azmi . Balqis Binti Abdul Halim . Best Boonthanomwong . Jacob Daya . Aya El Khayat . Tom Sutton
+> Team: Hamza Al Zudi Garcia-Olalla . Ziad Azmi . Balqis Binti Abdul Halim . Best Boonthanomwong . Jacob Daya . Aya El Khayat . Tom Sutton
 
 ## About
 
-A real- time football match tracking and alert system that provides live scores, match events (goals, cards, substitutions), league standings, player statistics, and personalised notification for registered users.
+A real-time football match tracking and alert system that provides live scores, match events (goals, cards, substitutions), league standings, player statistics, and personalised notifications for registered users.
 
 **Tech stack:** Python . Flask . SQLite . HTML/CSS . API-Football
 
@@ -17,10 +17,10 @@ A real- time football match tracking and alert system that provides live scores,
 
 - 🔴Live match scores updated every 30 seconds
 - ⚽Match events timeline (goals, cards, substitutions)
-- 🏆Premier League statndings table
+- 🏆Premier League standings table
 - 👤User accounts with personalised team alerts
 - 📊Player and team statistics
-- 💾 API caching system to stay witnin rate limits
+- 💾 API caching system to stay within rate limits
 
 ---
 
@@ -28,14 +28,15 @@ A real- time football match tracking and alert system that provides live scores,
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_ORG/COMP208-Real-Time-Football-Match-Tracking-and-Alert-System
+git clone https://github.com/aya1e1/COMP208-Real-Time-Football-Match-Tracking-and-Alert-System
 cd COMP208-Real-Time-Football-Match-Tracking-and-Alert-System
 ```
 
 ### 2. Create virtual environment
 ```bash
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate    # Mac/Linux
+venv\Scripts\activate       # Windows
 pip install -r requirements.txt
 ```
 ### 3. Add API key
@@ -72,7 +73,9 @@ python run.py
 ├── tests/
 │   └── test_all.py         # Unit and integration tests
 └── .github/workflows/
-    └── ci.yml              # GitHub Actions CI/CD
+│   └── ci.yml              # GitHub Actions CI/CD
+├── run.py                  # App entry point
+└── requirements.txt        # Python dependencies
 ```
 
 ---
@@ -85,6 +88,16 @@ python -m unittest tests.test_all -v
 ---
 
 ## API
+This project uses [API-Football v3](https://www.api-football.com/) (free tier — 100 requests/day).
+
+Endpoints used:
+- `/fixtures` — today's matches and live scores
+- `/fixtures/events` — goals, cards, substitutions
+- `/standings` — league table
+- `/teams` — team information
+- `/players` — player statistics
+
+All responses are cached in SQLite to stay within the free tier limit.
 
 ---
 
@@ -95,15 +108,8 @@ python -m unittest tests.test_all -v
 | Aya El Khayat | ... | @aya1e1 |
 | Tom Sutton | ... | @Thomas-Sutton-0 |
 | Best Boonthanomwong | ... | @nongbed |
-| Hamza Al Zudi Garcia-Olalla | ... | HAZ-GO |
-| Balqis Binti Abdul Halim | ... | balqishalim |
-| Ziad Azmi | ... | ziad-304 |
+| Hamza Al Zudi Garcia-Olalla | ... | @HAZ-GO |
+| Balqis Binti Abdul Halim | ... | @balqishalim |
+| Ziad Azmi | ... | @ziad-304 |
 
 ---
-## Run
-1. Create virtual environment 
-`python -m venv venv` 
-2. Activate virtual environment
-`source venv/bin/activate`
-3. Install requirements
-`pip install -r requirements.txt`

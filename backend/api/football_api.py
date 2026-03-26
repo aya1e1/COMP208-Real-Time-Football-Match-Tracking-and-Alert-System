@@ -122,7 +122,7 @@ def get_events(fixture_id):
     return result
 
 def get_teams(league_id, season):
-    """Fetch all teams in a league for a givenseason.
+    """Fetch all teams in a league for a given season.
     Cached for 24 hours as team data rarely changes.
     """
     key = f"teams_{league_id}_{season}"

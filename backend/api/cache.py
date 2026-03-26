@@ -1,7 +1,8 @@
 """cache.py - DB-backed cache to minimise API-Football calls (100/day limit)."""
 import json
 from datetime import datetime, timedelta
-from backend.db.database import query,execute
+from backend.db.database import query, execute
+
 
 class Cache:
     # Time to live constants (in seconds)
@@ -18,7 +19,7 @@ class Cache:
         if not rows:
             return None
         row = rows[0]
-      
+
         # Check if cached data has expired
         if datetime.utcnow() > datetime.fromisoformat(row["ExpiresAt"]):
             # Delete the expired entry and return None to trigger a fresh API call
@@ -43,16 +44,17 @@ class Cache:
                ExpiresAt=excluded.ExpiresAt""",
             (key, json.dumps(data), now.isoformat(), expires.isoformat()),
         )
+
     def delete(self, key):
         """Remove a single cache entry by key.
         Used to force a fresh API call for a specific resource,
         for example when a live match finishes.
         """
-       execute("DELETE FROM Cache WHERE CacheKey = ?", (key,))
+        execute("DELETE FROM Cache WHERE CacheKey = ?", (key,))
 
     def purge_expired(self):
         """Remove all cache entries that have passed their expiry time.
         Should be called periodically to keep the database clean
         and prevent it from filling up with stale data.
         """
-       execute("DELETE FROM Cache WHERE ExpiresAt < ?", (datetime.utcnow().isoformat(),))
+        execute("DELETE FROM Cache WHERE ExpiresAt < ?", (datetime.utcnow().isoformat(),))

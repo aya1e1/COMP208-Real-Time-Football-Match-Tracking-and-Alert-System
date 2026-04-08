@@ -1,1 +1,25 @@
+body {
+    background-color: #121212;
+    color: white;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    text-align: center;
+}
+
+.match {
+    background: #1e1e1e;
+    margin: 20px auto;
+    padding: 15px;
+    width: 300px;
+    border-radius: 10px;
+}
+
+.teams {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.score {
+    font-size: 22px;
+    margin-top: 10px;
+}
 

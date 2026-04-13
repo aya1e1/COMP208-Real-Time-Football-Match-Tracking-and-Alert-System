@@ -1,17 +1,9 @@
 import requests
-import sqlite3
-from pathlib import Path
 
+from db import database
 from dummy import mock_responses
 
 import responses
-
-current_file = Path(__file__).resolve()
-schema_path = current_file.parent.parent / "database" / "schema.sql"
-db_path = current_file.parent.parent / "database" / "database.db"
-
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
 
 #API_LINK = "https://v3.football.api-sports.io/"
 API_KEY = "7f14422097825f6406284820ff8f58cc"
@@ -40,7 +32,6 @@ def process_league(data):
     for item in data["response"]:
         save_league_and_seasons(item)
 
-    conn.commit()
     print("Leagues + seasons saved.")
 
 def save_league_and_seasons(item):
@@ -61,7 +52,7 @@ def save_league_and_seasons(item):
         return
 
     # insert league once
-    cursor.execute(
+    database.execute(
         "INSERT OR IGNORE INTO League (LeagueID, Name) VALUES (?, ?);",
         (league_id, league_name)
     )
@@ -69,12 +60,12 @@ def save_league_and_seasons(item):
     # innsert seasons for that league
     for season in seasons:
         year = season.get("year")     # eg. 2024
-        start = season.get("start")   
-        end = season.get("end")       
+        start = season.get("start")
+        end = season.get("end")
         if not year:
             continue
 
-        cursor.execute(
+        database.execute(
             """INSERT OR IGNORE INTO Seasons (SeasonYear, LeagueID, StartDate, EndDate)
                VALUES (?, ?, ?, ?);""",
             (year, league_id, start, end)
@@ -82,24 +73,17 @@ def save_league_and_seasons(item):
 
 def init_db():
     try:
-        with open(schema_path, 'r') as f: # reads schema
-            sql_script = f.read()
-        # ensure foreign keys are enforced in SQLite
-        cursor.execute('PRAGMA foreign_keys = ON;')
-        
-        cursor.executescript(sql_script)
-        conn.commit() # saves
+        database.init_db()
         print("Database initialised")
     except Exception as e:
         print(e)
-    finally:
-        conn.close()
 
 
 if __name__ == "__main__":
     try:
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='League';")
-        exists = cursor.fetchone()
+        exists = database.query(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='League';"
+        )
         if not exists:
             init_db()
             raise Exception("DB not initialised")
@@ -109,18 +93,14 @@ if __name__ == "__main__":
         # init_db()
 
 
-    cursor.execute("SELECT * FROM Seasons;")
-    print("Seasons rows:", cursor.fetchall())
+    seasons = database.query("SELECT * FROM Seasons;")
+    print("Seasons rows:", seasons)
 
     league_data = get("/leagues")
     process_league(league_data)
 
-    cursor.execute("SELECT * FROM League;")
-    print("League rows:", cursor.fetchall())
+    leagues = database.query("SELECT * FROM League;")
+    print("League rows:", leagues)
 
-    # cursor.execute("SELECT * FROM Seasons LIMIT 10;")
-    # print("Season rows:", cursor.fetchall())
-
-    conn.close()
-    
-    
+    # season_rows = database.query("SELECT * FROM Seasons LIMIT 10;")
+    # print("Season rows:", season_rows)

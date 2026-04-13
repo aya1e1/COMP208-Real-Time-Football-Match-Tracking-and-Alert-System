@@ -48,7 +48,6 @@ CREATE TABLE IF NOT EXISTS LeagueTable (
   Points   INT DEFAULT 0,
   Played   INT DEFAULT 0,
   Won      INT DEFAULT 0,
-  Drawn    INT DEFAULT 0,
   Lost     INT DEFAULT 0,
   GF       INT DEFAULT 0,
   GA       INT DEFAULT 0,
@@ -64,8 +63,7 @@ CREATE TABLE IF NOT EXISTS Player (
   Name         VARCHAR(100) NOT NULL,
   MainPosition VARCHAR(50),
   DateOfBirth  DATE,
-  Nationality  VARCHAR(50),
-  PhotoURL     VARCHAR(255)
+  Nationality  VARCHAR(50)
 );
 
 -- PlayerTeam
@@ -88,10 +86,10 @@ CREATE TABLE IF NOT EXISTS Fixtures (
   AwayTeamID INT NOT NULL,
   Location   VARCHAR(100),
   MatchDate  DATETIME NOT NULL,
-  Status     VARCHAR(10) DEFAULT 'NS',
-  Elapsed    INT DEFAULT 0,
   HomeScore  INT DEFAULT 0,
   AwayScore  INT DEFAULT 0,
+  Status    VARCHAR(10) DEFAULT 'NS',
+  Elapsed   INT DEFAULT 0,
   CONSTRAINT FK_Fixtures_League   FOREIGN KEY (LeagueID)   REFERENCES League(LeagueID),
   CONSTRAINT FK_Fixtures_HomeTeam FOREIGN KEY (HomeTeamID) REFERENCES Teams(TeamID),
   CONSTRAINT FK_Fixtures_AwayTeam FOREIGN KEY (AwayTeamID) REFERENCES Teams(TeamID),
@@ -107,12 +105,11 @@ CREATE TABLE IF NOT EXISTS Events (
   AssistID    INT,
   TeamID      INT NOT NULL,
   EventType   VARCHAR(50),
-  Detail      VARCHAR(255),
+  Detail     VARCHAR(255),
   EventMinute INT,
   ExtraMinute INT DEFAULT 0,
   CONSTRAINT PK_Events         PRIMARY KEY (FixtureID, EventID),
   CONSTRAINT FK_Events_Player  FOREIGN KEY (PlayerID)  REFERENCES Player(PlayerID),
-  CONSTRAINT FK_Events_Assist  FOREIGN KEY (AssistID)  REFERENCES Player(PlayerID),
   CONSTRAINT FK_Events_Fixture FOREIGN KEY (FixtureID) REFERENCES Fixtures(FixtureID),
   CONSTRAINT FK_Events_Team    FOREIGN KEY (TeamID)    REFERENCES Teams(TeamID)
 );
@@ -143,8 +140,6 @@ CREATE TABLE IF NOT EXISTS UserNotificationPreferences (
   NotifyGoals         BOOLEAN DEFAULT TRUE,
   NotifyCards         BOOLEAN DEFAULT TRUE,
   NotifySubstitutions BOOLEAN DEFAULT FALSE,
-  NotifyKickoff       BOOLEAN DEFAULT TRUE,
-  NotifyFullTime      BOOLEAN DEFAULT TRUE,
   CONSTRAINT FK_UserPrefs_User FOREIGN KEY (UserID) REFERENCES Users(UserID),
   CONSTRAINT FK_UserPrefs_Team FOREIGN KEY (TeamID) REFERENCES Teams(TeamID)
 );

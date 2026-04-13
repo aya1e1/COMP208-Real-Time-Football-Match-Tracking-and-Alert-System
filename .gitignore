@@ -211,3 +211,5 @@ database/database.db
 __pycache__/
 *.pyc
 .env
+database/database.db-shm
+database/database.db-wal

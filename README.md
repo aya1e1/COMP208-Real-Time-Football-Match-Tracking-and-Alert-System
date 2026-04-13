@@ -113,3 +113,5 @@ All responses are cached in SQLite to stay within the free tier limit.
 | Ziad Azmi | ... | @ziad-304 |
 
 ---
+
+Run API flask --app backend.api.api run

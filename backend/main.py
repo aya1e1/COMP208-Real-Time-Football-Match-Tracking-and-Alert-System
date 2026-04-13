@@ -146,7 +146,6 @@ def parse_fixtures(data: dict) -> list[tuple]:
     if not data or "response" not in data:
         return fixtures
 
-
     for item in data["response"]:
         fixture = item.get("fixture", {})
         league = item.get("league", {})
@@ -162,12 +161,13 @@ def parse_fixtures(data: dict) -> list[tuple]:
 
         timestamp = fixture.get("timestamp")
         if timestamp:
-            match_date = datetime.fromtimestamp(timestamp, UTC).strftime("%Y-%m-%d %H:%M:%S")
+            match_date = datetime.fromtimestamp(timestamp, UTC).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
         else:
             match_date = fixture.get("date")
 
         status = fixture.get("status", {}).get("short")
-
 
         home_score = goals.get("home") if goals.get("home") is not None else 0
         away_score = goals.get("away") if goals.get("away") is not None else 0
@@ -198,7 +198,18 @@ def save_fixtures(fixtures: list[tuple]) -> None:
         database.execute(
             """
             INSERT OR IGNORE INTO Fixtures
-            (FixtureID, LeagueID, HomeTeamID, AwayTeamID, Location, MatchDate, Status, HomeScore, AwayScore, Year)
+            (
+                FixtureID,
+                LeagueID,
+                HomeTeamID,
+                AwayTeamID,
+                Location,
+                MatchDate,
+                Status,
+                HomeScore,
+                AwayScore,
+                Year
+            )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """,
             fixture_row,
@@ -227,9 +238,9 @@ def sync_fixtures(league_id: int, season: int) -> None:
     save_fixtures(fixtures)
     print(f"Saved {len(fixtures)} fixtures.")
 
+
 @responses.activate
 def main() -> None:
-    
     exists = database.query(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='League';"
     )

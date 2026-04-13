@@ -1,44 +1,100 @@
-import responses
-import requests
 import json
 from pathlib import Path
+from urllib.parse import urlencode
 
-def get_json_from_file(file_path):
-    with open(file_path, 'r') as file:
+import requests
+import responses
+
+
+BASE_URL = "http://example.com"
+DIRECTORY = Path(__file__).absolute().parent
+
+
+def get_json_from_file(file_path: Path):
+    with open(file_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
-directory = Path(__file__).absolute().parent
+
+def parse_mock_filename(file_path: Path):
+    """
+    Convert filenames like:
+      output_leagues.json
+      output_team_league-39_season-2024.json
+
+    into:
+      endpoint = "leagues", params = {}
+      endpoint = "team", params = {"league": "39", "season": "2024"}
+    """
+    stem = file_path.stem  # e.g. "output_team_league-39_season-2024"
+
+    if not stem.startswith("output_"):
+        return None
+
+    remainder = stem[len("output_"):]  # e.g. "team_league-39_season-2024"
+
+    if not remainder:
+        return None
+
+    parts = remainder.split("_")
+    endpoint = parts[0]
+    param_parts = parts[1:]
+
+    params = {}
+    for part in param_parts:
+        if "-" not in part:
+            continue
+        key, value = part.split("-", 1)
+        params[key] = value
+
+    return endpoint, params
+
+
+def build_url(endpoint: str, params: dict):
+    url = f"{BASE_URL}/{endpoint}"
+    if params:
+        url = f"{url}?{urlencode(params)}"
+    return url
+
 
 def register_mocks():
-    mock_team_39 = get_json_from_file(directory / "output_team_39.json")
-    mock_leagues = get_json_from_file(directory / "output_leagues.json")
+    for file_path in DIRECTORY.glob("output_*.json"):
+        parsed = parse_mock_filename(file_path)
+        if parsed is None:
+            continue
 
-    responses.add(
-        method=responses.GET,
-        url="http://example.com/leagues",
-        json=mock_leagues,
-        status=200
-    )
+        endpoint, params = parsed
+        url = build_url(endpoint, params)
+        mock_data = get_json_from_file(file_path)
 
-    responses.add(
-        method=responses.GET,
-        url="http://example.com/team?league=39&season=2024",
-        json=mock_team_39,
-        status=200
-    )
+        responses.add(
+            method=responses.GET,
+            url=url,
+            json=mock_data,
+            status=200,
+        )
+
+        print(f"Registered mock: {url} -> {file_path.name}")
 
 
 @responses.activate
 def run_request():
     register_mocks()
-    try:
-        response = requests.get("http://example.com/team?league=39&season=2024")
-        response.raise_for_status()
-        data = response.json()
-        print("Success! Data received:")
-        print(data)
-    except Exception as e:
-        print(f"Error: {e}")
+
+    test_urls = [
+        "http://example.com/leagues",
+        "http://example.com/team?league=39&season=2024",
+    ]
+
+    for url in test_urls:
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+            print(f"\nSuccess: {url}")
+            print(data)
+        except Exception as e:
+            print(f"\nError for {url}: {e}")
+
 
 if __name__ == "__main__":
     run_request()

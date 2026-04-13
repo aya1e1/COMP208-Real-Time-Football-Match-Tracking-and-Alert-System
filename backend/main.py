@@ -155,7 +155,7 @@ def main():
 
     leagues = database.query("SELECT * FROM League;")
 
-    team_data = get("/team?league=39&season=2024")
+    team_data = get("/teams?league=39&season=2024")
     process_teams(team_data)
 
 if __name__ == "__main__":

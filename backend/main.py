@@ -7,8 +7,12 @@ from datetime import datetime, UTC
 
 import responses
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 #API_LINK = "https://v3.football.api-sports.io/"
-API_KEY = "7f14422097825f6406284820ff8f58cc"
+API_KEY = os.getenv("API_FOOTBALL_KEY")
 API_LINK = "http://example.com"
 
 mock_responses.register_mocks()

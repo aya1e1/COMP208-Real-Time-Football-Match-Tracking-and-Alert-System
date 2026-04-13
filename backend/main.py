@@ -3,6 +3,8 @@ import requests
 from db import database
 from dummy import mock_responses
 
+from datetime import datetime, UTC
+
 import responses
 
 #API_LINK = "https://v3.football.api-sports.io/"
@@ -130,7 +132,64 @@ def save_team_and_season(item, league_id, season_year):
         (team_id, season_year, league_id)
     )
 
+def process_fixtures(data):
+    if not data or "response" not in data:
+        print("No fixture data found.")
+        return
 
+    for item in data["response"]:
+        save_fixture(item)
+
+    print("Fixtures saved.")
+
+
+def save_fixture(item):
+    fixture = item.get("fixture", {})
+    league = item.get("league", {})
+    teams = item.get("teams", {})
+    goals = item.get("goals", {})
+
+    fixture_id = fixture.get("id")
+    league_id = league.get("id")
+
+    home_team = teams.get("home", {}).get("id")
+    away_team = teams.get("away", {}).get("id")
+
+    venue = fixture.get("venue", {})
+    location = venue.get("name")
+
+    timestamp = fixture.get("periods", {}).get("second")
+
+    if timestamp:
+        match_date = datetime.fromtimestamp(timestamp, UTC).strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        match_date = fixture.get("date")  # fallback
+
+    status = fixture.get("status", {}).get("short")
+    completed = status == "FT"
+
+    home_score = goals.get("home") or 0
+    away_score = goals.get("away") or 0
+
+    if not fixture_id or not league_id or not home_team or not away_team or not match_date:
+        return
+
+    database.execute(
+        """INSERT OR IGNORE INTO Fixtures
+           (FixtureID, LeagueID, HomeTeam, AwayTeam, Location, MatchDate, Completed, HomeScore, AwayScore)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+        (
+            fixture_id,
+            league_id,
+            home_team,
+            away_team,
+            location,
+            match_date,
+            completed,
+            home_score,
+            away_score
+        )
+    )
 
 @responses.activate
 def main():
@@ -157,6 +216,9 @@ def main():
 
     team_data = get("/teams?league=39&season=2024")
     process_teams(team_data)
+    
+    fixture_data = get("/fixtures?league=39&season=2024")
+    process_fixtures(fixture_data)
 
 if __name__ == "__main__":
 

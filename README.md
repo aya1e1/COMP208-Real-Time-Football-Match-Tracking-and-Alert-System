@@ -104,13 +104,13 @@ All responses are cached in SQLite to stay within the free tier limit.
 ## Contributors
 | Name | Role | GitHub |
 |------|------|--------|
-| Jacob Daya | ... | @kedachii |
-| Aya El Khayat | ... | @aya1e1 |
-| Tom Sutton | ... | @Thomas-Sutton-0 |
+| Jacob Daya | Database & Backend | @kedachii |
+| Aya El Khayat | API Integration, Database, Testing, DevOps | @aya1e1 |
+| Tom Sutton | Backend | @Thomas-Sutton-0 |
 | Best Boonthanomwong | ... | @nongbed |
 | Hamza Al Zudi Garcia-Olalla | ... | @HAZ-GO |
 | Balqis Binti Abdul Halim | ... | @balqishalim |
-| Ziad Azmi | ... | @ziad-304 |
+| Ziad Azmi | Backend & Frontend | @ziad-304 |
 
 ---
 

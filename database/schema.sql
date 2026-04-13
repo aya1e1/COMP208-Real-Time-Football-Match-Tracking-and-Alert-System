@@ -14,36 +14,35 @@ CREATE TABLE IF NOT EXISTS Teams (
   Name         VARCHAR(50) NOT NULL,
   Abbreviation VARCHAR(10),
   City         VARCHAR(50),
-  Stadium      VARCHAR(50),
-  LeagueID     INT NOT NULL,
-  CONSTRAINT FK_Teams_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID)
+  Stadium      VARCHAR(50)
 );
 
 -- Seasons
 CREATE TABLE IF NOT EXISTS Seasons (
-  SeasonID  INTEGER PRIMARY KEY AUTOINCREMENT,
   LeagueID  INT NOT NULL,
   Year      INT NOT NULL,
   StartDate DATE,
   EndDate   DATE,
   Current   INT DEFAULT 0,
+  CONSTRAINT PK_Seasons PRIMARY KEY (LeagueID, Year),
   CONSTRAINT FK_Seasons_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID)
 );
 
 -- SeasonTeams: which teams participate in a given season
 CREATE TABLE IF NOT EXISTS SeasonTeams (
   TeamID   INT NOT NULL,
-  SeasonID INT NOT NULL,
-  CONSTRAINT PK_SeasonTeams PRIMARY KEY (SeasonID, TeamID),
+  LeagueID INT NOT NULL,
+  Year     INT NOT NULL,
+  CONSTRAINT PK_SeasonTeams PRIMARY KEY (LeagueID, Year, TeamID),
   CONSTRAINT FK_SeasonTeams_Team   FOREIGN KEY (TeamID)   REFERENCES Teams(TeamID),
-  CONSTRAINT FK_SeasonTeams_Season FOREIGN KEY (SeasonID) REFERENCES Seasons(SeasonID)
+  CONSTRAINT FK_SeasonTeams_Season FOREIGN KEY (LeagueID, Year) REFERENCES Seasons(LeagueID, Year)
 );
 
 -- League Table / Standings
 CREATE TABLE IF NOT EXISTS LeagueTable (
   LeagueID INT NOT NULL,
+  Year     INT NOT NULL,
   TeamID   INT NOT NULL,
-  SeasonID INT NOT NULL,
   Position INT,
   Points   INT DEFAULT 0,
   Played   INT DEFAULT 0,
@@ -51,10 +50,9 @@ CREATE TABLE IF NOT EXISTS LeagueTable (
   Lost     INT DEFAULT 0,
   GF       INT DEFAULT 0,
   GA       INT DEFAULT 0,
-  PRIMARY KEY (LeagueID, TeamID, SeasonID),
+  PRIMARY KEY (LeagueID, Year, TeamID),
   CONSTRAINT FK_LeagueTable_Teams  FOREIGN KEY (TeamID)   REFERENCES Teams(TeamID),
-  CONSTRAINT FK_LeagueTable_League FOREIGN KEY (LeagueID) REFERENCES League(LeagueID),
-  CONSTRAINT FK_LeagueTable_Season FOREIGN KEY (SeasonID) REFERENCES Seasons(SeasonID)
+  CONSTRAINT FK_LeagueTable_Season FOREIGN KEY (LeagueID, Year) REFERENCES Seasons(LeagueID, Year)
 );
 
 -- Players
@@ -81,7 +79,7 @@ CREATE TABLE IF NOT EXISTS PlayerTeam (
 CREATE TABLE IF NOT EXISTS Fixtures (
   FixtureID  INT PRIMARY KEY,
   LeagueID   INT NOT NULL,
-  SeasonID   INT,
+  Year       INT,
   HomeTeamID INT NOT NULL,
   AwayTeamID INT NOT NULL,
   Location   VARCHAR(100),
@@ -91,6 +89,7 @@ CREATE TABLE IF NOT EXISTS Fixtures (
   Status    VARCHAR(10) DEFAULT 'NS',
   Elapsed   INT DEFAULT 0,
   CONSTRAINT FK_Fixtures_League   FOREIGN KEY (LeagueID)   REFERENCES League(LeagueID),
+  CONSTRAINT FK_Fixtures_Season   FOREIGN KEY (LeagueID, Year) REFERENCES Seasons(LeagueID, Year),
   CONSTRAINT FK_Fixtures_HomeTeam FOREIGN KEY (HomeTeamID) REFERENCES Teams(TeamID),
   CONSTRAINT FK_Fixtures_AwayTeam FOREIGN KEY (AwayTeamID) REFERENCES Teams(TeamID),
   CONSTRAINT CHK_Fixtures_Score         CHECK (HomeScore >= 0 AND AwayScore >= 0),

@@ -70,7 +70,7 @@ def save_seasons(seasons: list[tuple]) -> None:
     for year, league_id, start, end in seasons:
         database.execute(
             """
-            INSERT OR IGNORE INTO Seasons (SeasonYear, LeagueID, StartDate, EndDate)
+            INSERT OR IGNORE INTO Seasons (Year, LeagueID, StartDate, EndDate)
             VALUES (?, ?, ?, ?);
             """,
             (year, league_id, start, end),
@@ -133,7 +133,7 @@ def save_season_team_links(links: list[tuple]) -> None:
     for link_row in links:
         database.execute(
             """
-            INSERT OR IGNORE INTO SeasonTeams (TeamID, SeasonYear, LeagueID)
+            INSERT OR IGNORE INTO SeasonTeams (TeamID, Year, LeagueID)
             VALUES (?, ?, ?);
             """,
             link_row,
@@ -146,6 +146,7 @@ def parse_fixtures(data: dict) -> list[tuple]:
     if not data or "response" not in data:
         return fixtures
 
+
     for item in data["response"]:
         fixture = item.get("fixture", {})
         league = item.get("league", {})
@@ -154,6 +155,7 @@ def parse_fixtures(data: dict) -> list[tuple]:
 
         fixture_id = fixture.get("id")
         league_id = league.get("id")
+        year = league.get("season")
         home_team = teams.get("home", {}).get("id")
         away_team = teams.get("away", {}).get("id")
         location = fixture.get("venue", {}).get("name")
@@ -165,7 +167,7 @@ def parse_fixtures(data: dict) -> list[tuple]:
             match_date = fixture.get("date")
 
         status = fixture.get("status", {}).get("short")
-        completed = 1 if status == "FT" else 0
+
 
         home_score = goals.get("home") if goals.get("home") is not None else 0
         away_score = goals.get("away") if goals.get("away") is not None else 0
@@ -181,9 +183,10 @@ def parse_fixtures(data: dict) -> list[tuple]:
                 away_team,
                 location,
                 match_date,
-                completed,
+                status,
                 home_score,
                 away_score,
+                year,
             )
         )
 
@@ -195,8 +198,8 @@ def save_fixtures(fixtures: list[tuple]) -> None:
         database.execute(
             """
             INSERT OR IGNORE INTO Fixtures
-            (FixtureID, LeagueID, HomeTeam, AwayTeam, Location, MatchDate, Completed, HomeScore, AwayScore)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            (FixtureID, LeagueID, HomeTeamID, AwayTeamID, Location, MatchDate, Status, HomeScore, AwayScore, Year)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """,
             fixture_row,
         )

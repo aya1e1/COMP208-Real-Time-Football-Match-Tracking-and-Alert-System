@@ -10,7 +10,8 @@ API_KEY = "7f14422097825f6406284820ff8f58cc"
 API_LINK = "http://example.com"
 
 mock_responses.register_mocks()
-@responses.activate
+
+
 def get(request):
     headers = {
         "x-apisports-key": API_KEY,
@@ -78,8 +79,61 @@ def init_db():
     except Exception as e:
         print(e)
 
+def process_teams(data):
+    if not data or "response" not in data:
+        print("No team data found.")
+        return
 
-if __name__ == "__main__":
+    params = data.get("parameters", {})
+    league_id = params.get("league")
+    season_year = params.get("season")
+
+    if not league_id or not season_year:
+        print("Missing league or season in team data.")
+        return
+
+    for item in data["response"]:
+        save_team_and_season(item, league_id, season_year)
+
+    print("Teams + season links saved.")
+
+
+def save_team_and_season(item, league_id, season_year):
+
+    team = item.get("team", {})
+    venue = item.get("venue", {})
+
+    team_id = team.get("id")
+    team_name = team.get("name")
+    abbreviation = team.get("code")
+    country = team.get("country")
+    city = venue.get("city")
+    stadium = venue.get("name")
+
+    if country != "England":
+        return
+
+    if not team_id or not team_name:
+        return
+
+    # insert team once
+    database.execute(
+        """INSERT OR IGNORE INTO Teams (TeamID, Name, Abbreviation, City, Stadium)
+           VALUES (?, ?, ?, ?, ?);""",
+        (team_id, team_name, abbreviation, city, stadium)
+    )
+
+    # link team to season + league
+    database.execute(
+        """INSERT OR IGNORE INTO SeasonTeams (TeamID, SeasonYear, LeagueID)
+           VALUES (?, ?, ?);""",
+        (team_id, season_year, league_id)
+    )
+
+
+
+@responses.activate
+def main():
     try:
         exists = database.query(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='League';"
@@ -94,13 +148,18 @@ if __name__ == "__main__":
 
 
     seasons = database.query("SELECT * FROM Seasons;")
-    print("Seasons rows:", seasons)
+
 
     league_data = get("/leagues")
     process_league(league_data)
 
     leagues = database.query("SELECT * FROM League;")
-    print("League rows:", leagues)
 
+    team_data = get("/team?league=39&season=2024")
+    process_teams(team_data)
+
+if __name__ == "__main__":
+
+    main()
     # season_rows = database.query("SELECT * FROM Seasons LIMIT 10;")
     # print("Season rows:", season_rows)

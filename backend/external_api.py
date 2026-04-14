@@ -17,5 +17,6 @@ def api_get(path: str) -> dict | None:
         response.raise_for_status()
         return response.json()
     except requests.RequestException as exc:
-        print(f"API request failed for {path}: {exc}")
+        status_code = exc.response.status_code if exc.response is not None else "N/A"
+        print(f"API request failed for {path} (status code: {status_code}): {exc}")
         return None

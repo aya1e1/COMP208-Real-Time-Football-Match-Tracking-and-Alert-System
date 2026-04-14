@@ -8,14 +8,14 @@ load_dotenv()
 
 # Base configuration
 BASE_URL = "https://v3.football.api-sports.io"
-ENDPOINT = "/teams"  
+ENDPOINT = "/league"  
 
 # Build full URL
 url = f"{BASE_URL}{ENDPOINT}"
 
 params = {
     "league": 39,
-    "season": 2024
+    "season": 2025
 }
 
 # Get API key from .env

@@ -157,18 +157,11 @@
     gap: 2px;
   }
 
-  .overview-table .team-heading-main {
+  .overview-table .team-heading-main,
+  .overview-table .team-value {
     font-size: 1rem;
     font-weight: 600;
     color: #111;
-  }
-
-  .overview-table .team-heading-sub {
-    font-size: 0.76rem;
-    font-weight: 600;
-    color: var(--text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
   }
 
   .overview-table .row-label {
@@ -181,9 +174,6 @@
 
   .overview-table .team-value {
     text-align: center;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111;
   }
 
   .form-dots {
@@ -216,7 +206,6 @@
 
   .overview-table .team-value.soft {
     color: var(--text-2);
-    font-weight: 600;
   }
 
   .fixture-meta-grid {
@@ -226,7 +215,8 @@
     align-items: start;
   }
 
-  .fixture-meta-main {
+  .fixture-meta-main,
+  .fixture-meta-side {
     font-size: 1.05rem;
     font-weight: 600;
     color: #111;
@@ -238,15 +228,10 @@
     flex-direction: column;
     justify-self: end;
     text-align: right;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #111;
-    line-height: 1.4;
   }
 
   .fixture-meta-subtle {
     color: var(--text-2);
-    font-weight: 600;
   }
 
   .fixture-timeline-list {
@@ -262,12 +247,13 @@
     align-items: stretch;
   }
 
+  .fixture-event-row.marker {
+    display: block;
+  }
+
   .fixture-event-minute {
     display: flex;
     align-items: center;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #111;
     line-height: 1.35;
   }
 
@@ -314,20 +300,26 @@
     color: #111;
   }
 
-  .fixture-event-detail {
-    font-size: 0.92rem;
-    color: #111;
-    font-weight: 600;
-  }
-
   .fixture-event-detail.soft {
     color: var(--text-2);
-    font-weight: 600;
   }
 
   .fixture-empty {
     color: var(--text-2);
     font-size: 0.92rem;
+  }
+
+  .fixture-timeline-marker {
+    text-align: center;
+    padding: 6px 0;
+  }
+
+  .fixture-event-minute,
+  .fixture-event-detail,
+  .fixture-timeline-marker {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #111;
   }
 
   @media (max-width: 980px) {
@@ -525,59 +517,6 @@
     };
   }
 
-  function getStatusMeta(fixture) {
-    const status = fixture.Status || "NS";
-    const elapsed = fixture.Elapsed !== null && fixture.Elapsed !== undefined ? `${fixture.Elapsed}'` : "";
-    const liveStatuses = new Set(["1H", "HT", "2H", "ET", "BT", "P", "LIVE"]);
-
-    if (liveStatuses.has(status)) {
-      return {
-        label: elapsed || status,
-        badgeClass: "badge-live"
-      };
-    }
-
-    if (status === "FT" || status === "AET" || status === "PEN") {
-      return {
-        label: status,
-        badgeClass: "badge-ft"
-      };
-    }
-
-    return {
-      label: status,
-      badgeClass: ""
-    };
-  }
-
-  function prettifyStatus(status) {
-    const labelMap = {
-      NS: "Scheduled",
-      FT: "Full Time",
-      HT: "Half Time",
-      AET: "After Extra Time",
-      PEN: "Penalties",
-      LIVE: "Live",
-      PST: "Postponed",
-      CANC: "Cancelled"
-    };
-
-    return labelMap[status] || status || "Scheduled";
-  }
-
-  function getResultText(fixture, side) {
-    if (fixture.HomeScore === null || fixture.AwayScore === null) {
-      return "TBD";
-    }
-
-    if (fixture.HomeScore === fixture.AwayScore) {
-      return "Draw";
-    }
-
-    const homeWon = fixture.HomeScore > fixture.AwayScore;
-    return side === "home" ? (homeWon ? "Win" : "Loss") : (homeWon ? "Loss" : "Win");
-  }
-
   function eventTypeLabel(event) {
     const type = (event.EventType || "").toLowerCase();
     const detail = (event.Detail || "").toLowerCase();
@@ -660,6 +599,61 @@
     }
 
     return playerLabel;
+  }
+
+  function matchHasReachedHalftime(fixture) {
+    const status = fixture.Status || "";
+    const elapsed = Number(fixture.Elapsed);
+    return ["HT", "2H", "ET", "BT", "P", "FT", "AET", "PEN", "LIVE"].includes(status)
+      || (!Number.isNaN(elapsed) && elapsed >= 45);
+  }
+
+  function matchHasEnded(fixture) {
+    return ["FT", "AET", "PEN"].includes(fixture.Status || "");
+  }
+
+  function buildTimelineItems(events, fixture) {
+    const items = [];
+    const reachedHalftime = matchHasReachedHalftime(fixture);
+    const hasSecondHalfEvent = events.some((event) => Number(event.EventMinute) > 45);
+    const hasFirstHalfEvent = events.some((event) => {
+      const minute = Number(event.EventMinute);
+      return !Number.isNaN(minute) && minute <= 45;
+    });
+    let halftimeInserted = false;
+
+    if (matchHasEnded(fixture)) {
+      items.push({ kind: "marker", label: "End of Match" });
+    }
+
+    events.forEach((event, index) => {
+      items.push({ kind: "event", event });
+
+      if (halftimeInserted || !reachedHalftime) {
+        return;
+      }
+
+      const currentMinute = Number(event.EventMinute);
+      const nextMinute = Number(events[index + 1]?.EventMinute);
+      const crossesHalftimeBoundary = !Number.isNaN(currentMinute)
+        && currentMinute > 45
+        && (
+          index === events.length - 1
+          || Number.isNaN(nextMinute)
+          || nextMinute <= 45
+        );
+
+      if (crossesHalftimeBoundary) {
+        items.push({ kind: "marker", label: "Half Time" });
+        halftimeInserted = true;
+      }
+    });
+
+    if (!halftimeInserted && reachedHalftime && !hasSecondHalfEvent && hasFirstHalfEvent) {
+      items.push({ kind: "marker", label: "Half Time" });
+    }
+
+    return items;
   }
 
   function renderSummary(fixture) {
@@ -779,13 +773,13 @@
             <th></th>
             <th>
               <div class="team-heading">
-                <span class="team-heading-sub">At Home</span>
+                <span class="team-heading-main">At Home</span>
                 <span class="team-heading-main">${homeLabel}</span>
               </div>
             </th>
             <th>
               <div class="team-heading">
-                <span class="team-heading-sub">At Away</span>
+                <span class="team-heading-main">At Away</span>
                 <span class="team-heading-main">${awayLabel}</span>
               </div>
             </th>
@@ -853,8 +847,18 @@
     }
 
     const orderedEvents = [...events].reverse();
+    const timelineItems = buildTimelineItems(orderedEvents, fixture);
 
-    eventsEl.innerHTML = orderedEvents.map((event) => {
+    eventsEl.innerHTML = timelineItems.map((item) => {
+      if (item.kind === "marker") {
+        return `
+          <div class="fixture-event-row marker">
+            <div class="fixture-timeline-marker">${item.label}</div>
+          </div>
+        `;
+      }
+
+      const { event } = item;
       const type = (event.EventType || "").toLowerCase();
       const goalClass = type.includes("goal") ? "goal" : "";
       const eventLabel = eventTypeLabel(event);

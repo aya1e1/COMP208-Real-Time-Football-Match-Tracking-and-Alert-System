@@ -15,14 +15,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # -- Shared in memory database setup --
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "database" / "schema.sql"
+SCHEMA_DIR = Path(__file__).resolve().parent.parent / "database" / "schema"
 
 def _build_memory_db():
     """Create an in-memory SQLite database and initialize it with the schema."""
     conn = sqlite3.connect(":memory:")
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    with open(SCHEMA_PATH, "r") as f:
-        conn.executescript(f.read())
+    if SCHEMA_DIR.exists():
+        for schema_file in sorted(SCHEMA_DIR.glob("*.sql")):
+            conn.executescript(schema_file.read_text(encoding="utf-8"))
+    else:
+        with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
+            conn.executescript(f.read())
     return conn
 
 def _patch_db(test_case, conn):
@@ -111,8 +116,10 @@ class TestDatabase(unittest.TestCase):
     def test_foreign_key_enforced(self):
         from backend.db.database import execute
         with self.assertRaises(Exception):
-            execute("INSERT INTO Teams (TeamID,Name,LeagueID) VALUES (?,?,?)",
-                    (1, "Ghost FC", 9999))  # LeagueID 9999 does not exist
+            execute(
+                "INSERT INTO SeasonTeams (TeamID,LeagueID,Year) VALUES (?,?,?)",
+                (1, 9999, 2024),
+            )
 
 
 # -- 3. Cache Tests --
@@ -166,9 +173,9 @@ class TestCache(unittest.TestCase):
 
 def _seed_teams(execute_fn):
     execute_fn("INSERT INTO League (LeagueID,Name) VALUES (39,'Premier League')")
-    execute_fn("INSERT INTO Seasons (SeasonID,LeagueID,Year) VALUES (2024,39,2024)")
-    execute_fn("INSERT INTO Teams (TeamID,Name,LeagueID) VALUES (40,'Liverpool',39)")
-    execute_fn("INSERT INTO Teams (TeamID,Name,LeagueID) VALUES (42,'Arsenal',39)")
+    execute_fn("INSERT INTO Seasons (LeagueID,Year) VALUES (39,2024)")
+    execute_fn("INSERT INTO Teams (TeamID,Name) VALUES (40,'Liverpool')")
+    execute_fn("INSERT INTO Teams (TeamID,Name) VALUES (42,'Arsenal')")
     execute_fn("INSERT INTO Player (PlayerID,Name) VALUES (100,'Salah')")
 
 def _sample_fixture():
@@ -246,7 +253,7 @@ class TestNotifier(unittest.TestCase):
         _patch_db(self, self.conn)
         from backend.db.database import execute
         execute("INSERT INTO League (LeagueID,Name) VALUES (39,'PL')")
-        execute("INSERT INTO Teams (TeamID,Name,LeagueID) VALUES (40,'Liverpool',39)")
+        execute("INSERT INTO Teams (TeamID,Name) VALUES (40,'Liverpool')")
         execute("INSERT INTO Users (UserID,Username,Email,PasswordHash) VALUES (1,'tom','t@t.com','h')")
         execute("INSERT INTO UserFavouriteTeams (UserID,TeamID) VALUES (1,40)")
         import backend.events.notifier as n

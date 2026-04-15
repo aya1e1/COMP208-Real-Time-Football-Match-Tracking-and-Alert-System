@@ -29,6 +29,7 @@ def create_app():
     from backend.routes.players       import players_bp
     from backend.routes.auth          import auth_bp
     from backend.routes.notifications import notif_bp
+    from backend.api.api              import api_bp
 
     # Register each blueprint with its URL prefix
     app.register_blueprint(main_bp)                              # /
@@ -37,5 +38,6 @@ def create_app():
     app.register_blueprint(players_bp,   url_prefix="/players")  # /players/...
     app.register_blueprint(auth_bp,      url_prefix="/auth")     # /auth/...
     app.register_blueprint(notif_bp,     url_prefix="/notifications") # /notifications/...
+    app.register_blueprint(api_bp,       url_prefix="/api")      # /api/...
 
     return app

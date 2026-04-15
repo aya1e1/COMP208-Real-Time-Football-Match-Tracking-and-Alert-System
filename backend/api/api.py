@@ -1,9 +1,10 @@
-from flask import Flask, jsonify
+from flask import Blueprint, jsonify
 from backend.db import database
 
-app = Flask(__name__)
+api_bp = Blueprint("api", __name__)
 
-@app.route("/leagues")
+
+@api_bp.route("/leagues")
 def leagues():
     sql = """
         SELECT LeagueID, Name
@@ -14,7 +15,7 @@ def leagues():
     return jsonify(leagues)
 
 
-@app.route("/leagues/<int:league_id>/teams")
+@api_bp.route("/leagues/<int:league_id>/teams")
 def league_teams(league_id):
 
     league_sql = """
@@ -46,7 +47,3 @@ def league_teams(league_id):
         "league": league[0],
         "teams": teams
     })
-
-
-if __name__ == "__main__":
-    app.run(debug=True)

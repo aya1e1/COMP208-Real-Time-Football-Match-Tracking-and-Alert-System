@@ -58,9 +58,12 @@ CREATE TABLE IF NOT EXISTS LeagueTable (
 -- Players
 CREATE TABLE IF NOT EXISTS Player (
   PlayerID     INT PRIMARY KEY,
+  FirstName    VARCHAR(50),
+  LastName     VARCHAR(50),
   Name         VARCHAR(100) NOT NULL,
   MainPosition VARCHAR(50),
   DateOfBirth  DATE,
+  PlaceOfBirth VARCHAR(100),
   Nationality  VARCHAR(50)
 );
 

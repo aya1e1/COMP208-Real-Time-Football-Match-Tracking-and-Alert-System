@@ -169,7 +169,7 @@
       const dateTime = [summary.date, summary.time].filter(Boolean).join(" ");
 
       return `
-        <a href="/fixtures/match/${fixture.FixtureID}" class="upcoming-item">
+        <a href="/fixtures/${fixture.FixtureID}" class="upcoming-item">
           <div class="upcoming-team">${fixture.HomeTeam}</div>
           <div class="upcoming-time">
             <span class="upcoming-date">${dateTime || "-"}</span>

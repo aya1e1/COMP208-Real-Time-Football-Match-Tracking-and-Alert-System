@@ -1,6 +1,7 @@
 import os
 import json
 from pathlib import Path
+from urllib.parse import parse_qsl, urlsplit
 
 import requests
 from dotenv import load_dotenv
@@ -10,12 +11,22 @@ load_dotenv()
 API_KEY = os.getenv("API_FOOTBALL_KEY")
 API_LINK = os.getenv("API_FOOTBALL_BASE_URL", "http://example.com")
 DUMMY_DIR = Path(__file__).resolve().parent / "dummy"
-SAVE_JSON = False
+SAVE_JSON = True
+USE_MOCKS = os.getenv("USE_MOCKS", "").strip().lower() == "true"
 
 
 def save_api_json(path: str, data: dict) -> None:
-    endpoint_name = path.strip("/").replace("/", "_") or "root"
-    file_path = DUMMY_DIR / f"output_{endpoint_name}.json"
+    parsed_path = urlsplit(path)
+    endpoint_name = parsed_path.path.strip("/").replace("/", "_") or "root"
+    params = parse_qsl(parsed_path.query, keep_blank_values=True)
+    param_str = "_".join(f"{key}-{value}" for key, value in params)
+
+    if param_str:
+        filename = f"output_{endpoint_name}_{param_str}.json"
+    else:
+        filename = f"output_{endpoint_name}.json"
+
+    file_path = DUMMY_DIR / filename
 
     with open(file_path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4)
@@ -23,8 +34,32 @@ def save_api_json(path: str, data: dict) -> None:
     print(f"Saved to {file_path}")
 
 
+def get_mock_file_path(path: str) -> Path:
+    parsed_path = urlsplit(path)
+    endpoint_name = parsed_path.path.strip("/").replace("/", "_") or "root"
+    params = parse_qsl(parsed_path.query, keep_blank_values=True)
+    param_str = "_".join(f"{key}-{value}" for key, value in params)
+
+    if param_str:
+        filename = f"output_{endpoint_name}_{param_str}.json"
+    else:
+        filename = f"output_{endpoint_name}.json"
+
+    return DUMMY_DIR / filename
+
+
 def api_get(path: str) -> dict | None:
-    headers = {"x-apisports-key": API_KEY}
+    if USE_MOCKS:
+        file_path = get_mock_file_path(path)
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            print(f"Mock file not found for {path}: {file_path}")
+            return None
+
+    headers = {}
+    headers["x-apisports-key"] = API_KEY
 
     try:
         response = requests.get(f"{API_LINK}{path}", headers=headers, timeout=30)

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 from backend.db import database
+from backend.main import sync_events, sync_fixture_statistics
 
 api_bp = Blueprint("api", __name__)
 
@@ -82,8 +83,10 @@ def fixtures():
             f.Year,
             f.HomeTeamID,
             ht.Name AS HomeTeam,
+            ht.Abbreviation AS HomeTeamAbbreviation,
             f.AwayTeamID,
             at.Name AS AwayTeam,
+            at.Abbreviation AS AwayTeamAbbreviation,
             f.Location,
             f.MatchDate,
             f.HomeScore,
@@ -120,6 +123,9 @@ def fixtures():
 
 @api_bp.route("/fixtures/<int:fixture_id>")
 def fixture(fixture_id):
+    sync_events(fixture_id)
+    sync_fixture_statistics(fixture_id)
+
     fixture_sql = """
         SELECT
             f.FixtureID,
@@ -128,8 +134,10 @@ def fixture(fixture_id):
             f.Year,
             f.HomeTeamID,
             ht.Name AS HomeTeam,
+            ht.Abbreviation AS HomeTeamAbbreviation,
             f.AwayTeamID,
             at.Name AS AwayTeam,
+            at.Abbreviation AS AwayTeamAbbreviation,
             f.Location,
             f.MatchDate,
             f.HomeScore,
@@ -171,7 +179,39 @@ def fixture(fixture_id):
     """
     events = database.query(events_sql, (fixture_id,))
 
+    statistics_sql = """
+        SELECT
+            fs.FixtureID,
+            fs.TeamID,
+            t.Name AS TeamName,
+            fs.ShotsOnGoal,
+            fs.ShotsOffGoal,
+            fs.TotalShots,
+            fs.BlockedShots,
+            fs.ShotsInsideBox,
+            fs.ShotsOutsideBox,
+            fs.Fouls,
+            fs.CornerKicks,
+            fs.Offsides,
+            fs.BallPossession,
+            fs.YellowCards,
+            fs.RedCards,
+            fs.GoalkeeperSaves,
+            fs.TotalPasses,
+            fs.PassesAccurate,
+            fs.PassesPercentage,
+            fs.ExpectedGoals,
+            fs.GoalsPrevented
+        FROM FixtureStatistics fs
+        JOIN Teams t
+            ON fs.TeamID = t.TeamID
+        WHERE fs.FixtureID = ?
+        ORDER BY fs.TeamID ASC
+    """
+    statistics = database.query(statistics_sql, (fixture_id,))
+
     return jsonify({
         "data": fixture,
-        "events": events
+        "events": events,
+        "statistics": statistics,
     })

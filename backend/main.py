@@ -1,10 +1,17 @@
 from datetime import datetime, UTC
+import os
 
-import responses
+from dotenv import load_dotenv
 
-from db import database
-from dummy import mock_responses
-from external_api import api_get
+try:
+    from backend.db import database
+    from backend.external_api import api_get
+except ImportError:
+    from db import database
+    from external_api import api_get
+
+load_dotenv()
+USE_MOCKS = os.getenv("USE_MOCKS", "").strip().lower() == "true"
 
 
 def parse_leagues(data: dict) -> tuple[list[tuple], list[tuple]]:
@@ -194,6 +201,162 @@ def save_fixtures(fixtures: list[tuple]) -> None:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """,
             fixture_row,
+        )
+
+
+def parse_stat_number(value, *, percentage: bool = False):
+    if value is None:
+        return None
+
+    if isinstance(value, (int, float)):
+        return value
+
+    if isinstance(value, str):
+        stripped = value.strip()
+        if percentage:
+            stripped = stripped.rstrip("%").strip()
+        if stripped == "":
+            return None
+        try:
+            numeric = float(stripped)
+        except ValueError:
+            return None
+        if percentage or "." in stripped:
+            return numeric
+        return int(numeric)
+
+    return None
+
+
+def parse_fixture_statistics(data: dict) -> list[tuple]:
+    fixture_statistics = []
+
+    if not data or "response" not in data:
+        return fixture_statistics
+
+    fixture_id = data.get("parameters", {}).get("fixture")
+    if fixture_id is None:
+        return fixture_statistics
+
+    fixture_id = int(fixture_id)
+
+    stat_column_map = {
+        "Shots on Goal": ("ShotsOnGoal", False),
+        "Shots off Goal": ("ShotsOffGoal", False),
+        "Total Shots": ("TotalShots", False),
+        "Blocked Shots": ("BlockedShots", False),
+        "Shots insidebox": ("ShotsInsideBox", False),
+        "Shots outsidebox": ("ShotsOutsideBox", False),
+        "Fouls": ("Fouls", False),
+        "Corner Kicks": ("CornerKicks", False),
+        "Offsides": ("Offsides", False),
+        "Ball Possession": ("BallPossession", True),
+        "Yellow Cards": ("YellowCards", False),
+        "Red Cards": ("RedCards", False),
+        "Goalkeeper Saves": ("GoalkeeperSaves", False),
+        "Total passes": ("TotalPasses", False),
+        "Passes accurate": ("PassesAccurate", False),
+        "Passes %": ("PassesPercentage", True),
+        "expected_goals": ("ExpectedGoals", False),
+        "goals_prevented": ("GoalsPrevented", False),
+    }
+
+    ordered_columns = [
+        "ShotsOnGoal",
+        "ShotsOffGoal",
+        "TotalShots",
+        "BlockedShots",
+        "ShotsInsideBox",
+        "ShotsOutsideBox",
+        "Fouls",
+        "CornerKicks",
+        "Offsides",
+        "BallPossession",
+        "YellowCards",
+        "RedCards",
+        "GoalkeeperSaves",
+        "TotalPasses",
+        "PassesAccurate",
+        "PassesPercentage",
+        "ExpectedGoals",
+        "GoalsPrevented",
+    ]
+
+    for item in data["response"]:
+        team_id = item.get("team", {}).get("id")
+        if team_id is None:
+            continue
+
+        row_data = {column: None for column in ordered_columns}
+
+        for stat in item.get("statistics", []):
+            stat_type = stat.get("type")
+            if stat_type not in stat_column_map:
+                continue
+
+            column_name, is_percentage = stat_column_map[stat_type]
+            row_data[column_name] = parse_stat_number(
+                stat.get("value"), percentage=is_percentage
+            )
+
+        fixture_statistics.append(
+            (
+                fixture_id,
+                int(team_id),
+                row_data["ShotsOnGoal"],
+                row_data["ShotsOffGoal"],
+                row_data["TotalShots"],
+                row_data["BlockedShots"],
+                row_data["ShotsInsideBox"],
+                row_data["ShotsOutsideBox"],
+                row_data["Fouls"],
+                row_data["CornerKicks"],
+                row_data["Offsides"],
+                row_data["BallPossession"],
+                row_data["YellowCards"],
+                row_data["RedCards"],
+                row_data["GoalkeeperSaves"],
+                row_data["TotalPasses"],
+                row_data["PassesAccurate"],
+                row_data["PassesPercentage"],
+                row_data["ExpectedGoals"],
+                row_data["GoalsPrevented"],
+            )
+        )
+
+    return fixture_statistics
+
+
+def save_fixture_statistics(fixture_statistics: list[tuple]) -> None:
+    if fixture_statistics:
+        database.executemany(
+            """
+            INSERT OR REPLACE INTO FixtureStatistics
+            (
+                FixtureID,
+                TeamID,
+                ShotsOnGoal,
+                ShotsOffGoal,
+                TotalShots,
+                BlockedShots,
+                ShotsInsideBox,
+                ShotsOutsideBox,
+                Fouls,
+                CornerKicks,
+                Offsides,
+                BallPossession,
+                YellowCards,
+                RedCards,
+                GoalkeeperSaves,
+                TotalPasses,
+                PassesAccurate,
+                PassesPercentage,
+                ExpectedGoals,
+                GoalsPrevented
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """,
+            fixture_statistics,
         )
 
 
@@ -389,6 +552,27 @@ def sync_events(fixture_id: int, force: bool = False) -> None:
     print(f"Saved {len(events)} events.")
 
 
+def sync_fixture_statistics(fixture_id: int, force: bool = False) -> None:
+    if not force and record_exists(
+        """
+        SELECT 1
+        FROM FixtureStatistics
+        WHERE FixtureID = ?
+        LIMIT 1
+        """,
+        (fixture_id,),
+    ):
+        print(
+            f"Skipped fixture statistics sync for fixture {fixture_id}: records already exist."
+        )
+        return
+
+    data = api_get(f"/fixtures/statistics?fixture={fixture_id}")
+    fixture_statistics = parse_fixture_statistics(data)
+    save_fixture_statistics(fixture_statistics)
+    print(f"Saved {len(fixture_statistics)} fixture statistics rows.")
+
+
 def sync_players(player_id: int, force: bool = False) -> None:
     if not force and record_exists(
         """
@@ -408,9 +592,10 @@ def sync_players(player_id: int, force: bool = False) -> None:
     print(f"Saved {len(players)} players.")
 
 
-@responses.activate
 def main() -> None:
-    mock_responses.register_mocks()
+    if USE_MOCKS:
+        print("Using mock API responses")
+
     database.init_db()
     print("Database initialised")
 
@@ -418,6 +603,7 @@ def main() -> None:
     sync_teams(league_id=39, season=2024)
     sync_fixtures(league_id=39, season=2024)
     sync_events(fixture_id=1208399)
+    sync_fixture_statistics(fixture_id=1208399)
     sync_players(player_id=138908)
 
 

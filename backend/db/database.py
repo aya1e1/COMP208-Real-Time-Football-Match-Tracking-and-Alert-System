@@ -14,14 +14,15 @@ def get_connection():
 
 
 def init_db():
-    if DB_PATH.exists():
-        return
-
+    db_already_exists = DB_PATH.exists()
     with open(SCHEMA_PATH) as f:
         schema_sql = f.read()
     with get_connection() as conn:
         conn.executescript(schema_sql)
-    print("[DB] Initialised database.")
+    if db_already_exists:
+        print("[DB] Schema ensured.")
+    else:
+        print("[DB] Initialised database.")
 
 
 def query(sql, params=()):

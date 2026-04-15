@@ -20,6 +20,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 BACKEND_DIR = ROOT_DIR / "backend"
 CORE_DB_PATH = ROOT_DIR / "database" / "core.db"
 SCHEMA_PATH = ROOT_DIR / "database" / "schema.sql"
+SCHEMA_DIR = ROOT_DIR / "database" / "schema"
 DUMMY_DIR = BACKEND_DIR / "dummy"
 MAIN_PATH = BACKEND_DIR / "main.py"
 
@@ -81,7 +82,35 @@ def _build_memory_db():
     conn = sqlite3.connect(":memory:")
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
+    if SCHEMA_DIR.exists():
+        for schema_file in sorted(SCHEMA_DIR.glob("*.sql")):
+            conn.executescript(schema_file.read_text(encoding="utf-8"))
+    elif SCHEMA_PATH.exists():
+        conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
+    else:
+        disk_conn = sqlite3.connect(CORE_DB_PATH)
+        try:
+            schema_statements = disk_conn.execute(
+                """
+                SELECT sql
+                FROM sqlite_master
+                WHERE sql IS NOT NULL
+                  AND type IN ('table', 'index', 'trigger', 'view')
+                  AND name NOT LIKE 'sqlite_%'
+                ORDER BY
+                    CASE type
+                        WHEN 'table' THEN 0
+                        WHEN 'index' THEN 1
+                        WHEN 'trigger' THEN 2
+                        ELSE 3
+                    END,
+                    name
+                """
+            ).fetchall()
+        finally:
+            disk_conn.close()
+
+        conn.executescript(";\n".join(statement[0] for statement in schema_statements) + ";")
     return conn
 
 
@@ -265,7 +294,9 @@ class TestParserFunctions(MainModuleDatabaseTestCase):
                     1208399,
                     1,
                     101,
+                    None,
                     202,
+                    None,
                     40,
                     "Substitution",
                     "Substitution 1",

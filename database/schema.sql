@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS Events (
   EventID     INT NOT NULL,
   PlayerID    INT,
   AssistID    INT,
-  TeamID      INT NOT NULL,
+  TeamID      INT,
   EventType   VARCHAR(50),
   Detail     VARCHAR(255),
   EventMinute INT,

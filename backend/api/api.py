@@ -118,7 +118,7 @@ def fixtures():
     return jsonify(fixtures)
 
 
-@api_bp.route("/fixture/<int:fixture_id>")
+@api_bp.route("/fixtures/<int:fixture_id>")
 def fixture(fixture_id):
     fixture_sql = """
         SELECT
@@ -151,4 +151,27 @@ def fixture(fixture_id):
     if not fixture:
         return jsonify({"error": "Fixture not found"}), 404
 
-    return jsonify(fixture[0])
+    events_sql = """
+        SELECT
+            e.FixtureID,
+            e.EventID,
+            e.PlayerID,
+            e.AssistPlayerID,
+            e.TeamID,
+            t.Name AS TeamName,
+            e.EventType,
+            e.Detail,
+            e.EventMinute,
+            e.ExtraMinute
+        FROM Events e
+        LEFT JOIN Teams t
+            ON e.TeamID = t.TeamID
+        WHERE e.FixtureID = ?
+        ORDER BY e.EventMinute ASC, e.ExtraMinute ASC, e.EventID ASC
+    """
+    events = database.query(events_sql, (fixture_id,))
+
+    return jsonify({
+        "data": fixture,
+        "events": events
+    })

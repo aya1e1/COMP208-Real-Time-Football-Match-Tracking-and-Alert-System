@@ -1,14 +1,13 @@
 from flask import Blueprint, render_template
 
-# create blueprint
-main = Blueprint("main", __name__)
+main_bp = Blueprint("main", __name__)
 
-# homepage
-@main.route("/")
+
+@main_bp.route("/")
 def home():
     return render_template("home.html")
 
-# live matches page
-@main.route("/live")
+
+@main_bp.route("/live")
 def live():
     return render_template("live.html")

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS Teams (
   TeamID       INT PRIMARY KEY,
   Name         VARCHAR(50) NOT NULL,
   Abbreviation VARCHAR(10),
+  LogoURL      VARCHAR(255),
   City         VARCHAR(50),
   Stadium      VARCHAR(50)
 );
@@ -145,6 +146,30 @@ CREATE TABLE IF NOT EXISTS FixtureStatistics (
   CONSTRAINT FK_FixtureStatistics_Team    FOREIGN KEY (TeamID)    REFERENCES Teams(TeamID)
 );
 
+-- Team statistics: one row per league/season/team
+CREATE TABLE IF NOT EXISTS TeamStatistics (
+  LeagueID                  INT NOT NULL,
+  Year                      INT NOT NULL,
+  TeamID                    INT NOT NULL,
+  Form                      VARCHAR(50),
+  WinsHome                  INT,
+  WinsAway                  INT,
+  DrawsHome                 INT,
+  DrawsAway                 INT,
+  LossesHome                INT,
+  LossesAway                INT,
+  GoalsForAverageHome       DECIMAL(5, 2),
+  GoalsForAverageAway       DECIMAL(5, 2),
+  GoalsAgainstAverageHome   DECIMAL(5, 2),
+  GoalsAgainstAverageAway   DECIMAL(5, 2),
+  FailedToScoreHome         INT,
+  FailedToScoreAway         INT,
+  CONSTRAINT PK_TeamStatistics PRIMARY KEY (LeagueID, Year, TeamID),
+  CONSTRAINT FK_TeamStatistics_Team FOREIGN KEY (TeamID) REFERENCES Teams(TeamID),
+  CONSTRAINT FK_TeamStatistics_Season FOREIGN KEY (LeagueID, Year)
+    REFERENCES Seasons(LeagueID, Year)
+);
+
 -- API response cache
 CREATE TABLE IF NOT EXISTS Cache (
   CacheKey  TEXT PRIMARY KEY,
@@ -161,5 +186,7 @@ CREATE INDEX IF NOT EXISTS idx_Events_FixtureID   ON Events(FixtureID);
 CREATE INDEX IF NOT EXISTS idx_Events_EventType   ON Events(EventType);
 CREATE INDEX IF NOT EXISTS idx_FixtureStatistics_TeamID
   ON FixtureStatistics(TeamID);
+CREATE INDEX IF NOT EXISTS idx_TeamStatistics_TeamID
+  ON TeamStatistics(TeamID);
 CREATE INDEX IF NOT EXISTS idx_PlayerTeam_TeamID  ON PlayerTeam(TeamID);
 CREATE INDEX IF NOT EXISTS idx_Cache_ExpiresAt    ON Cache(ExpiresAt);

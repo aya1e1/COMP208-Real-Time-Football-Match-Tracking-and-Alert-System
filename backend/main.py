@@ -97,6 +97,7 @@ def parse_teams(data: dict) -> tuple[list[tuple], list[tuple]]:
                 team_id,
                 team_name,
                 team.get("code"),
+                team.get("logo"),
                 venue.get("city"),
                 venue.get("name"),
             )
@@ -110,8 +111,14 @@ def save_teams(teams: list[tuple]) -> None:
     for team_row in teams:
         database.execute(
             """
-            INSERT OR IGNORE INTO Teams (TeamID, Name, Abbreviation, City, Stadium)
-            VALUES (?, ?, ?, ?, ?);
+            INSERT INTO Teams (TeamID, Name, Abbreviation, LogoURL, City, Stadium)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(TeamID) DO UPDATE SET
+                Name = excluded.Name,
+                Abbreviation = excluded.Abbreviation,
+                LogoURL = excluded.LogoURL,
+                City = excluded.City,
+                Stadium = excluded.Stadium;
             """,
             team_row,
         )
@@ -360,6 +367,83 @@ def save_fixture_statistics(fixture_statistics: list[tuple]) -> None:
         )
 
 
+def parse_team_statistics(data: dict) -> list[tuple]:
+    team_statistics = []
+
+    if not data or "response" not in data:
+        return team_statistics
+
+    response = data.get("response", {})
+    league = response.get("league", {})
+    team = response.get("team", {})
+    fixtures = response.get("fixtures", {})
+    goals = response.get("goals", {})
+    failed_to_score = response.get("failed_to_score", {})
+
+    league_id = league.get("id")
+    year = league.get("season")
+    team_id = team.get("id")
+
+    if league_id is None or year is None or team_id is None:
+        return team_statistics
+
+    team_statistics.append(
+        (
+            int(league_id),
+            int(year),
+            int(team_id),
+            response.get("form"),
+            parse_stat_number(fixtures.get("wins", {}).get("home")),
+            parse_stat_number(fixtures.get("wins", {}).get("away")),
+            parse_stat_number(fixtures.get("draws", {}).get("home")),
+            parse_stat_number(fixtures.get("draws", {}).get("away")),
+            parse_stat_number(fixtures.get("loses", {}).get("home")),
+            parse_stat_number(fixtures.get("loses", {}).get("away")),
+            parse_stat_number(goals.get("for", {}).get("average", {}).get("home")),
+            parse_stat_number(goals.get("for", {}).get("average", {}).get("away")),
+            parse_stat_number(
+                goals.get("against", {}).get("average", {}).get("home")
+            ),
+            parse_stat_number(
+                goals.get("against", {}).get("average", {}).get("away")
+            ),
+            parse_stat_number(failed_to_score.get("home")),
+            parse_stat_number(failed_to_score.get("away")),
+        )
+    )
+
+    return team_statistics
+
+
+def save_team_statistics(team_statistics: list[tuple]) -> None:
+    if team_statistics:
+        database.executemany(
+            """
+            INSERT OR REPLACE INTO TeamStatistics
+            (
+                LeagueID,
+                Year,
+                TeamID,
+                Form,
+                WinsHome,
+                WinsAway,
+                DrawsHome,
+                DrawsAway,
+                LossesHome,
+                LossesAway,
+                GoalsForAverageHome,
+                GoalsForAverageAway,
+                GoalsAgainstAverageHome,
+                GoalsAgainstAverageAway,
+                FailedToScoreHome,
+                FailedToScoreAway
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """,
+            team_statistics,
+        )
+
+
 def parse_events(data: dict) -> list[tuple]:
     events = []
 
@@ -583,6 +667,30 @@ def sync_fixture_statistics(fixture_id: int, force: bool = False) -> None:
     print(f"Saved {len(fixture_statistics)} fixture statistics rows.")
 
 
+def sync_team_statistics(
+    league_id: int, season: int, team_id: int, force: bool = False
+) -> None:
+    if not force and record_exists(
+        """
+        SELECT 1
+        FROM TeamStatistics
+        WHERE LeagueID = ? AND Year = ? AND TeamID = ?
+        LIMIT 1
+        """,
+        (league_id, season, team_id),
+    ):
+        print(
+            "Skipped team statistics sync for "
+            f"league {league_id}, season {season}, team {team_id}: record already exists."
+        )
+        return
+
+    data = api_get(f"/teams/statistics?league={league_id}&season={season}&team={team_id}")
+    team_statistics = parse_team_statistics(data)
+    save_team_statistics(team_statistics)
+    print(f"Saved {len(team_statistics)} team statistics rows.")
+
+
 def sync_players(player_id: int, force: bool = False) -> None:
     if not force and record_exists(
         """
@@ -614,6 +722,7 @@ def main() -> None:
     sync_fixtures(league_id=39, season=2024)
     sync_events(fixture_id=1208399)
     sync_fixture_statistics(fixture_id=1208399)
+    sync_team_statistics(league_id=39, season=2024, team_id=41)
     sync_players(player_id=138908)
 
 

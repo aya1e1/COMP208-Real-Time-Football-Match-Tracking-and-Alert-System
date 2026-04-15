@@ -43,7 +43,38 @@
   }
 
   .fixture-team-block {
+    position: relative;
     text-align: center;
+    padding: 0 88px;
+    min-height: 132px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .fixture-team-logo-wrap {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fixture-team-block.home .fixture-team-logo-wrap {
+    left: 0;
+  }
+
+  .fixture-team-block.away .fixture-team-logo-wrap {
+    right: 0;
+  }
+
+  .fixture-team-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   .fixture-team-score {
@@ -119,6 +150,27 @@
     color: #111;
   }
 
+  .overview-table .team-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .overview-table .team-heading-main {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111;
+  }
+
+  .overview-table .team-heading-sub {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
   .overview-table .row-label {
     width: 34%;
     font-size: 0.82rem;
@@ -132,6 +184,34 @@
     font-size: 1rem;
     font-weight: 600;
     color: #111;
+  }
+
+  .form-dots {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 18px;
+  }
+
+  .form-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  }
+
+  .form-dot.win {
+    background: #16a34a;
+  }
+
+  .form-dot.loss {
+    background: #dc2626;
+  }
+
+  .form-dot.draw {
+    background: #94a3b8;
   }
 
   .overview-table .team-value.soft {
@@ -280,6 +360,20 @@
       order: 3;
     }
 
+    .fixture-team-block {
+      padding: 0;
+      min-height: 0;
+      gap: 8px;
+    }
+
+    .fixture-team-logo-wrap {
+      position: static;
+      transform: none;
+      width: 60px;
+      height: 60px;
+      margin: 0 auto;
+    }
+
     .overview-table .row-label,
     .overview-table .team-value {
       font-size: 0.9rem;
@@ -382,9 +476,45 @@
     return value !== null && value !== undefined && value !== "" ? `${value}${suffix}` : "-";
   }
 
+  function renderFormDots(form) {
+    if (!form) {
+      return '<span class="team-value soft">-</span>';
+    }
+
+    return `
+      <span class="form-dots" aria-label="Recent form ${form}">
+        ${[...form].map((result) => {
+          const normalized = String(result || "").toUpperCase();
+          let dotClass = "draw";
+
+          if (normalized === "W") {
+            dotClass = "win";
+          } else if (normalized === "L") {
+            dotClass = "loss";
+          }
+
+          return `<span class="form-dot ${dotClass}" title="${normalized}"></span>`;
+        }).join("")}
+      </span>
+    `;
+  }
+
   function getFixtureStatisticsByTeam(fixture, statistics) {
     const statsByTeamId = new Map(
       (Array.isArray(statistics) ? statistics : [])
+        .filter((row) => row && row.TeamID !== null && row.TeamID !== undefined)
+        .map((row) => [Number(row.TeamID), row])
+    );
+
+    return {
+      home: statsByTeamId.get(Number(fixture.HomeTeamID)) || null,
+      away: statsByTeamId.get(Number(fixture.AwayTeamID)) || null
+    };
+  }
+
+  function getTeamLocationStatisticsByTeam(fixture, teamLocationStatistics) {
+    const statsByTeamId = new Map(
+      (Array.isArray(teamLocationStatistics) ? teamLocationStatistics : [])
         .filter((row) => row && row.TeamID !== null && row.TeamID !== undefined)
         .map((row) => [Number(row.TeamID), row])
     );
@@ -534,6 +664,30 @@
 
   function renderSummary(fixture) {
     const statusLabel = fixture.Status || "VS";
+    const homeLogo = fixture.HomeTeamLogoURL
+      ? `
+          <div class="fixture-team-logo-wrap">
+            <img
+              class="fixture-team-logo"
+              src="${fixture.HomeTeamLogoURL}"
+              alt="${fixture.HomeTeam || "Home Team"} logo"
+              loading="lazy"
+            >
+          </div>
+        `
+      : "";
+    const awayLogo = fixture.AwayTeamLogoURL
+      ? `
+          <div class="fixture-team-logo-wrap">
+            <img
+              class="fixture-team-logo"
+              src="${fixture.AwayTeamLogoURL}"
+              alt="${fixture.AwayTeam || "Away Team"} logo"
+              loading="lazy"
+            >
+          </div>
+        `
+      : "";
 
     headerEl.innerHTML = `
       <h1 class="fixture-headline">${fixture.HomeTeam || "Home Team"} vs ${fixture.AwayTeam || "Away Team"}</h1>
@@ -542,12 +696,14 @@
     summaryEl.innerHTML = `
       <div class="card-body">
         <div class="fixture-score-grid">
-          <div class="fixture-team-block">
+          <div class="fixture-team-block home">
+            ${homeLogo}
             <div class="fixture-team-score">${formatScoreValue(fixture.HomeScore)}</div>
             <div class="fixture-team-name">${fixture.HomeTeam || "Home Team"}</div>
           </div>
           <div class="fixture-score-separator">${statusLabel}</div>
           <div class="fixture-team-block away">
+            ${awayLogo}
             <div class="fixture-team-score">${formatScoreValue(fixture.AwayScore)}</div>
             <div class="fixture-team-name">${fixture.AwayTeam || "Away Team"}</div>
           </div>
@@ -606,44 +762,65 @@
     `;
   }
 
-  function renderTeamOverview(fixture) {
+  function renderTeamOverview(fixture, teamLocationStatistics) {
     const homeLabel = fixture.HomeTeamAbbreviation || fixture.HomeTeam || "Home Team";
     const awayLabel = fixture.AwayTeamAbbreviation || fixture.AwayTeam || "Away Team";
+    const { home: homeTeamStats, away: awayTeamStats } = getTeamLocationStatisticsByTeam(
+      fixture,
+      teamLocationStatistics
+    );
+    const homeValues = homeTeamStats?.Values || {};
+    const awayValues = awayTeamStats?.Values || {};
 
     teamOverviewEl.innerHTML = `
       <table class="overview-table">
         <thead>
           <tr>
             <th></th>
-            <th>${homeLabel}</th>
-            <th>${awayLabel}</th>
+            <th>
+              <div class="team-heading">
+                <span class="team-heading-sub">At Home</span>
+                <span class="team-heading-main">${homeLabel}</span>
+              </div>
+            </th>
+            <th>
+              <div class="team-heading">
+                <span class="team-heading-sub">At Away</span>
+                <span class="team-heading-main">${awayLabel}</span>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <th class="row-label">Team ID</th>
-            <td class="team-value soft">#${fixture.HomeTeamID || "-"}</td>
-            <td class="team-value soft">#${fixture.AwayTeamID || "-"}</td>
+            <th class="row-label">Form</th>
+            <td class="team-value">${renderFormDots(homeValues.last_five_form)}</td>
+            <td class="team-value">${renderFormDots(awayValues.last_five_form)}</td>
           </tr>
           <tr>
-            <th class="row-label">Result</th>
-            <td class="team-value">${getResultText(fixture, "home")}</td>
-            <td class="team-value">${getResultText(fixture, "away")}</td>
+            <th class="row-label">Wins</th>
+            <td class="team-value">${formatStatValue(homeValues.wins)}</td>
+            <td class="team-value">${formatStatValue(awayValues.wins)}</td>
           </tr>
           <tr>
-            <th class="row-label">League</th>
-            <td class="team-value soft">${fixture.LeagueName || "-"}</td>
-            <td class="team-value soft">${fixture.LeagueName || "-"}</td>
+            <th class="row-label">Losses</th>
+            <td class="team-value">${formatStatValue(homeValues.losses)}</td>
+            <td class="team-value">${formatStatValue(awayValues.losses)}</td>
           </tr>
           <tr>
-            <th class="row-label">Season</th>
-            <td class="team-value soft">${fixture.Year || "-"}</td>
-            <td class="team-value soft">${fixture.Year || "-"}</td>
+            <th class="row-label">GF average</th>
+            <td class="team-value">${formatStatValue(homeValues.goals_for_average)}</td>
+            <td class="team-value">${formatStatValue(awayValues.goals_for_average)}</td>
           </tr>
           <tr>
-            <th class="row-label">Venue</th>
-            <td class="team-value soft">${fixture.Location || "-"}</td>
-            <td class="team-value soft">${fixture.Location || "-"}</td>
+            <th class="row-label">GA average</th>
+            <td class="team-value">${formatStatValue(homeValues.goals_against_average)}</td>
+            <td class="team-value">${formatStatValue(awayValues.goals_against_average)}</td>
+          </tr>
+          <tr>
+            <th class="row-label">Failed to score</th>
+            <td class="team-value">${formatStatValue(homeValues.failed_to_score)}</td>
+            <td class="team-value">${formatStatValue(awayValues.failed_to_score)}</td>
           </tr>
         </tbody>
       </table>
@@ -733,6 +910,9 @@
       const fixture = Array.isArray(payload.data) ? payload.data[0] : null;
       const events = Array.isArray(payload.events) ? payload.events : [];
       const statistics = Array.isArray(payload.statistics) ? payload.statistics : [];
+      const teamLocationStatistics = Array.isArray(payload.team_location_statistics)
+        ? payload.team_location_statistics
+        : [];
 
       if (!fixture) {
         throw new Error("Match data is unavailable.");
@@ -740,7 +920,7 @@
 
       renderSummary(fixture);
       renderOverview(fixture, statistics);
-      renderTeamOverview(fixture);
+      renderTeamOverview(fixture, teamLocationStatistics);
       renderInfo(fixture);
       renderEvents(events, fixture);
     })

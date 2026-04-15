@@ -8,13 +8,14 @@ load_dotenv()
 
 # Base configuration
 BASE_URL = "https://v3.football.api-sports.io"
-ENDPOINT = "/fixtures/statistics"  
+ENDPOINT = "/teams"  
 
 # Build full URL
 url = f"{BASE_URL}{ENDPOINT}"
 
 params = {
-    "fixture": 1208399,
+
+    "id": 41,
 
 }
 

@@ -256,6 +256,69 @@ def save_events(events: list[tuple]) -> None:
         )
 
 
+def parse_players(data: dict) -> list[tuple]:
+    players = []
+
+    if not data or "response" not in data:
+        return players
+
+    for item in data["response"]:
+        player = item.get("player", {})
+        birth = player.get("birth", {})
+
+        player_id = player.get("id")
+        name = player.get("name")
+
+        if not player_id or not name:
+            continue
+
+        birth_place = birth.get("place")
+        birth_country = birth.get("country")
+        place_of_birth = ", ".join(
+            part for part in [birth_place, birth_country] if part
+        ) or None
+
+        players.append(
+            (
+                player_id,
+                player.get("firstname"),
+                player.get("lastname"),
+                name,
+                player.get("position"),
+                birth.get("date"),
+                place_of_birth,
+                player.get("nationality"),
+            )
+        )
+
+    return players
+
+
+def save_players(players: list[tuple]) -> None:
+    for player_row in players:
+        database.execute(
+            """
+            INSERT OR REPLACE INTO Player
+            (
+                PlayerID,
+                FirstName,
+                LastName,
+                Name,
+                MainPosition,
+                DateOfBirth,
+                PlaceOfBirth,
+                Nationality
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            """,
+            player_row,
+        )
+
+
+def record_exists(sql: str, params: tuple) -> bool:
+    return bool(database.query(sql, params))
+
+
 def sync_leagues() -> None:
     data = api_get("/leagues")
     leagues, seasons = parse_leagues(data)
@@ -264,7 +327,21 @@ def sync_leagues() -> None:
     print(f"Saved {len(leagues)} leagues and {len(seasons)} seasons.")
 
 
-def sync_teams(league_id: int, season: int) -> None:
+def sync_teams(league_id: int, season: int, force: bool = False) -> None:
+    if not force and record_exists(
+        """
+        SELECT 1
+        FROM SeasonTeams
+        WHERE LeagueID = ? AND Year = ?
+        LIMIT 1
+        """,
+        (league_id, season),
+    ):
+        print(
+            f"Skipped team sync for league {league_id}, season {season}: records already exist."
+        )
+        return
+
     data = api_get(f"/teams?league={league_id}&season={season}")
     teams, links = parse_teams(data)
     save_teams(teams)
@@ -272,35 +349,77 @@ def sync_teams(league_id: int, season: int) -> None:
     print(f"Saved {len(teams)} teams and {len(links)} season links.")
 
 
-def sync_fixtures(league_id: int, season: int) -> None:
+def sync_fixtures(league_id: int, season: int, force: bool = False) -> None:
+    if not force and record_exists(
+        """
+        SELECT 1
+        FROM Fixtures
+        WHERE LeagueID = ? AND Year = ?
+        LIMIT 1
+        """,
+        (league_id, season),
+    ):
+        print(
+            f"Skipped fixture sync for league {league_id}, season {season}: records already exist."
+        )
+        return
+
     data = api_get(f"/fixtures?league={league_id}&season={season}")
     fixtures = parse_fixtures(data)
     save_fixtures(fixtures)
     print(f"Saved {len(fixtures)} fixtures.")
 
 
-def sync_events(fixture_id: int) -> None:
+def sync_events(fixture_id: int, force: bool = False) -> None:
+    if not force and record_exists(
+        """
+        SELECT 1
+        FROM Events
+        WHERE FixtureID = ?
+        LIMIT 1
+        """,
+        (fixture_id,),
+    ):
+        print(f"Skipped event sync for fixture {fixture_id}: records already exist.")
+        return
+
     data = api_get(f"/fixtures/events?fixture={fixture_id}")
     events = parse_events(data)
     save_events(events)
     print(f"Saved {len(events)} events.")
 
 
+def sync_players(player_id: int, force: bool = False) -> None:
+    if not force and record_exists(
+        """
+        SELECT 1
+        FROM Player
+        WHERE PlayerID = ?
+        LIMIT 1
+        """,
+        (player_id,),
+    ):
+        print(f"Skipped player sync for player {player_id}: record already exists.")
+        return
+
+    data = api_get(f"/players/profiles?player={player_id}")
+    players = parse_players(data)
+    save_players(players)
+    print(f"Saved {len(players)} players.")
+
+
 @responses.activate
 def main() -> None:
-    exists = database.query(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='League';"
-    )
-    if not exists:
-        database.init_db()
-        print("Database initialised")
+    mock_responses.register_mocks()
+    database.init_db()
+    print("Database initialised")
 
     sync_leagues()
     sync_teams(league_id=39, season=2024)
     sync_fixtures(league_id=39, season=2024)
     sync_events(fixture_id=1208399)
+    sync_players(player_id=138908)
 
 
 if __name__ == "__main__":
-    mock_responses.register_mocks()
     main()

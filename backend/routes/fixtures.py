@@ -8,6 +8,6 @@ def show_fixtures():
     return render_template("live.html")
 
 
-@fixtures_bp.route("/match/<int:fixture_id>")
+@fixtures_bp.route("/<int:fixture_id>")
 def match(fixture_id):
-    return render_template("match.html", match_id=fixture_id)
+    return render_template("fixture_view.html", match_id=fixture_id)

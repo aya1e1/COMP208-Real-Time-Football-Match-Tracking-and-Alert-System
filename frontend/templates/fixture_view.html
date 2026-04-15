@@ -48,6 +48,16 @@
     color: #1f2937;
   }
 
+  .match-page.is-loading {
+    cursor: progress;
+  }
+
+  .match-page.is-loading .fixture-h2h-link,
+  .match-page.is-loading .match-back a {
+    pointer-events: none;
+    opacity: 0.72;
+  }
+
   .fixture-h2h-link.active {
     color: #111;
   }
@@ -66,6 +76,15 @@
 
   .fixture-page-header {
     padding: 4px 0 2px;
+  }
+
+  .fixture-relative-date {
+    text-align: center;
+    font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+    font-weight: 600;
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+    color: #6b7280;
   }
 
   .fixture-score-grid {
@@ -422,6 +441,7 @@
   <div class="fixture-view-page">
   <div id="match-h2h" class="fixture-empty">Loading head-to-head fixtures...</div>
   <header class="fixture-page-header" id="match-header">
+    <div id="match-relative-date" class="fixture-relative-date">Loading match age...</div>
     <h1 class="fixture-headline">Loading match...</h1>
   </header>
 
@@ -472,7 +492,7 @@
 
 <script>
   const page = document.querySelector(".match-page");
-  const matchId = page?.dataset.matchId;
+  let currentMatchId = page?.dataset.matchId;
   const headerEl = document.getElementById("match-header");
   const summaryEl = document.getElementById("match-summary");
   const h2hEl = document.getElementById("match-h2h");
@@ -480,6 +500,7 @@
   const teamOverviewEl = document.getElementById("team-overview");
   const infoEl = document.getElementById("match-info");
   const eventsEl = document.getElementById("match-events");
+  let activeRequestId = 0;
 
   function formatDateTime(dateString) {
     if (!dateString) {
@@ -511,6 +532,36 @@
 
   function formatDateLabel(dateString) {
     return formatDateTime(dateString).date;
+  }
+
+  function formatRelativeMatchDate(dateString) {
+    if (!dateString) {
+      return "";
+    }
+
+    const matchDate = new Date(dateString);
+    if (Number.isNaN(matchDate.getTime())) {
+      return "";
+    }
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfMatchDay = new Date(
+      matchDate.getFullYear(),
+      matchDate.getMonth(),
+      matchDate.getDate()
+    );
+    const dayDifference = Math.round(
+      (startOfToday.getTime() - startOfMatchDay.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (dayDifference === 0) {
+      return "Today";
+    }
+
+    const absoluteDays = Math.abs(dayDifference);
+    const dayLabel = `${absoluteDays} day${absoluteDays === 1 ? "" : "s"}`;
+    return dayDifference > 0 ? `${dayLabel} ago` : `In ${dayLabel}`;
   }
 
   function getH2HStorageKey(fixture) {
@@ -753,6 +804,7 @@
 
   function renderSummary(fixture) {
     const statusLabel = fixture.Status || "VS";
+    const relativeMatchDate = formatRelativeMatchDate(fixture.MatchDate);
     const homeLogo = fixture.HomeTeamLogoURL
       ? `
           <div class="fixture-team-logo-wrap">
@@ -779,6 +831,7 @@
       : "";
 
     headerEl.innerHTML = `
+      <div class="fixture-relative-date">${relativeMatchDate || "Match date unavailable"}</div>
       <h1 class="fixture-headline">${fixture.HomeTeam || "Home Team"} vs ${fixture.AwayTeam || "Away Team"}</h1>
     `;
 
@@ -1089,6 +1142,7 @@
 
   function renderError(message) {
     headerEl.innerHTML = `
+      <div class="fixture-relative-date">Match date unavailable</div>
       <h1 class="fixture-headline">Match Details</h1>
     `;
     summaryEl.innerHTML = `
@@ -1105,35 +1159,124 @@
     eventsEl.innerHTML = `<div class="fixture-empty">${message}</div>`;
   }
 
-  fetch(`/api/fixtures/${matchId}`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(response.status === 404 ? "Match not found." : "Unable to load match details.");
-      }
-      return response.json();
-    })
-    .then((payload) => {
-      const fixture = Array.isArray(payload.data) ? payload.data[0] : null;
-      const h2h = payload?.h2h || {};
-      const events = Array.isArray(payload.events) ? payload.events : [];
-      const statistics = Array.isArray(payload.statistics) ? payload.statistics : [];
-      const teamLocationStatistics = Array.isArray(payload.team_location_statistics)
-        ? payload.team_location_statistics
-        : [];
+  function renderFixturePayload(payload) {
+    const fixture = Array.isArray(payload.data) ? payload.data[0] : null;
+    const h2h = payload?.h2h || {};
+    const events = Array.isArray(payload.events) ? payload.events : [];
+    const statistics = Array.isArray(payload.statistics) ? payload.statistics : [];
+    const teamLocationStatistics = Array.isArray(payload.team_location_statistics)
+      ? payload.team_location_statistics
+      : [];
 
-      if (!fixture) {
-        throw new Error("Match data is unavailable.");
+    if (!fixture) {
+      throw new Error("Match data is unavailable.");
+    }
+
+    renderSummary(fixture);
+    renderH2H(fixture, h2h);
+    renderOverview(fixture, statistics);
+    renderTeamOverview(fixture, teamLocationStatistics);
+    renderInfo(fixture);
+    renderEvents(events, fixture);
+    document.title = `${fixture.HomeTeam || "Home Team"} vs ${fixture.AwayTeam || "Away Team"} — Kickoff`;
+  }
+
+  function loadFixture(targetMatchId, { pushHistory = false, replaceHistory = false } = {}) {
+    if (!targetMatchId) {
+      return Promise.resolve();
+    }
+
+    const requestId = activeRequestId + 1;
+    activeRequestId = requestId;
+    page?.classList.add("is-loading");
+
+    return fetch(`/api/fixtures/${targetMatchId}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status === 404 ? "Match not found." : "Unable to load match details.");
+        }
+        return response.json();
+      })
+      .then((payload) => {
+        if (requestId !== activeRequestId) {
+          return;
+        }
+
+        currentMatchId = String(targetMatchId);
+        page.dataset.matchId = currentMatchId;
+        renderFixturePayload(payload);
+
+        const targetPath = `/fixtures/${targetMatchId}`;
+        if (pushHistory) {
+          window.history.pushState({ matchId: currentMatchId }, "", targetPath);
+        } else if (replaceHistory) {
+          window.history.replaceState({ matchId: currentMatchId }, "", targetPath);
+        }
+
+        window.scrollTo({ top: 0, behavior: "auto" });
+      })
+      .catch((error) => {
+        if (requestId === activeRequestId) {
+          renderError(error.message || "Unable to load match details.");
+        }
+      })
+      .finally(() => {
+        if (requestId === activeRequestId) {
+          page?.classList.remove("is-loading");
+        }
+      });
+  }
+
+  function setupFixtureNavigation() {
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest('a[href]');
+      if (!link) {
+        return;
       }
 
-      renderSummary(fixture);
-      renderH2H(fixture, h2h);
-      renderOverview(fixture, statistics);
-      renderTeamOverview(fixture, teamLocationStatistics);
-      renderInfo(fixture);
-      renderEvents(events, fixture);
-    })
-    .catch((error) => {
-      renderError(error.message || "Unable to load match details.");
+      const href = link.getAttribute("href");
+      if (
+        !href
+        || href.startsWith("#")
+        || link.target === "_blank"
+        || event.metaKey
+        || event.ctrlKey
+        || event.shiftKey
+        || event.altKey
+      ) {
+        return;
+      }
+
+      const targetUrl = new URL(link.href, window.location.href);
+      if (targetUrl.origin !== window.location.origin) {
+        return;
+      }
+
+      const fixtureMatch = targetUrl.pathname.match(/^\/fixtures\/(\d+)$/);
+      if (!fixtureMatch) {
+        return;
+      }
+
+      event.preventDefault();
+      if (fixtureMatch[1] === currentMatchId) {
+        return;
+      }
+
+      loadFixture(fixtureMatch[1], { pushHistory: true });
     });
+
+    window.addEventListener("popstate", () => {
+      const fixtureMatch = window.location.pathname.match(/^\/fixtures\/(\d+)$/);
+      if (!fixtureMatch || fixtureMatch[1] === currentMatchId) {
+        return;
+      }
+
+      loadFixture(fixtureMatch[1]);
+    });
+  }
+
+  setupFixtureNavigation();
+  window.history.replaceState({ matchId: String(currentMatchId || "") }, "", window.location.pathname);
+  loadFixture(currentMatchId, { replaceHistory: true });
 </script>
 {% endblock %}

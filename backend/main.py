@@ -197,6 +197,65 @@ def save_fixtures(fixtures: list[tuple]) -> None:
         )
 
 
+def parse_events(data: dict) -> list[tuple]:
+    events = []
+
+    if not data or "response" not in data:
+        return events
+
+    fixture_id = data.get("parameters", {}).get("fixture")
+    if fixture_id is None:
+        return events
+
+    for event_id, item in enumerate(data["response"], start=1):
+        player = item.get("player", {})
+        assist = item.get("assist", {})
+        event_type = item.get("type")
+
+        player_id = player.get("id")
+        assist_player_id = assist.get("id")
+        if event_type == "subst":
+            event_type = "Sub"
+
+        events.append(
+            (
+                fixture_id,
+                event_id,
+                player_id,
+                assist_player_id,
+                item.get("team", {}).get("id"),
+                event_type,
+                item.get("comments"),
+                item.get("time", {}).get("elapsed"),
+                item.get("time", {}).get("extra"),
+            )
+        )
+
+    return events
+
+
+def save_events(events: list[tuple]) -> None:
+    for event_row in events:
+        database.execute(
+            """
+            INSERT OR REPLACE INTO Events
+            (
+                FixtureID,
+                EventID,
+                PlayerID,
+                AssistPlayerID,
+                TeamID,
+                EventType,
+                Detail,
+                EventMinute,
+                ExtraMinute
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """,
+            event_row,
+        )
+
+
 def sync_leagues() -> None:
     data = api_get("/leagues")
     leagues, seasons = parse_leagues(data)
@@ -220,6 +279,13 @@ def sync_fixtures(league_id: int, season: int) -> None:
     print(f"Saved {len(fixtures)} fixtures.")
 
 
+def sync_events(fixture_id: int) -> None:
+    data = api_get(f"/fixtures/events?fixture={fixture_id}")
+    events = parse_events(data)
+    save_events(events)
+    print(f"Saved {len(events)} events.")
+
+
 @responses.activate
 def main() -> None:
     exists = database.query(
@@ -232,6 +298,7 @@ def main() -> None:
     sync_leagues()
     sync_teams(league_id=39, season=2024)
     sync_fixtures(league_id=39, season=2024)
+    sync_events(fixture_id=1208399)
 
 
 if __name__ == "__main__":

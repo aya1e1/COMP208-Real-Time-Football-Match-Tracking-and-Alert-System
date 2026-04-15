@@ -1,3 +1,0 @@
--- Schema has been split into `database/schema/` for easier maintenance.
--- `backend/db/database.py` now loads all `.sql` files in that directory in
--- alphabetical order, with this file kept as a fallback for older setups.

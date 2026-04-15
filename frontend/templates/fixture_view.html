@@ -25,7 +25,7 @@
   .fixture-headline {
     text-align: center;
     font-size: clamp(1.55rem, 2vw, 2.2rem);
-    font-weight: 800;
+    font-weight: 600;
     margin: 0;
     letter-spacing: -0.03em;
   }
@@ -49,14 +49,14 @@
   .fixture-team-score {
     font-size: clamp(4rem, 8vw, 5.8rem);
     line-height: 1;
-    font-weight: 800;
+    font-weight: 600;
     color: #111;
   }
 
   .fixture-team-name {
     margin-top: 10px;
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: 600;
     color: #161616;
   }
 
@@ -66,7 +66,7 @@
     align-items: center;
     font-size: 1rem;
     color: #777;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
   }
@@ -93,7 +93,7 @@
   .fixture-section-title {
     margin: 0 0 18px;
     font-size: 1.05rem;
-    font-weight: 800;
+    font-weight: 600;
     color: #121826;
   }
 
@@ -115,14 +115,14 @@
 
   .overview-table thead th {
     font-size: 1rem;
-    font-weight: 800;
+    font-weight: 600;
     color: #111;
   }
 
   .overview-table .row-label {
     width: 34%;
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-2);
     text-transform: none;
   }
@@ -130,7 +130,7 @@
   .overview-table .team-value {
     text-align: center;
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 600;
     color: #111;
   }
 
@@ -148,17 +148,20 @@
 
   .fixture-meta-main {
     font-size: 1.05rem;
-    font-weight: 700;
+    font-weight: 600;
     color: #111;
     line-height: 1.4;
   }
 
   .fixture-meta-side {
+    display: flex;
+    flex-direction: column;
+    justify-self: end;
     text-align: right;
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 1.05rem;
+    font-weight: 600;
     color: #111;
-    line-height: 1.35;
+    line-height: 1.4;
   }
 
   .fixture-meta-subtle {
@@ -183,7 +186,7 @@
     display: flex;
     align-items: center;
     font-size: 0.92rem;
-    font-weight: 800;
+    font-weight: 600;
     color: #111;
     line-height: 1.35;
   }
@@ -210,7 +213,7 @@
     padding: 10px 8px;
     border-right: 1px solid #e4e4e4;
     font-size: 1rem;
-    font-weight: 800;
+    font-weight: 600;
     color: #111;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -227,7 +230,7 @@
 
   .fixture-event-title {
     font-size: 0.86rem;
-    font-weight: 800;
+    font-weight: 600;
     color: #111;
   }
 
@@ -493,6 +496,42 @@
     return event.TeamName || "MATCH";
   }
 
+  function getEventPlayerLabel(name, id) {
+    if (name) {
+      return name;
+    }
+
+    if (id) {
+      return `Player #${id}`;
+    }
+
+    return "";
+  }
+
+  function getEventParticipants(event) {
+    const type = (event.EventType || "").toLowerCase();
+    const playerLabel = getEventPlayerLabel(event.PlayerName, event.PlayerID);
+    const assistLabel = getEventPlayerLabel(event.AssistPlayerName, event.AssistPlayerID);
+
+    if (type.includes("subst")) {
+      if (playerLabel && assistLabel) {
+        return `${playerLabel} -> ${assistLabel}`;
+      }
+
+      return playerLabel || assistLabel;
+    }
+
+    if (type.includes("goal")) {
+      if (playerLabel && assistLabel) {
+        return `${playerLabel} · Assist: ${assistLabel}`;
+      }
+
+      return playerLabel || assistLabel;
+    }
+
+    return playerLabel;
+  }
+
   function renderSummary(fixture) {
     const statusLabel = fixture.Status || "VS";
 
@@ -519,14 +558,16 @@
 
   function renderOverview(fixture, statistics) {
     const { home: homeStats, away: awayStats } = getFixtureStatisticsByTeam(fixture, statistics);
+    const homeLabel = fixture.HomeTeamAbbreviation || fixture.HomeTeam || "Home Team";
+    const awayLabel = fixture.AwayTeamAbbreviation || fixture.AwayTeam || "Away Team";
 
     overviewEl.innerHTML = `
       <table class="overview-table">
         <thead>
           <tr>
             <th></th>
-            <th>${fixture.HomeTeam || "Home Team"}</th>
-            <th>${fixture.AwayTeam || "Away Team"}</th>
+            <th>${homeLabel}</th>
+            <th>${awayLabel}</th>
           </tr>
         </thead>
         <tbody>
@@ -566,13 +607,16 @@
   }
 
   function renderTeamOverview(fixture) {
+    const homeLabel = fixture.HomeTeamAbbreviation || fixture.HomeTeam || "Home Team";
+    const awayLabel = fixture.AwayTeamAbbreviation || fixture.AwayTeam || "Away Team";
+
     teamOverviewEl.innerHTML = `
       <table class="overview-table">
         <thead>
           <tr>
             <th></th>
-            <th>${fixture.HomeTeam || "Home Team"}</th>
-            <th>${fixture.AwayTeam || "Away Team"}</th>
+            <th>${homeLabel}</th>
+            <th>${awayLabel}</th>
           </tr>
         </thead>
         <tbody>
@@ -612,12 +656,11 @@
     infoEl.innerHTML = `
       <div class="fixture-meta-main">
         <div>@ ${fixture.Location || "Venue TBC"}</div>
-        <div>${kickoff.date}${kickoff.time ? `, Scheduled Kickoff: ${kickoff.time}` : ""}</div>
+        <div>${kickoff.date}${kickoff.time ? `, ${kickoff.time}` : ""}</div>
       </div>
       <div class="fixture-meta-side">
         <div>${fixture.LeagueName || "League"}</div>
         <div class="fixture-meta-subtle">Season ${fixture.Year || "-"}</div>
-        <div class="fixture-meta-subtle">Fixture #${fixture.FixtureID}</div>
       </div>
     `;
   }
@@ -632,12 +675,18 @@
       return;
     }
 
-    eventsEl.innerHTML = events.map((event) => {
+    const orderedEvents = [...events].reverse();
+
+    eventsEl.innerHTML = orderedEvents.map((event) => {
       const type = (event.EventType || "").toLowerCase();
       const goalClass = type.includes("goal") ? "goal" : "";
       const eventLabel = eventTypeLabel(event);
       const eventDetail = describeEvent(event);
-      const subtitle = [eventTypeLabel(event), event.PlayerID ? `Player #${event.PlayerID}` : null]
+      const participants = getEventParticipants(event);
+      const subtitle = [
+        type.includes("subst") || eventDetail === "Normal Goal" || eventDetail === eventLabel ? null : eventDetail,
+        participants
+      ]
         .filter(Boolean)
         .join(" · ");
 
@@ -647,7 +696,7 @@
           <div class="fixture-event-card ${goalClass}">
             <div class="fixture-event-team">${getEventTeamAbbreviation(event, fixture)}</div>
             <div class="fixture-event-body">
-              <div class="fixture-event-title">${eventDetail}</div>
+              <div class="fixture-event-title">${eventLabel}</div>
               <div class="fixture-event-detail ${subtitle ? "" : "soft"}">${subtitle || eventLabel}</div>
             </div>
           </div>

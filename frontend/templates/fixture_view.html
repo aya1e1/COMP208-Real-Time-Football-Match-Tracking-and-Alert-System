@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Kickoff — Match Details{% endblock %}
+
+{% block content %}
+<main class="page match-page" data-match-id="{{ match_id }}">
+  <div class="match-back">
+    <a href="/fixtures">&larr; Back to fixtures</a>
+  </div>
+
+  <section class="match-hero card" id="match-summary">
+    <div class="card-body">
+      <div class="match-loading">Loading match details...</div>
+    </div>
+  </section>
+
+  <section class="match-layout">
+    <div class="card">
+      <div class="card-header">
+        <span>Match Timeline</span>
+      </div>
+      <div class="card-body">
+        <div id="match-events" class="timeline-list">
+          <div class="timeline-empty">Loading events...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="match-sidebar">
+      <div class="card">
+        <div class="card-header">
+          <span>Match Info</span>
+        </div>
+        <div class="card-body">
+          <div class="info-list" id="match-info">
+            <div class="info-row">
+              <span class="info-label">Status</span>
+              <span class="info-value">...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const page = document.querySelector(".match-page");
+  const matchId = page?.dataset.matchId;
+  const summaryEl = document.getElementById("match-summary");
+  const infoEl = document.getElementById("match-info");
+  const eventsEl = document.getElementById("match-events");
+
+  function formatDateTime(dateString) {
+    if (!dateString) {
+      return { date: "TBC", time: "" };
+    }
+
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+      return { date: dateString, time: "" };
+    }
+
+    return {
+      date: date.toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }),
+      time: date.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    };
+  }
+
+  function formatScore(fixture) {
+    const hasScore = fixture.HomeScore !== null && fixture.AwayScore !== null;
+    return hasScore
+      ? `${fixture.HomeScore}<span class="score-sep">-</span>${fixture.AwayScore}`
+      : '<span class="match-score-placeholder">vs</span>';
+  }
+
+  function getStatusMeta(fixture) {
+    const status = fixture.Status || "NS";
+    const elapsed = fixture.Elapsed !== null && fixture.Elapsed !== undefined ? `${fixture.Elapsed}'` : "";
+    const liveStatuses = new Set(["1H", "HT", "2H", "ET", "BT", "P", "LIVE"]);
+
+    if (liveStatuses.has(status)) {
+      return {
+        label: elapsed || status,
+        badgeClass: "badge-live"
+      };
+    }
+
+    if (status === "FT" || status === "AET" || status === "PEN") {
+      return {
+        label: status,
+        badgeClass: "badge-ft"
+      };
+    }
+
+    return {
+      label: status,
+      badgeClass: ""
+    };
+  }
+
+  function eventIcon(event) {
+    const type = (event.EventType || "").toLowerCase();
+    const detail = (event.Detail || "").toLowerCase();
+
+    if (type.includes("goal")) return "Goal";
+    if (detail.includes("yellow")) return "Yellow card";
+    if (detail.includes("red")) return "Red card";
+    if (type.includes("subst")) return "Substitution";
+    return event.EventType || "Event";
+  }
+
+  function eventMinute(event) {
+    if (event.EventMinute === null || event.EventMinute === undefined) {
+      return "-";
+    }
+
+    if (event.ExtraMinute) {
+      return `${event.EventMinute}+${event.ExtraMinute}'`;
+    }
+
+    return `${event.EventMinute}'`;
+  }
+
+  function renderSummary(fixture) {
+    const kickoff = formatDateTime(fixture.MatchDate);
+    const statusMeta = getStatusMeta(fixture);
+
+    summaryEl.innerHTML = `
+      <div class="card-body">
+        <div class="match-meta-row">
+          <div>
+            <div class="match-league">${fixture.LeagueName || "League"}</div>
+            <div class="match-date">${kickoff.date}${kickoff.time ? ` · ${kickoff.time}` : ""}</div>
+          </div>
+          <span class="badge ${statusMeta.badgeClass}">${statusMeta.label}</span>
+        </div>
+
+        <div class="match-scoreboard-lg">
+          <div class="match-team-panel">
+            <div class="match-team-name">${fixture.HomeTeam || "Home Team"}</div>
+          </div>
+          <div class="match-score-panel">
+            <div class="match-score-lg">${formatScore(fixture)}</div>
+            <div class="match-subline">${fixture.Location || "Venue TBC"}</div>
+          </div>
+          <div class="match-team-panel away">
+            <div class="match-team-name">${fixture.AwayTeam || "Away Team"}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderInfo(fixture) {
+    const kickoff = formatDateTime(fixture.MatchDate);
+    const rows = [
+      ["Fixture ID", fixture.FixtureID],
+      ["League", fixture.LeagueName || "-"],
+      ["Season", fixture.Year || "-"],
+      ["Kickoff", `${kickoff.date}${kickoff.time ? `, ${kickoff.time}` : ""}`],
+      ["Venue", fixture.Location || "-"],
+      ["Status", fixture.Status || "-"],
+      ["Elapsed", fixture.Elapsed !== null && fixture.Elapsed !== undefined ? `${fixture.Elapsed}'` : "-"]
+    ];
+
+    infoEl.innerHTML = rows.map(([label, value]) => `
+      <div class="info-row">
+        <span class="info-label">${label}</span>
+        <span class="info-value">${value}</span>
+      </div>
+    `).join("");
+  }
+
+  function renderEvents(events, fixture) {
+    if (!events.length) {
+      eventsEl.innerHTML = `
+        <div class="timeline-empty">
+          No match events recorded yet for ${fixture.HomeTeam} vs ${fixture.AwayTeam}.
+        </div>
+      `;
+      return;
+    }
+
+    eventsEl.innerHTML = events.map((event) => {
+      const sideClass = event.TeamID === fixture.AwayTeamID ? "away" : "home";
+      const title = event.Detail || event.EventType || "Match event";
+      const subtitle = [event.TeamName, event.PlayerID ? `Player #${event.PlayerID}` : null]
+        .filter(Boolean)
+        .join(" · ");
+
+      return `
+        <article class="timeline-item ${sideClass}">
+          <div class="timeline-minute">${eventMinute(event)}</div>
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-title-row">
+              <strong>${title}</strong>
+              <span class="timeline-type">${eventIcon(event)}</span>
+            </div>
+            <div class="timeline-subtitle">${subtitle || "No extra event details"}</div>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function renderError(message) {
+    summaryEl.innerHTML = `
+      <div class="card-body">
+        <div class="match-loading">${message}</div>
+      </div>
+    `;
+    infoEl.innerHTML = `
+      <div class="info-row">
+        <span class="info-label">Status</span>
+        <span class="info-value">Unavailable</span>
+      </div>
+    `;
+    eventsEl.innerHTML = `<div class="timeline-empty">${message}</div>`;
+  }
+
+  fetch(`/api/fixtures/${matchId}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(response.status === 404 ? "Match not found." : "Unable to load match details.");
+      }
+      return response.json();
+    })
+    .then((payload) => {
+      const fixture = Array.isArray(payload.data) ? payload.data[0] : null;
+      const events = Array.isArray(payload.events) ? payload.events : [];
+
+      if (!fixture) {
+        throw new Error("Match data is unavailable.");
+      }
+
+      renderSummary(fixture);
+      renderInfo(fixture);
+      renderEvents(events, fixture);
+    })
+    .catch((error) => {
+      renderError(error.message || "Unable to load match details.");
+    });
+</script>
+{% endblock %}

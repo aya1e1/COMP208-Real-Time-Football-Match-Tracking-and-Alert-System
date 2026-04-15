@@ -18,6 +18,7 @@ except ModuleNotFoundError:
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 BACKEND_DIR = ROOT_DIR / "backend"
+CORE_DB_PATH = ROOT_DIR / "database" / "core.db"
 SCHEMA_PATH = ROOT_DIR / "database" / "schema.sql"
 DUMMY_DIR = BACKEND_DIR / "dummy"
 MAIN_PATH = BACKEND_DIR / "main.py"
@@ -103,6 +104,7 @@ class MainModuleDatabaseTestCase(unittest.TestCase):
     def setUp(self):
         self.main_module = _load_main_module()
         self.conn = _build_memory_db()
+        self.assertEqual(self.main_module.database.DB_PATH, CORE_DB_PATH)
 
         self.original_get_connection = self.main_module.database.get_connection
         self.original_init_db = self.main_module.database.init_db
@@ -247,6 +249,7 @@ class TestParserFunctions(MainModuleDatabaseTestCase):
                     "assist": {"id": 202},
                     "team": {"id": 40},
                     "type": "subst",
+                    "detail": "Substitution 1",
                     "comments": "Tactical",
                     "time": {"elapsed": 66, "extra": None},
                 }
@@ -255,7 +258,23 @@ class TestParserFunctions(MainModuleDatabaseTestCase):
 
         events = self.main_module.parse_events(data)
 
-        self.assertEqual(events, [(1208399, 1, 101, 202, 40, "Sub", "Tactical", 66, None)])
+        self.assertEqual(
+            events,
+            [
+                (
+                    1208399,
+                    1,
+                    101,
+                    202,
+                    40,
+                    "Substitution",
+                    "Substitution 1",
+                    "Tactical",
+                    66,
+                    None,
+                )
+            ],
+        )
 
     def test_parse_fixture_statistics_converts_numeric_and_percentage_values(self):
         data = {

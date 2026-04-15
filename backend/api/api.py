@@ -164,11 +164,14 @@ def fixture(fixture_id):
             e.FixtureID,
             e.EventID,
             e.PlayerID,
+            e.PlayerName,
             e.AssistPlayerID,
+            e.AssistPlayerName,
             e.TeamID,
             t.Name AS TeamName,
             e.EventType,
             e.Detail,
+            e.Comments,
             e.EventMinute,
             e.ExtraMinute
         FROM Events e

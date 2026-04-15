@@ -373,21 +373,27 @@ def parse_events(data: dict) -> list[tuple]:
     for event_id, item in enumerate(data["response"], start=1):
         player = item.get("player", {})
         assist = item.get("assist", {})
-        event_type = item.get("type")
 
         player_id = player.get("id")
+        player_name = player.get("name")
         assist_player_id = assist.get("id")
+        assist_player_name = assist.get("name")
+
+        event_type = item.get("type")
         if event_type == "subst":
-            event_type = "Sub"
+            event_type = "Substitution"
 
         events.append(
             (
                 fixture_id,
                 event_id,
                 player_id,
+                player_name,
                 assist_player_id,
+                assist_player_name,
                 item.get("team", {}).get("id"),
                 event_type,
+                item.get("detail"),
                 item.get("comments"),
                 item.get("time", {}).get("elapsed"),
                 item.get("time", {}).get("extra"),
@@ -406,14 +412,17 @@ def save_events(events: list[tuple]) -> None:
                 FixtureID,
                 EventID,
                 PlayerID,
+                PlayerName,
                 AssistPlayerID,
+                AssistPlayerName,
                 TeamID,
                 EventType,
                 Detail,
+                Comments,
                 EventMinute,
                 ExtraMinute
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """,
             event_row,
         )
@@ -539,6 +548,7 @@ def sync_events(fixture_id: int, force: bool = False) -> None:
         SELECT 1
         FROM Events
         WHERE FixtureID = ?
+          AND (PlayerName IS NOT NULL OR AssistPlayerName IS NOT NULL)
         LIMIT 1
         """,
         (fixture_id,),

@@ -114,34 +114,89 @@
 
   </div>
 
-  <div class="upcoming-label">Upcoming Today</div>
-  <div class="upcoming-list">
-
-    <a href="/match/3" class="upcoming-item">
-      <div class="upcoming-team">Man United</div>
-      <div class="upcoming-time">15:00</div>
-      <div class="upcoming-team r">Tottenham</div>
-    </a>
-
-    <a href="/match/4" class="upcoming-item">
-      <div class="upcoming-team">Newcastle</div>
-      <div class="upcoming-time">15:00</div>
-      <div class="upcoming-team r">Aston Villa</div>
-    </a>
-
-    <a href="/match/5" class="upcoming-item">
-      <div class="upcoming-team">Brentford</div>
-      <div class="upcoming-time">15:00</div>
-      <div class="upcoming-team r">Brighton</div>
-    </a>
-
-    <a href="/match/6" class="upcoming-item">
-      <div class="upcoming-team">Everton</div>
-      <div class="upcoming-time">17:30</div>
-      <div class="upcoming-team r">Wolves</div>
-    </a>
-
+  <div class="upcoming-label">Recent Matches</div>
+  <div class="upcoming-list" id="recent-matches-list">
+    <div class="upcoming-item">
+      <div class="upcoming-team">Loading recent matches...</div>
+      <div class="upcoming-time">...</div>
+      <div class="upcoming-team r"></div>
+    </div>
   </div>
 
 </main>
+
+<script>
+  const recentMatchesList = document.getElementById("recent-matches-list");
+
+  function formatMatchSummary(fixture) {
+    const hasScore = fixture.HomeScore !== null && fixture.AwayScore !== null;
+    const matchDate = fixture.MatchDate ? new Date(fixture.MatchDate) : null;
+    const formattedDate = matchDate && !Number.isNaN(matchDate.getTime())
+      ? matchDate.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short"
+        })
+      : null;
+    const formattedTime = matchDate && !Number.isNaN(matchDate.getTime())
+      ? matchDate.toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      : null;
+    const score = hasScore ? `${fixture.HomeScore}-${fixture.AwayScore}` : (fixture.Status || "TBD");
+
+    return {
+      date: formattedDate,
+      time: formattedTime,
+      score
+    };
+  }
+
+  function renderRecentMatches(fixtures) {
+    if (!fixtures.length) {
+      recentMatchesList.innerHTML = `
+        <div class="upcoming-item">
+          <div class="upcoming-team">No recent matches found.</div>
+          <div class="upcoming-time">-</div>
+          <div class="upcoming-team r"></div>
+        </div>
+      `;
+      return;
+    }
+
+    recentMatchesList.innerHTML = fixtures.map((fixture) => {
+      const summary = formatMatchSummary(fixture);
+      const dateTime = [summary.date, summary.time].filter(Boolean).join(" ");
+
+      return `
+        <a href="/fixtures/match/${fixture.FixtureID}" class="upcoming-item">
+          <div class="upcoming-team">${fixture.HomeTeam}</div>
+          <div class="upcoming-time">
+            <span class="upcoming-date">${dateTime || "-"}</span>
+            <span class="upcoming-score">${summary.score}</span>
+          </div>
+          <div class="upcoming-team r">${fixture.AwayTeam}</div>
+        </a>
+      `;
+    }).join("");
+  }
+
+  fetch("/api/fixtures")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to load fixtures");
+      }
+      return response.json();
+    })
+    .then((fixtures) => renderRecentMatches(fixtures))
+    .catch(() => {
+      recentMatchesList.innerHTML = `
+        <div class="upcoming-item">
+          <div class="upcoming-team">Unable to load recent matches.</div>
+          <div class="upcoming-time">-</div>
+          <div class="upcoming-team r"></div>
+        </div>
+      `;
+    });
+</script>
 {% endblock %}

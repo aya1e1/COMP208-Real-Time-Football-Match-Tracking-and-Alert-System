@@ -320,7 +320,15 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
 
 .upcoming-team { display: flex; align-items: center; gap: 7px; font-size: .875rem; font-weight: 500; }
 .upcoming-team.r { flex-direction: row-reverse; }
-.upcoming-time { font-size: .9rem; font-weight: 600; text-align: center; white-space: nowrap; }
+.upcoming-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+.upcoming-date { font-size: .78rem; color: var(--text-3); white-space: nowrap; }
+.upcoming-score { font-size: .9rem; font-weight: 600; white-space: nowrap; }
 
 /* ── Footer ──────────────────────────────────────────────── */
 footer {

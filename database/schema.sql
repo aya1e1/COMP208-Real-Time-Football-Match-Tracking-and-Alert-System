@@ -115,6 +115,33 @@ CREATE TABLE IF NOT EXISTS Events (
   CONSTRAINT FK_Events_Team    FOREIGN KEY (TeamID)    REFERENCES Teams(TeamID)
 );
 
+-- Fixture statistics: one row per fixture/team pair
+CREATE TABLE IF NOT EXISTS FixtureStatistics (
+  FixtureID         INT NOT NULL,
+  TeamID            INT NOT NULL,
+  ShotsOnGoal       INT,
+  ShotsOffGoal      INT,
+  TotalShots        INT,
+  BlockedShots      INT,
+  ShotsInsideBox    INT,
+  ShotsOutsideBox   INT,
+  Fouls             INT,
+  CornerKicks       INT,
+  Offsides          INT,
+  BallPossession    DECIMAL(5, 2),
+  YellowCards       INT,
+  RedCards          INT,
+  GoalkeeperSaves   INT,
+  TotalPasses       INT,
+  PassesAccurate    INT,
+  PassesPercentage  DECIMAL(5, 2),
+  ExpectedGoals     DECIMAL(10, 2),
+  GoalsPrevented    INT,
+  CONSTRAINT PK_FixtureStatistics PRIMARY KEY (FixtureID, TeamID),
+  CONSTRAINT FK_FixtureStatistics_Fixture FOREIGN KEY (FixtureID) REFERENCES Fixtures(FixtureID),
+  CONSTRAINT FK_FixtureStatistics_Team    FOREIGN KEY (TeamID)    REFERENCES Teams(TeamID)
+);
+
 -- Users (for authentication system)
 CREATE TABLE IF NOT EXISTS Users (
   UserID       INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -173,6 +200,8 @@ CREATE INDEX IF NOT EXISTS idx_Fixtures_MatchDate ON Fixtures(MatchDate);
 CREATE INDEX IF NOT EXISTS idx_Fixtures_Status    ON Fixtures(Status);
 CREATE INDEX IF NOT EXISTS idx_Events_FixtureID   ON Events(FixtureID);
 CREATE INDEX IF NOT EXISTS idx_Events_EventType   ON Events(EventType);
+CREATE INDEX IF NOT EXISTS idx_FixtureStatistics_TeamID
+  ON FixtureStatistics(TeamID);
 CREATE INDEX IF NOT EXISTS idx_PlayerTeam_TeamID  ON PlayerTeam(TeamID);
 CREATE INDEX IF NOT EXISTS idx_UserPrefs_UserID   ON UserNotificationPreferences(UserID);
 CREATE INDEX IF NOT EXISTS idx_UserPrefs_TeamID   ON UserNotificationPreferences(TeamID);

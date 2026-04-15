@@ -1,1 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Kickoff{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
 
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">Kick<span>off</span></a>
+    <div class="nav-links">
+      <a href="/" {% if request.endpoint == 'main_bp.home' %}class="active"{% endif %}>Home</a>
+      <a href="/live" {% if request.endpoint == 'main_bp.live' %}class="active"{% endif %}>
+        Live <span class="nav-live-badge">3</span>
+      </a>
+      <a href="/fixtures" {% if request.endpoint == 'fixtures_bp.show_fixtures' %}class="active"{% endif %}>Fixtures</a>
+    </div>
+    <div class="nav-right">
+      <a href="/auth/login" class="btn-ghost">Sign in</a>
+    </div>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer>
+  Kickoff &copy; 2025 &middot; Real-time football tracking
+</footer>
+
+</body>
+</html>

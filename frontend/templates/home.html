@@ -1,1 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Kickoff — Today's Matches{% endblock %}
 
+{% block content %}
+<main class="page">
+  <div class="two-col">
+
+    <!-- current fixtures  -->
+    <div>
+      <div class="date-strip">
+        <div class="date-pill"><span>Fri</span><strong>11</strong></div>
+        <div class="date-pill"><span>Sat</span><strong>12</strong></div>
+        <div class="date-pill active"><span>Sun</span><strong>13</strong></div>
+        <div class="date-pill"><span>Mon</span><strong>14</strong></div>
+        <div class="date-pill"><span>Tue</span><strong>15</strong></div>
+      </div>
+
+      <div class="comp-group card">
+        <div class="comp-label">Premier League &mdash; Gameweek 32</div>
+
+        <a href="/match/1" class="match-row">
+          <div class="team-side"><span class="team-name">Arsenal</span></div>
+          <div class="match-center">
+            <div class="score-box"><span>2</span><span class="score-dash">–</span><span>1</span></div>
+            <div class="match-time live">&#9679; 67'</div>
+          </div>
+          <div class="team-side away"><span class="team-name">Chelsea</span></div>
+        </a>
+
+        <a href="/match/2" class="match-row">
+          <div class="team-side"><span class="team-name">Liverpool</span></div>
+          <div class="match-center">
+            <div class="score-box"><span>0</span><span class="score-dash">–</span><span>0</span></div>
+            <div class="match-time live">&#9679; 34'</div>
+          </div>
+          <div class="team-side away"><span class="team-name">Man City</span></div>
+        </a>
+
+        <a href="/match/3" class="match-row">
+          <div class="team-side"><span class="team-name">Man United</span></div>
+          <div class="match-center">
+            <div class="score-box"><span class="score-dash">vs</span></div>
+            <div class="match-time">15:00</div>
+          </div>
+          <div class="team-side away"><span class="team-name">Tottenham</span></div>
+        </a>
+
+        <a href="/match/4" class="match-row">
+          <div class="team-side"><span class="team-name">Newcastle</span></div>
+          <div class="match-center">
+            <div class="score-box"><span class="score-dash">vs</span></div>
+            <div class="match-time">15:00</div>
+          </div>
+          <div class="team-side away"><span class="team-name">Aston Villa</span></div>
+        </a>
+
+        <a href="/match/5" class="match-row">
+          <div class="team-side"><span class="team-name">Brentford</span></div>
+          <div class="match-center">
+            <div class="score-box"><span class="score-dash">vs</span></div>
+            <div class="match-time">15:00</div>
+          </div>
+          <div class="team-side away"><span class="team-name">Brighton</span></div>
+        </a>
+
+        <a href="/match/6" class="match-row">
+          <div class="team-side"><span class="team-name">Everton</span></div>
+          <div class="match-center">
+            <div class="score-box"><span class="score-dash">vs</span></div>
+            <div class="match-time">17:30</div>
+          </div>
+          <div class="team-side away"><span class="team-name">Wolves</span></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <!-- league table random data for demo) -->
+      <div class="card">
+        <div class="card-header">Premier League Table</div>
+        <div class="card-body" style="padding:0;">
+          <table class="table-mini">
+            <thead>
+              <tr>
+                <th>#</th><th>Team</th><th>P</th><th>GD</th><th>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Liverpool</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>2</td><td>Arsenal</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>3</td><td>Chelsea</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>4</td><td>Nottm Forest</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr style="border-top:2px solid var(--blue);">
+                <td>5</td><td>Man City</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>6</td><td>Newcastle</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>7</td><td>Aston Villa</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>8</td><td>Bournemouth</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>9</td><td>Fulham</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>10</td><td>Man United</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>11</td><td>Tottenham</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>12</td><td>Brighton</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>13</td><td>Brentford</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>14</td><td>West Ham</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>15</td><td>Crystal Palace</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>16</td><td>Everton</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>17</td><td>Leicester</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr style="border-top:2px solid var(--accent);">
+                <td>18</td><td>Ipswich</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>19</td><td>Wolves</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+              <tr><td>20</td><td>Southampton</td><td>–</td><td>–</td><td class="pts">–</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="alert-card">
+        <h3>Get match alerts</h3>
+        <p>Instant notifications for goals, cards, and full time.</p>
+        <a href="/auth/register" class="alert-btn">Set up alerts →</a>
+      </div>
+
+    </aside>
+  </div>
+</main>
+{% endblock %}

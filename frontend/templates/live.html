@@ -1,1 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Kickoff — Live Scores{% endblock %}
 
+{% block content %}
+<main class="page">
+
+  <div class="live-header">
+    <h1>Live Now</h1>
+    <span class="live-count">3 matches</span>
+    <span class="live-dot"></span>
+  </div>
+
+  <div class="filter-tabs">
+    <button class="filter-tab active">All</button>
+    <button class="filter-tab">Premier League</button>
+    <button class="filter-tab">La Liga</button>
+    <button class="filter-tab">Bundesliga</button>
+    <button class="filter-tab">Serie A</button>
+  </div>
+
+  <div class="live-grid">
+
+    <a href="/match/1" class="live-card">
+      <div class="live-card-header">
+        Premier League
+        <span class="badge badge-live">Live</span>
+      </div>
+      <div class="live-card-body">
+        <div class="match-teams">
+          <div class="team-block l"><span class="team-nm">Arsenal</span></div>
+          <div class="scoreboard">
+            <div class="score-main">2<span class="score-sep">–</span>1</div>
+            <div class="min-badge"><span class="min-dot"></span>67'</div>
+          </div>
+          <div class="team-block r"><span class="team-nm">Chelsea</span></div>
+        </div>
+        <div class="events-strip">
+          <div class="event-item">
+            <span class="event-min">45'</span>
+            <span class="event-icon">&#9917;</span>
+            <span class="event-name">Saka</span>
+          </div>
+          <div class="event-item">
+            <span class="event-min">61'</span>
+            <span class="event-icon">&#9917;</span>
+            <span class="event-name">Martinelli</span>
+          </div>
+          <div class="event-item away">
+            <span class="event-min">55'</span>
+            <span class="event-icon">&#9917;</span>
+            <span class="event-name">Palmer</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a href="/match/2" class="live-card">
+      <div class="live-card-header">
+        Premier League
+        <span class="badge badge-live">Live</span>
+      </div>
+      <div class="live-card-body">
+        <div class="match-teams">
+          <div class="team-block l"><span class="team-nm">Liverpool</span></div>
+          <div class="scoreboard">
+            <div class="score-main">0<span class="score-sep">–</span>0</div>
+            <div class="min-badge"><span class="min-dot"></span>34'</div>
+          </div>
+          <div class="team-block r"><span class="team-nm">Man City</span></div>
+        </div>
+        <div class="events-strip">
+          <div class="event-item">
+            <span class="event-min">12'</span>
+            <span class="event-icon">&#127olean;</span>
+            <span class="event-name">Salah (yellow)</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a href="/match/7" class="live-card">
+      <div class="live-card-header">
+        La Liga
+        <span class="badge badge-live">Live</span>
+      </div>
+      <div class="live-card-body">
+        <div class="match-teams">
+          <div class="team-block l"><span class="team-nm">Real Madrid</span></div>
+          <div class="scoreboard">
+            <div class="score-main">3<span class="score-sep">–</span>1</div>
+            <div class="min-badge"><span class="min-dot"></span>78'</div>
+          </div>
+          <div class="team-block r"><span class="team-nm">Barcelona</span></div>
+        </div>
+        <div class="events-strip">
+          <div class="event-item">
+            <span class="event-min">23'</span>
+            <span class="event-icon">&#9917;</span>
+            <span class="event-name">Vinicius Jr.</span>
+          </div>
+          <div class="event-item">
+            <span class="event-min">51'</span>
+            <span class="event-icon">&#9917;</span>
+            <span class="event-name">Mbappe</span>
+          </div>
+          <div class="event-item away">
+            <span class="event-min">40'</span>
+            <span class="event-icon">&#9917;</span>
+            <span class="event-name">Yamal</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="upcoming-label">Upcoming Today</div>
+  <div class="upcoming-list">
+
+    <a href="/match/3" class="upcoming-item">
+      <div class="upcoming-team">Man United</div>
+      <div class="upcoming-time">15:00</div>
+      <div class="upcoming-team r">Tottenham</div>
+    </a>
+
+    <a href="/match/4" class="upcoming-item">
+      <div class="upcoming-team">Newcastle</div>
+      <div class="upcoming-time">15:00</div>
+      <div class="upcoming-team r">Aston Villa</div>
+    </a>
+
+    <a href="/match/5" class="upcoming-item">
+      <div class="upcoming-team">Brentford</div>
+      <div class="upcoming-time">15:00</div>
+      <div class="upcoming-team r">Brighton</div>
+    </a>
+
+    <a href="/match/6" class="upcoming-item">
+      <div class="upcoming-team">Everton</div>
+      <div class="upcoming-time">17:30</div>
+      <div class="upcoming-team r">Wolves</div>
+    </a>
+
+  </div>
+
+</main>
+{% endblock %}

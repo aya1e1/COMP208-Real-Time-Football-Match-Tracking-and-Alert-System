@@ -44,6 +44,47 @@ def _build_location_stats(team_stats: dict, venue: str) -> dict:
     }
 
 
+def _get_h2h_fixtures(
+    home_team_id: int,
+    away_team_id: int,
+    excluded_fixture_id: int,
+) -> list[dict]:
+    sql = """
+        SELECT
+            f.FixtureID,
+            f.LeagueID,
+            l.Name AS LeagueName,
+            f.Year,
+            f.HomeTeamID,
+            ht.Name AS HomeTeam,
+            ht.Abbreviation AS HomeTeamAbbreviation,
+            ht.LogoURL AS HomeTeamLogoURL,
+            f.AwayTeamID,
+            at.Name AS AwayTeam,
+            at.Abbreviation AS AwayTeamAbbreviation,
+            at.LogoURL AS AwayTeamLogoURL,
+            f.Location,
+            f.MatchDate,
+            f.HomeScore,
+            f.AwayScore,
+            f.Status,
+            f.Elapsed
+        FROM Fixtures f
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+        WHERE f.HomeTeamID = ?
+          AND f.AwayTeamID = ?
+          AND f.FixtureID != ?
+        ORDER BY f.MatchDate DESC
+        LIMIT 5
+    """
+    return database.query(sql, (home_team_id, away_team_id, excluded_fixture_id))
+
+
 @api_bp.route("/leagues")
 def leagues():
     sql = """
@@ -327,9 +368,23 @@ def fixture(fixture_id):
             }
         )
 
+    h2h = {
+        "home_vs_away": _get_h2h_fixtures(
+            home_team_id=fixture_data["HomeTeamID"],
+            away_team_id=fixture_data["AwayTeamID"],
+            excluded_fixture_id=fixture_id,
+        ),
+        "away_vs_home": _get_h2h_fixtures(
+            home_team_id=fixture_data["AwayTeamID"],
+            away_team_id=fixture_data["HomeTeamID"],
+            excluded_fixture_id=fixture_id,
+        ),
+    }
+
     return jsonify({
         "data": fixture,
         "events": events,
         "statistics": statistics,
         "team_location_statistics": location_team_statistics,
+        "h2h": h2h,
     })

@@ -18,6 +18,40 @@
     border: 1px solid #ececec;
   }
 
+  .fixture-h2h-nav {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px 24px;
+    padding: 2px 0 6px;
+  }
+
+  .fixture-h2h-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 18px;
+  }
+
+  .fixture-h2h-group.right {
+    justify-content: flex-end;
+  }
+
+  .fixture-h2h-link {
+    color: #5f5f5f;
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1.8;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .fixture-h2h-link:hover {
+    color: #1f2937;
+  }
+
+  .fixture-h2h-link.active {
+    color: #111;
+  }
+
   .fixture-scoreboard .card-body {
     padding: 18px 18px 26px;
   }
@@ -327,6 +361,14 @@
       grid-template-columns: 1fr;
     }
 
+    .fixture-h2h-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .fixture-h2h-group.right {
+      justify-content: flex-start;
+    }
+
     .fixture-meta-grid {
       grid-template-columns: 1fr;
     }
@@ -378,9 +420,11 @@
   </div>
 
   <div class="fixture-view-page">
+  <div id="match-h2h" class="fixture-empty">Loading head-to-head fixtures...</div>
   <header class="fixture-page-header" id="match-header">
     <h1 class="fixture-headline">Loading match...</h1>
   </header>
+
   <section class="card fixture-scoreboard" id="match-summary">
     <div class="card-body">
       <div class="match-loading">Loading match details...</div>
@@ -431,6 +475,7 @@
   const matchId = page?.dataset.matchId;
   const headerEl = document.getElementById("match-header");
   const summaryEl = document.getElementById("match-summary");
+  const h2hEl = document.getElementById("match-h2h");
   const overviewEl = document.getElementById("match-overview");
   const teamOverviewEl = document.getElementById("team-overview");
   const infoEl = document.getElementById("match-info");
@@ -462,6 +507,56 @@
 
   function formatScoreValue(score) {
     return score !== null && score !== undefined ? score : "-";
+  }
+
+  function formatDateLabel(dateString) {
+    return formatDateTime(dateString).date;
+  }
+
+  function getH2HStorageKey(fixture) {
+    const teamIds = [Number(fixture.HomeTeamID), Number(fixture.AwayTeamID)]
+      .filter((value) => !Number.isNaN(value))
+      .sort((left, right) => left - right);
+
+    if (teamIds.length !== 2) {
+      return null;
+    }
+
+    return `fixture-h2h-order:${teamIds[0]}:${teamIds[1]}`;
+  }
+
+  function getCanonicalH2HOrder(fixture) {
+    const defaultOrder = {
+      homeTeamId: Number(fixture.HomeTeamID),
+      awayTeamId: Number(fixture.AwayTeamID)
+    };
+    const storageKey = getH2HStorageKey(fixture);
+
+    if (!storageKey) {
+      return defaultOrder;
+    }
+
+    try {
+      const savedValue = window.sessionStorage.getItem(storageKey);
+      if (savedValue) {
+        const parsed = JSON.parse(savedValue);
+        const savedHomeTeamId = Number(parsed?.homeTeamId);
+        const savedAwayTeamId = Number(parsed?.awayTeamId);
+
+        if (!Number.isNaN(savedHomeTeamId) && !Number.isNaN(savedAwayTeamId)) {
+          return {
+            homeTeamId: savedHomeTeamId,
+            awayTeamId: savedAwayTeamId
+          };
+        }
+      }
+
+      window.sessionStorage.setItem(storageKey, JSON.stringify(defaultOrder));
+    } catch (error) {
+      return defaultOrder;
+    }
+
+    return defaultOrder;
   }
 
   function formatStatValue(value, suffix = "") {
@@ -706,6 +801,112 @@
     `;
   }
 
+  function renderH2H(fixture, h2h) {
+    const canonicalOrder = getCanonicalH2HOrder(fixture);
+    const isCurrentFixtureCanonicalHomeVsAway = (
+      Number(fixture.HomeTeamID) === Number(canonicalOrder.homeTeamId)
+      && Number(fixture.AwayTeamID) === Number(canonicalOrder.awayTeamId)
+    );
+    const homeVsAway = Array.isArray(h2h?.home_vs_away) ? h2h.home_vs_away : [];
+    const awayVsHome = Array.isArray(h2h?.away_vs_home) ? h2h.away_vs_home : [];
+
+    const sortMatches = (matches) => (
+      [...matches].sort((left, right) => {
+        const leftTime = new Date(left.MatchDate || 0).getTime();
+        const rightTime = new Date(right.MatchDate || 0).getTime();
+        return rightTime - leftTime;
+      })
+    );
+
+    const canonicalHomeVsAwayMatches = isCurrentFixtureCanonicalHomeVsAway
+      ? homeVsAway
+      : awayVsHome;
+    const canonicalAwayVsHomeMatches = isCurrentFixtureCanonicalHomeVsAway
+      ? awayVsHome
+      : homeVsAway;
+
+    const leftMatches = sortMatches([
+      ...canonicalHomeVsAwayMatches,
+      ...(isCurrentFixtureCanonicalHomeVsAway
+        ? [{
+            FixtureID: fixture.FixtureID,
+            MatchDate: fixture.MatchDate
+          }]
+        : [])
+    ]).filter((match, index, matches) => (
+      matches.findIndex((item) => Number(item.FixtureID) === Number(match.FixtureID)) === index
+    ));
+    const rightMatches = sortMatches([
+      ...canonicalAwayVsHomeMatches,
+      ...(!isCurrentFixtureCanonicalHomeVsAway
+        ? [{
+            FixtureID: fixture.FixtureID,
+            MatchDate: fixture.MatchDate
+          }]
+        : [])
+    ]).filter((match, index, matches) => (
+      matches.findIndex((item) => Number(item.FixtureID) === Number(match.FixtureID)) === index
+    ));
+
+    if (!leftMatches.length && !rightMatches.length) {
+      h2hEl.innerHTML = `<div class="fixture-empty">No head-to-head fixtures found.</div>`;
+      return;
+    }
+
+    h2hEl.innerHTML = `
+      <nav class="fixture-h2h-nav" aria-label="Head-to-head fixtures">
+        <div class="fixture-h2h-group left">
+          ${leftMatches.map((match) => {
+            const isActive = Number(match.FixtureID) === Number(fixture.FixtureID);
+            if (isActive) {
+              return `
+                <span
+                  class="fixture-h2h-link active"
+                  aria-current="page"
+                >
+                  ${formatDateLabel(match.MatchDate)}
+                </span>
+              `;
+            }
+
+            return `
+              <a
+                class="fixture-h2h-link"
+                href="/fixtures/${match.FixtureID}"
+              >
+                ${formatDateLabel(match.MatchDate)}
+              </a>
+            `;
+          }).join("")}
+        </div>
+        <div class="fixture-h2h-group right">
+          ${rightMatches.map((match) => {
+            const isActive = Number(match.FixtureID) === Number(fixture.FixtureID);
+            if (isActive) {
+              return `
+                <span
+                  class="fixture-h2h-link active"
+                  aria-current="page"
+                >
+                  ${formatDateLabel(match.MatchDate)}
+                </span>
+              `;
+            }
+
+            return `
+              <a
+                class="fixture-h2h-link"
+                href="/fixtures/${match.FixtureID}"
+              >
+                ${formatDateLabel(match.MatchDate)}
+              </a>
+            `;
+          }).join("")}
+        </div>
+      </nav>
+    `;
+  }
+
   function renderOverview(fixture, statistics) {
     const { home: homeStats, away: awayStats } = getFixtureStatisticsByTeam(fixture, statistics);
     const homeLabel = fixture.HomeTeamAbbreviation || fixture.HomeTeam || "Home Team";
@@ -895,6 +1096,7 @@
         <div class="match-loading">${message}</div>
       </div>
     `;
+    h2hEl.innerHTML = `<div class="fixture-empty">${message}</div>`;
     infoEl.innerHTML = `
       <div class="fixture-empty">Unavailable</div>
     `;
@@ -912,6 +1114,7 @@
     })
     .then((payload) => {
       const fixture = Array.isArray(payload.data) ? payload.data[0] : null;
+      const h2h = payload?.h2h || {};
       const events = Array.isArray(payload.events) ? payload.events : [];
       const statistics = Array.isArray(payload.statistics) ? payload.statistics : [];
       const teamLocationStatistics = Array.isArray(payload.team_location_statistics)
@@ -923,6 +1126,7 @@
       }
 
       renderSummary(fixture);
+      renderH2H(fixture, h2h);
       renderOverview(fixture, statistics);
       renderTeamOverview(fixture, teamLocationStatistics);
       renderInfo(fixture);

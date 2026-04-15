@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify
+from datetime import datetime
+
+from flask import Blueprint, jsonify, request
 from backend.db import database
 
 api_bp = Blueprint("api", __name__)
@@ -47,3 +49,106 @@ def league_teams(league_id):
         "league": league[0],
         "teams": teams
     })
+
+
+@api_bp.route("/fixtures")
+def fixtures():
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+
+    parsed_start = None
+    parsed_end = None
+
+    try:
+        if start_date:
+            parsed_start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        if end_date:
+            parsed_end = datetime.strptime(end_date, "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({
+            "error": "Invalid date format. Use YYYY-MM-DD for start_date and end_date."
+        }), 400
+
+    if parsed_start and parsed_end and parsed_start > parsed_end:
+        return jsonify({
+            "error": "start_date cannot be later than end_date."
+        }), 400
+
+    sql = """
+        SELECT
+            f.FixtureID,
+            f.LeagueID,
+            l.Name AS LeagueName,
+            f.Year,
+            f.HomeTeamID,
+            ht.Name AS HomeTeam,
+            f.AwayTeamID,
+            at.Name AS AwayTeam,
+            f.Location,
+            f.MatchDate,
+            f.HomeScore,
+            f.AwayScore,
+            f.Status,
+            f.Elapsed
+        FROM Fixtures f
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+        WHERE 1 = 1
+    """
+    params = []
+
+    if parsed_start:
+        sql += " AND DATE(f.MatchDate) >= DATE(?)"
+        params.append(parsed_start.isoformat())
+
+    if parsed_end:
+        sql += " AND DATE(f.MatchDate) <= DATE(?)"
+        params.append(parsed_end.isoformat())
+
+    sql += " ORDER BY f.MatchDate DESC"
+
+    if not parsed_start and not parsed_end:
+        sql += " LIMIT 10"
+
+    fixtures = database.query(sql, tuple(params))
+    return jsonify(fixtures)
+
+
+@api_bp.route("/fixture/<int:fixture_id>")
+def fixture(fixture_id):
+    fixture_sql = """
+        SELECT
+            f.FixtureID,
+            f.LeagueID,
+            l.Name AS LeagueName,
+            f.Year,
+            f.HomeTeamID,
+            ht.Name AS HomeTeam,
+            f.AwayTeamID,
+            at.Name AS AwayTeam,
+            f.Location,
+            f.MatchDate,
+            f.HomeScore,
+            f.AwayScore,
+            f.Status,
+            f.Elapsed
+        FROM Fixtures f
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+        WHERE f.FixtureID = ?
+    """
+
+    fixture = database.query(fixture_sql, (fixture_id,))
+
+    if not fixture:
+        return jsonify({"error": "Fixture not found"}), 404
+
+    return jsonify(fixture[0])

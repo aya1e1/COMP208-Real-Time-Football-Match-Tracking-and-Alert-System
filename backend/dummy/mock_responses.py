@@ -19,11 +19,13 @@ def parse_mock_filename(file_path: Path):
     """
     Convert filenames like:
       output_leagues.json
-      output_team_league-39_season-2024.json
+      output_teams_league-39_season-2024.json
+      output_fixtures_events_fixture-1208399.json
 
     into:
       endpoint = "leagues", params = {}
-      endpoint = "team", params = {"league": "39", "season": "2024"}
+      endpoint = "teams", params = {"league": "39", "season": "2024"}
+      endpoint = "fixtures/events", params = {"fixture": "1208399"}
     """
     stem = file_path.stem  # e.g. "output_team_league-39_season-2024"
 
@@ -36,8 +38,23 @@ def parse_mock_filename(file_path: Path):
         return None
 
     parts = remainder.split("_")
-    endpoint = parts[0]
-    param_parts = parts[1:]
+
+    endpoint_parts = []
+    param_parts = []
+    found_params = False
+
+    for part in parts:
+        if not found_params and "-" not in part:
+            endpoint_parts.append(part)
+            continue
+
+        found_params = True
+        param_parts.append(part)
+
+    if not endpoint_parts:
+        return None
+
+    endpoint = "/".join(endpoint_parts)
 
     params = {}
     for part in param_parts:
@@ -82,7 +99,7 @@ def run_request():
 
     test_urls = [
         "http://example.com/leagues",
-        "http://example.com/team?league=39&season=2024",
+        "http://example.com/teams?league=39&season=2024",
     ]
 
     for url in test_urls:

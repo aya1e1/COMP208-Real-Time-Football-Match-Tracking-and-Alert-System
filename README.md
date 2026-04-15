@@ -109,7 +109,7 @@ All responses are cached in SQLite to stay within the free tier limit.
 | Tom Sutton | Backend | @Thomas-Sutton-0 |
 | Best Boonthanomwong | ... | @nongbed |
 | Hamza Al Zudi Garcia-Olalla | ... | @HAZ-GO |
-| Balqis Binti Abdul Halim | ... | @balqishalim |
+| Balqis Binti Abdul Halim | Database & Backend| @balqishalim |
 | Ziad Azmi | Backend & Frontend | @ziad-304 |
 
 ---

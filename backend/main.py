@@ -1,29 +1,10 @@
-import os
 from datetime import datetime, UTC
 
-import requests
 import responses
-from dotenv import load_dotenv
 
 from db import database
 from dummy import mock_responses
-
-load_dotenv()
-
-API_KEY = os.getenv("API_FOOTBALL_KEY")
-API_LINK = "http://example.com"
-
-
-def api_get(path: str) -> dict | None:
-    headers = {"x-apisports-key": API_KEY}
-
-    try:
-        response = requests.get(f"{API_LINK}{path}", headers=headers, timeout=30)
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as exc:
-        print(f"API request failed for {path}: {exc}")
-        return None
+from external_api import api_get
 
 
 def parse_leagues(data: dict) -> tuple[list[tuple], list[tuple]]:

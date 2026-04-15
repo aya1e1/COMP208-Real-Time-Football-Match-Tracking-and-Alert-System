@@ -3,10 +3,6 @@ from backend.db import database
 
 app = Flask(__name__)
 
-# Optional: initialise tables when the app starts
-
-
-
 @app.route("/leagues")
 def leagues():
     sql = """
@@ -20,7 +16,7 @@ def leagues():
 
 @app.route("/leagues/<int:league_id>/teams")
 def league_teams(league_id):
-    # Check the league exists
+
     league_sql = """
         SELECT LeagueID, Name
         FROM League
@@ -31,7 +27,6 @@ def league_teams(league_id):
     if not league:
         return jsonify({"error": "League not found"}), 404
 
-    # Get distinct teams that have participated in this league
     teams_sql = """
         SELECT DISTINCT
             t.TeamID,

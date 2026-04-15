@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS Events (
   FixtureID   INT NOT NULL,
   EventID     INT NOT NULL,
   PlayerID    INT,
-  AssistID    INT,
+  AssistPlayerID INT,
   TeamID      INT,
   EventType   VARCHAR(50),
   Detail     VARCHAR(255),
@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS Events (
   ExtraMinute INT DEFAULT 0,
   CONSTRAINT PK_Events         PRIMARY KEY (FixtureID, EventID),
   CONSTRAINT FK_Events_Player  FOREIGN KEY (PlayerID)  REFERENCES Player(PlayerID),
+  CONSTRAINT FK_Events_AssistPlayer FOREIGN KEY (AssistPlayerID) REFERENCES Player(PlayerID),
   CONSTRAINT FK_Events_Fixture FOREIGN KEY (FixtureID) REFERENCES Fixtures(FixtureID),
   CONSTRAINT FK_Events_Team    FOREIGN KEY (TeamID)    REFERENCES Teams(TeamID)
 );

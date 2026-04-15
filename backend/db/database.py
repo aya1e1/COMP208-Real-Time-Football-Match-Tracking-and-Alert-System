@@ -4,6 +4,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DB_PATH = BASE_DIR / 'database' / 'database.db'
 SCHEMA_PATH = BASE_DIR / 'database' / 'schema.sql'
+SCHEMA_DIR = BASE_DIR / 'database' / 'schema'
 
 
 def get_connection():
@@ -15,10 +16,14 @@ def get_connection():
 
 def init_db():
     db_already_exists = DB_PATH.exists()
-    with open(SCHEMA_PATH) as f:
-        schema_sql = f.read()
     with get_connection() as conn:
-        conn.executescript(schema_sql)
+        if SCHEMA_DIR.exists():
+            for schema_file in sorted(SCHEMA_DIR.glob("*.sql")):
+                with open(schema_file) as f:
+                    conn.executescript(f.read())
+        else:
+            with open(SCHEMA_PATH) as f:
+                conn.executescript(f.read())
     if db_already_exists:
         print("[DB] Schema ensured.")
     else:

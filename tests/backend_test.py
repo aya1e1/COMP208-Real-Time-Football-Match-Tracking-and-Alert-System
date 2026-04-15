@@ -8,6 +8,7 @@ import sys
 import types
 import unittest
 from pathlib import Path
+from urllib.parse import parse_qsl, urlsplit
 from unittest.mock import patch
 
 try:
@@ -124,9 +125,23 @@ def _mock_api_get(path: str):
         "/players/profiles?player=138908": "output_players_profiles_player-138908.json",
     }
     file_name = fixture_map.get(path)
+
     if file_name is None:
+        parsed_path = urlsplit(path)
+        endpoint_name = parsed_path.path.strip("/").replace("/", "_") or "root"
+        params = parse_qsl(parsed_path.query, keep_blank_values=True)
+        param_str = "_".join(f"{key}-{value}" for key, value in params)
+        file_name = (
+            f"output_{endpoint_name}_{param_str}.json"
+            if param_str
+            else f"output_{endpoint_name}.json"
+        )
+
+    file_path = DUMMY_DIR / file_name
+    if not file_path.exists():
         raise AssertionError(f"Unexpected API path requested: {path}")
-    return json.loads((DUMMY_DIR / file_name).read_text(encoding="utf-8"))
+
+    return json.loads(file_path.read_text(encoding="utf-8"))
 
 
 class MainModuleDatabaseTestCase(unittest.TestCase):
@@ -266,7 +281,10 @@ class TestParserFunctions(MainModuleDatabaseTestCase):
 
         teams, links = self.main_module.parse_teams(data)
 
-        self.assertEqual(teams, [(1, "Liverpool", "LIV", "Liverpool", "Anfield")])
+        self.assertEqual(
+            teams,
+            [(1, "Liverpool", "LIV", None, "Liverpool", "Anfield")],
+        )
         self.assertEqual(links, [(1, 2024, 39)])
 
     def test_parse_events_normalises_substitutions(self):
@@ -422,10 +440,14 @@ class TestApiRoutes(MainModuleDatabaseTestCase):
         self.original_api_db_get_connection = self.api_module.database.get_connection
         self.original_sync_events = self.api_module.sync_events
         self.original_sync_fixture_statistics = self.api_module.sync_fixture_statistics
+        self.original_sync_team_statistics = self.api_module.sync_team_statistics
 
         self.api_module.database.get_connection = lambda: self.conn
         self.api_module.sync_events = lambda fixture_id: None
         self.api_module.sync_fixture_statistics = lambda fixture_id: None
+        self.api_module.sync_team_statistics = (
+            lambda league_id, season, team_id: None
+        )
 
         app = Flask(__name__)
         app.register_blueprint(self.api_module.api_bp, url_prefix="/api")
@@ -435,6 +457,7 @@ class TestApiRoutes(MainModuleDatabaseTestCase):
         self.api_module.database.get_connection = self.original_api_db_get_connection
         self.api_module.sync_events = self.original_sync_events
         self.api_module.sync_fixture_statistics = self.original_sync_fixture_statistics
+        self.api_module.sync_team_statistics = self.original_sync_team_statistics
         super().tearDown()
 
     def test_league_teams_returns_404_for_unknown_league(self):

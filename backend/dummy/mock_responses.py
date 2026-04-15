@@ -16,17 +16,6 @@ def get_json_from_file(file_path: Path):
 
 
 def parse_mock_filename(file_path: Path):
-    """
-    Convert filenames like:
-      output_leagues.json
-      output_teams_league-39_season-2024.json
-      output_fixtures_events_fixture-1208399.json
-
-    into:
-      endpoint = "leagues", params = {}
-      endpoint = "teams", params = {"league": "39", "season": "2024"}
-      endpoint = "fixtures/events", params = {"fixture": "1208399"}
-    """
     stem = file_path.stem  # e.g. "output_team_league-39_season-2024"
 
     if not stem.startswith("output_"):

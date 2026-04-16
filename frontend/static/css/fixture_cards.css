@@ -169,9 +169,29 @@
   transition: color .12s ease;
 }
 
+.fixture-team-block.is-winner .fixture-team-score,
+.fixture-team-block.is-winner .fixture-team-name {
+  color: #15803d;
+}
+
+.fixture-team-block.is-loser .fixture-team-score,
+.fixture-team-block.is-loser .fixture-team-name {
+  color: #b42318;
+}
+
 .fixture-team-block:hover .fixture-team-score,
 .fixture-team-block:hover .fixture-team-name {
   color: var(--text-1);
+}
+
+.fixture-team-block.is-winner:hover .fixture-team-score,
+.fixture-team-block.is-winner:hover .fixture-team-name {
+  color: #15803d;
+}
+
+.fixture-team-block.is-loser:hover .fixture-team-score,
+.fixture-team-block.is-loser:hover .fixture-team-name {
+  color: #b42318;
 }
 
 .fixture-score-separator {
@@ -311,6 +331,20 @@
   flex-direction: column;
   justify-self: end;
   text-align: right;
+}
+
+.fixture-meta-side-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color .12s ease;
+}
+
+.fixture-meta-side-link:hover {
+  color: var(--text-1);
+}
+
+.fixture-meta-side-link:hover .fixture-meta-subtle {
+  color: var(--text-1);
 }
 
 .fixture-meta-subtle {
@@ -500,27 +534,26 @@
   color: #b42318;
 }
 
-.ui-error-state {
+.page-error-banner {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 16px 18px;
-  border: 1px solid #f1c3c0;
-  background: #fff2f1;
-  color: #7a271a;
+  justify-content: center;
 }
 
-.ui-error-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.page-error-banner:empty {
+  display: none;
+}
+
+.page-error-banner .ui-error-message {
+  width: min(100%, 680px);
+  text-align: center;
+  color: #b42318;
 }
 
 .ui-error-message {
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.5;
+  color: #b42318;
 }
 
 .fixture-empty {
@@ -665,6 +698,26 @@
   align-items: center;
   gap: 8px;
   text-align: center;
+}
+
+.dashboard-score-side.is-winner .dashboard-score-value,
+.dashboard-score-side.is-winner .dashboard-score-team-name {
+  color: #15803d;
+}
+
+.dashboard-fixture-card.is-win .dashboard-score-value,
+.dashboard-fixture-card.is-win .dashboard-score-team-name {
+  color: #15803d;
+}
+
+.dashboard-score-side.is-loser .dashboard-score-value,
+.dashboard-score-side.is-loser .dashboard-score-team-name {
+  color: #b42318;
+}
+
+.dashboard-fixture-card.is-loss .dashboard-score-value,
+.dashboard-fixture-card.is-loss .dashboard-score-team-name {
+  color: #b42318;
 }
 
 .dashboard-score-logo {

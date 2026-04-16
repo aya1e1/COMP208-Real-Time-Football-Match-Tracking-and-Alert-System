@@ -114,4 +114,20 @@ All responses are cached in SQLite to stay within the free tier limit.
 
 ---
 
-Run API flask --app backend.api.api run
+To do:
+
+- Correct data parsing for leagues in data_sync.py (logo + country not passed through)
+    - Then, pass through the league logo in the API (fixture() function)
+        - Add the league logo to fixture_view.html
+
+- Fix frontend homepage
+- Add player pages
+
+- Implement live match information (requires API plan)
+    - Implement notifications
+
+- Implement user settings
+    - Password changing
+    - Account deletion
+- Add minimum username length to sign up
+

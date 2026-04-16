@@ -1,5 +1,5 @@
 {
-    "get": "fixtures",
+    "get": "standings",
     "parameters": {
         "league": "39",
         "season": "2023"

@@ -2,10 +2,10 @@
     "get": "fixtures",
     "parameters": {
         "league": "39",
-        "season": "2023"
+        "season": "2016"
     },
     "errors": {
-        "requests": "You have reached the request limit for the day, Go to https://dashboard.api-football.com to upgrade your plan."
+        "plan": "Free plans do not have access to this season, try from 2022 to 2024."
     },
     "results": 0,
     "paging": {

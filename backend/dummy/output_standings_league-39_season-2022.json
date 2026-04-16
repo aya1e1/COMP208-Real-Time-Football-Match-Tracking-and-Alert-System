@@ -1,8 +1,8 @@
 {
-    "get": "fixtures",
+    "get": "standings",
     "parameters": {
         "league": "39",
-        "season": "2023"
+        "season": "2022"
     },
     "errors": {
         "requests": "You have reached the request limit for the day, Go to https://dashboard.api-football.com to upgrade your plan."

@@ -202,6 +202,16 @@
     color: var(--text-1);
   }
 
+  .team-fixture-card.is-win .team-fixture-team,
+  .team-fixture-card.is-win .team-fixture-score {
+    color: #15803d;
+  }
+
+  .team-fixture-card.is-loss .team-fixture-team,
+  .team-fixture-card.is-loss .team-fixture-score {
+    color: #b42318;
+  }
+
   .team-fixture-center {
     text-align: center;
   }
@@ -272,6 +282,7 @@
   <div class="match-back">
     <a href="/fixtures">&larr; Back to fixtures</a>
   </div>
+  <div id="team-error-banner" class="page-error-banner" aria-live="polite"></div>
 
   <header class="team-page-header" id="team-header">
     <div class="team-empty">Loading team...</div>
@@ -302,76 +313,70 @@
 
       <section class="dashboard-section">
         <h2 class="fixture-section-title">Recent Games</h2>
-        <div id="team-recent-fixtures" class="team-empty">Loading recent fixtures...</div>
+        <div id="team-recent-fixtures" class="team-fixture-stack">Loading recent fixtures...</div>
       </section>
     </aside>
   </section>
 </main>
 
+<script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recent_fixtures.js') }}"></script>
+<script src="{{ url_for('static', filename='js/overview_tables.js') }}"></script>
 <script>
   const teamPage = document.querySelector(".team-page");
   const teamId = Number(teamPage?.dataset.teamId);
   const isUserAuthenticated = teamPage?.dataset.userAuthenticated === "true";
   const loginUrl = teamPage?.dataset.loginUrl || "/auth/login";
+  const errorBannerEl = document.getElementById("team-error-banner");
   const teamHeaderEl = document.getElementById("team-header");
   const teamSummaryEl = document.getElementById("team-summary");
   const teamOverviewEl = document.getElementById("team-overview");
   const upcomingFixtureEl = document.getElementById("team-upcoming-fixture");
   const recentFixturesEl = document.getElementById("team-recent-fixtures");
+  const { escapeHtml, formatDateTime, renderTeamLogo, renderUpcomingFixtures } = window.KickoffFixtureCards;
   let currentTeamPayload = null;
   let favouriteRequestPending = false;
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+  function clearPageError() {
+    errorBannerEl.innerHTML = "";
   }
 
-  function formatDateTime(dateString) {
-    if (!dateString) {
-      return { date: "TBC", time: "" };
-    }
-
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) {
-      return { date: escapeHtml(dateString), time: "" };
-    }
-
-    return {
-      date: date.toLocaleDateString("en-GB", {
-        weekday: "short",
-        day: "2-digit",
-        month: "short"
-      }),
-      time: date.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    };
+  function renderPageError(message) {
+    errorBannerEl.innerHTML = window.KickoffUIErrors.render(message);
   }
 
   function formatScoreValue(score) {
     return score !== null && score !== undefined ? score : "-";
   }
 
-  function renderTeamLogo(url, alt, className) {
-    if (!url) {
+  function getTeamFixtureResultClass(fixture, currentTeamId) {
+    const fixtureTeamId = Number(currentTeamId);
+    const homeTeamId = Number(fixture?.HomeTeamID);
+    const awayTeamId = Number(fixture?.AwayTeamID);
+    const homeScore = Number(fixture?.HomeScore);
+    const awayScore = Number(fixture?.AwayScore);
+
+    if (
+      !Number.isFinite(fixtureTeamId)
+      || !Number.isFinite(homeTeamId)
+      || !Number.isFinite(awayTeamId)
+      || !Number.isFinite(homeScore)
+      || !Number.isFinite(awayScore)
+      || homeScore === awayScore
+    ) {
       return "";
     }
 
-    return `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" class="${className}">`;
-  }
+    const teamIsHome = fixtureTeamId === homeTeamId;
+    const teamIsAway = fixtureTeamId === awayTeamId;
 
-  function renderErrorMessage(message) {
-    return `
-      <div class="ui-error-state" role="alert">
-        <div class="ui-error-label">Error</div>
-        <p class="ui-error-message">${escapeHtml(message)}</p>
-      </div>
-    `;
+    if (!teamIsHome && !teamIsAway) {
+      return "";
+    }
+
+    const teamWon = teamIsHome ? homeScore > awayScore : awayScore > homeScore;
+    return teamWon ? "is-win" : "is-loss";
   }
 
   function renderFormDots(form) {
@@ -406,44 +411,35 @@
 
     const context = team.StatisticsContext;
     teamOverviewEl.innerHTML = `
-      <table class="overview-table">
-        <thead>
-          <tr>
-            <th class="row-label">Metric</th>
-            <th>
-              <div class="team-heading">
-                <span class="team-heading-main">${escapeHtml(team.Name)}</span>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th class="row-label">Form</th>
-            <td class="team-value">${renderFormDots(overview.last_five_form)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Wins</th>
-            <td class="team-value">${escapeHtml(overview.wins ?? "-")}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Losses</th>
-            <td class="team-value">${escapeHtml(overview.losses ?? "-")}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Goals For Avg</th>
-            <td class="team-value">${escapeHtml(overview.goals_for_average ?? "-")}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Goals Against Avg</th>
-            <td class="team-value">${escapeHtml(overview.goals_against_average ?? "-")}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Failed To Score</th>
-            <td class="team-value">${escapeHtml(overview.failed_to_score ?? "-")}</td>
-          </tr>
-        </tbody>
-      </table>
+      ${window.KickoffOverviewTables.renderTable({
+        className: "overview-table",
+        rows: [
+          [
+            { tag: "th", className: "row-label", content: "Form" },
+            { className: "team-value", content: renderFormDots(overview.last_five_form), raw: true }
+          ],
+          [
+            { tag: "th", className: "row-label", content: "Wins" },
+            { className: "team-value", content: overview.wins ?? "-" }
+          ],
+          [
+            { tag: "th", className: "row-label", content: "Losses" },
+            { className: "team-value", content: overview.losses ?? "-" }
+          ],
+          [
+            { tag: "th", className: "row-label", content: "GF average" },
+            { className: "team-value", content: overview.goals_for_average ?? "-" }
+          ],
+          [
+            { tag: "th", className: "row-label", content: "GA average" },
+            { className: "team-value", content: overview.goals_against_average ?? "-" }
+          ],
+          [
+            { tag: "th", className: "row-label", content: "Failed To Score" },
+            { className: "team-value", content: overview.failed_to_score ?? "-" }
+          ]
+        ]
+      })}
       ${context ? `
         <div class="team-overview-note">
           Based on ${escapeHtml(context.LeagueName)} ${escapeHtml(context.Year)} team statistics.
@@ -457,29 +453,37 @@
   }
 
   function renderTeamSummary(team) {
-    teamSummaryEl.innerHTML = `
-      <div class="team-summary-stack">
-        <div class="team-summary-row">
-          <div class="team-summary-label">Venue</div>
-          <div class="team-summary-value">${escapeHtml(team.Stadium || "Unknown venue")}</div>
-        </div>
-        <div class="team-summary-row">
-          <div class="team-summary-label">City</div>
-          <div class="team-summary-value">${escapeHtml(team.City || "Unknown city")}</div>
-        </div>
-      </div>
-    `;
+    teamSummaryEl.innerHTML = window.KickoffOverviewTables.renderTable({
+      className: "overview-table",
+      rows: [
+        [
+          { tag: "th", className: "row-label", content: "Venue" },
+          { className: "team-value", content: team.Stadium || "Unknown venue" }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "City" },
+          { className: "team-value", content: team.City || "Unknown city" }
+        ]
+      ]
+    });
   }
 
   function renderFixtureCard(fixture, options = {}) {
-    const kickoff = formatDateTime(fixture.MatchDate);
+    const kickoff = formatDateTime(fixture.MatchDate, {
+      dateOptions: {
+        weekday: "short",
+        day: "2-digit",
+        month: "short"
+      }
+    });
     const status = fixture.Status || (options.upcoming ? "NS" : "FT");
+    const resultClass = options.upcoming ? "" : getTeamFixtureResultClass(fixture, teamId);
     const centerLabel = options.upcoming
       ? `<div class="team-fixture-vs">vs</div>`
       : `<div class="team-fixture-score">${escapeHtml(formatScoreValue(fixture.HomeScore))} - ${escapeHtml(formatScoreValue(fixture.AwayScore))}</div>`;
 
     return `
-      <a href="/fixtures/${fixture.FixtureID}" class="card team-fixture-card">
+      <a href="/fixtures/${fixture.FixtureID}" class="card team-fixture-card ${resultClass}">
         <div class="card-body">
           <div class="team-fixture-meta">
             <div class="team-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
@@ -502,78 +506,19 @@
     `;
   }
 
-  function renderRecentFixtureCard(fixture) {
-    const kickoff = formatDateTime(fixture.MatchDate);
-    const status = fixture.Status || "FT";
-
-    return `
-      <a href="/fixtures/${fixture.FixtureID}" class="card dashboard-fixture-card">
-        <div class="card-body">
-          <div class="dashboard-fixture-meta">
-            <div class="dashboard-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
-            <div class="dashboard-fixture-status">${escapeHtml(status)}</div>
-          </div>
-          <div class="dashboard-score-layout">
-            <div class="dashboard-score-side">
-              ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "dashboard-score-logo")}
-              <div class="dashboard-score-value">${escapeHtml(formatScoreValue(fixture.HomeScore))}</div>
-              <div class="dashboard-score-team-name">${escapeHtml(fixture.HomeTeam)}</div>
-            </div>
-            <div class="dashboard-score-divider">vs</div>
-            <div class="dashboard-score-side">
-              ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "dashboard-score-logo")}
-              <div class="dashboard-score-value">${escapeHtml(formatScoreValue(fixture.AwayScore))}</div>
-              <div class="dashboard-score-team-name">${escapeHtml(fixture.AwayTeam)}</div>
-            </div>
-          </div>
-          <div class="dashboard-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
-        </div>
-      </a>
-    `;
-  }
-
   function renderUpcomingFixture(fixture) {
-    if (!fixture) {
-      upcomingFixtureEl.innerHTML = '<div class="team-empty">No upcoming fixture found</div>';
-      return;
-    }
-
-    const kickoff = formatDateTime(fixture.MatchDate);
-    upcomingFixtureEl.innerHTML = `
-      <a href="/fixtures/${fixture.FixtureID}" class="card dashboard-fixture-card">
-        <div class="card-body">
-          <div class="dashboard-fixture-meta">
-            <div class="dashboard-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
-            <div class="dashboard-fixture-status">${escapeHtml(fixture.Status || "NS")}</div>
-          </div>
-          <div class="dashboard-upcoming-layout">
-            <div class="dashboard-upcoming-team">
-              ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "dashboard-upcoming-team-logo")}
-              <div class="dashboard-upcoming-team-name">${escapeHtml(fixture.HomeTeam)}</div>
-            </div>
-            <div class="dashboard-vs-pill">vs</div>
-            <div class="dashboard-upcoming-team away">
-              ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "dashboard-upcoming-team-logo")}
-              <div class="dashboard-upcoming-team-name">${escapeHtml(fixture.AwayTeam)}</div>
-            </div>
-          </div>
-          <div class="dashboard-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
-        </div>
-      </a>
-    `;
+    renderUpcomingFixtures(upcomingFixtureEl, fixture ? [fixture] : [], {
+      emptyMessage: "No upcoming fixture found",
+      emptyClassName: "team-empty"
+    });
   }
 
   function renderRecentFixtures(fixtures) {
-    if (!fixtures.length) {
-      recentFixturesEl.innerHTML = '<div class="team-empty">No recent fixtures found</div>';
-      return;
-    }
-
-    recentFixturesEl.innerHTML = `
-      <div class="team-fixture-stack">
-        ${fixtures.map((fixture) => renderRecentFixtureCard(fixture)).join("")}
-      </div>
-    `;
+    window.KickoffRecentFixtures.render(recentFixturesEl, fixtures, {
+      emptyMessage: "No recent fixtures found",
+      emptyClassName: "team-empty",
+      teamId
+    });
   }
 
   function renderHeader(team) {
@@ -600,6 +545,7 @@
 
     statusEl.textContent = "";
     statusEl.classList.remove("error");
+    clearPageError();
   }
 
   function setActionStatus(message, { isError = false } = {}) {
@@ -608,8 +554,20 @@
       return;
     }
 
-    statusEl.textContent = message || "";
-    statusEl.classList.toggle("error", Boolean(message) && isError);
+    statusEl.textContent = "";
+    statusEl.classList.remove("error");
+
+    if (!message) {
+      clearPageError();
+      return;
+    }
+
+    if (isError) {
+      renderPageError(message);
+      return;
+    }
+
+    clearPageError();
   }
 
   function setFavouriteButtonPending(isPending) {
@@ -694,6 +652,7 @@
 
   function renderTeamPage(payload) {
     currentTeamPayload = payload;
+    clearPageError();
     const team = payload?.data;
 
     if (!team) {
@@ -709,22 +668,22 @@
     renderRecentFixtures(Array.isArray(payload.recent_fixtures) ? payload.recent_fixtures : []);
   }
 
-  function renderErrorState(message = "Team page unavailable.") {
-    const errorMessage = renderErrorMessage(message);
-    teamHeaderEl.innerHTML = errorMessage;
-    teamSummaryEl.innerHTML = errorMessage;
-    teamOverviewEl.innerHTML = errorMessage;
-    upcomingFixtureEl.innerHTML = errorMessage;
-    recentFixturesEl.innerHTML = errorMessage;
+  function renderErrorState(message = "Unable to load team details.") {
+    renderPageError(message);
+    teamHeaderEl.innerHTML = '<div class="team-empty">Team details unavailable.</div>';
+    teamSummaryEl.innerHTML = '<div class="team-empty">Team details unavailable.</div>';
+    teamOverviewEl.innerHTML = '<div class="team-empty">Overview unavailable.</div>';
+    upcomingFixtureEl.innerHTML = '<div class="team-empty">Upcoming fixture unavailable.</div>';
+    recentFixturesEl.innerHTML = '<div class="team-empty">Recent fixtures unavailable.</div>';
   }
 
   if (!Number.isFinite(teamId)) {
-    renderErrorState();
+    renderErrorState("Unable to load team details.");
   } else {
     fetch(`/api/teams/${teamId}`)
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Failed to load team");
+          throw new Error(response.status === 404 ? "Team not found." : "Unable to load team details.");
         }
 
         return response.json();
@@ -733,7 +692,7 @@
         renderTeamPage(payload);
       })
       .catch(() => {
-        renderErrorState();
+        renderErrorState("Unable to load team details.");
       });
   }
 </script>

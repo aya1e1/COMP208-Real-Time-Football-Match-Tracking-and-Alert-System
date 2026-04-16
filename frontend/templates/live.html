@@ -184,7 +184,7 @@
   fetch("/api/fixtures")
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Failed to load fixtures");
+        throw new Error("Unable to load fixtures.");
       }
       return response.json();
     })

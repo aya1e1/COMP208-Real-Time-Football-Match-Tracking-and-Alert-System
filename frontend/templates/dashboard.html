@@ -6,6 +6,7 @@
 
 {% block content %}
 <main class="page dashboard-page">
+  <div id="dashboard-error-banner" class="page-error-banner" aria-live="polite"></div>
   <header class="dashboard-page-header">
 
     <h1 class="dashboard-title">You</h1>
@@ -41,57 +42,22 @@
   </section>
 </main>
 
+<script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recent_fixtures.js') }}"></script>
 <script>
+  const errorBannerEl = document.getElementById("dashboard-error-banner");
   const favouriteTeamsEl = document.getElementById("dashboard-favourite-teams");
   const recentFixturesEl = document.getElementById("dashboard-recent-fixtures");
   const upcomingFixturesEl = document.getElementById("dashboard-upcoming-fixtures");
+  const { escapeHtml, renderTeamLogo, renderUpcomingFixtures } = window.KickoffFixtureCards;
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+  function clearPageError() {
+    errorBannerEl.innerHTML = "";
   }
 
-  function formatDateTime(dateString) {
-    if (!dateString) {
-      return { date: "TBC", time: "" };
-    }
-
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) {
-      return { date: escapeHtml(dateString), time: "" };
-    }
-
-    return {
-      date: date.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short"
-      }),
-      time: date.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    };
-  }
-
-  function renderTeamLogo(url, alt, className) {
-    if (!url) {
-      return "";
-    }
-
-    return `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" class="${className}">`;
-  }
-
-  function renderErrorMessage(message) {
-    return `
-      <div class="ui-error-state" role="alert">
-        <div class="ui-error-label">Error</div>
-        <p class="ui-error-message">${escapeHtml(message)}</p>
-      </div>
-    `;
+  function renderPageError(message) {
+    errorBannerEl.innerHTML = window.KickoffUIErrors.render(message);
   }
 
   function renderFavouriteTeams(teams) {
@@ -116,104 +82,32 @@
     `).join("");
   }
 
-  function renderRecentFixtures(fixtures) {
-    if (!fixtures.length) {
-      recentFixturesEl.innerHTML = `
-        <div class="dashboard-empty-card">
-          No recent fixtures found
-        </div>
-      `;
-      return;
-    }
-
-    recentFixturesEl.innerHTML = fixtures.map((fixture) => {
-      const kickoff = formatDateTime(fixture.MatchDate);
-      const status = fixture.Status || "FT";
-
-      return `
-        <a href="/fixtures/${fixture.FixtureID}" class="card dashboard-fixture-card">
-          <div class="card-body">
-            <div class="dashboard-fixture-meta">
-              <div class="dashboard-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
-              <div class="dashboard-fixture-status">${escapeHtml(status)}</div>
-            </div>
-            <div class="dashboard-score-layout">
-              <div class="dashboard-score-side">
-                ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "dashboard-score-logo")}
-                <div class="dashboard-score-value">${fixture.HomeScore ?? "-"}</div>
-                <div class="dashboard-score-team-name">${escapeHtml(fixture.HomeTeam)}</div>
-              </div>
-              <div class="dashboard-score-divider">vs</div>
-              <div class="dashboard-score-side">
-                ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "dashboard-score-logo")}
-                <div class="dashboard-score-value">${fixture.AwayScore ?? "-"}</div>
-                <div class="dashboard-score-team-name">${escapeHtml(fixture.AwayTeam)}</div>
-              </div>
-            </div>
-            <div class="dashboard-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
-          </div>
-        </a>
-      `;
-    }).join("");
-  }
-
-  function renderUpcomingFixtures(fixtures) {
-    if (!fixtures.length) {
-      upcomingFixturesEl.innerHTML = `
-        <div class="dashboard-empty-card">
-          No upcoming fixtures available
-        </div>
-      `;
-      return;
-    }
-
-    upcomingFixturesEl.innerHTML = fixtures.map((fixture) => {
-      const kickoff = formatDateTime(fixture.MatchDate);
-
-      return `
-        <a href="/fixtures/${fixture.FixtureID}" class="card dashboard-fixture-card">
-          <div class="card-body">
-            <div class="dashboard-fixture-meta">
-              <div class="dashboard-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
-              <div class="dashboard-fixture-status">${escapeHtml(fixture.Status || "NS")}</div>
-            </div>
-            <div class="dashboard-upcoming-layout">
-              <div class="dashboard-upcoming-team">
-                ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "dashboard-upcoming-team-logo")}
-                <div class="dashboard-upcoming-team-name">${escapeHtml(fixture.HomeTeam)}</div>
-              </div>
-              <div class="dashboard-vs-pill">vs</div>
-              <div class="dashboard-upcoming-team away">
-                ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "dashboard-upcoming-team-logo")}
-                <div class="dashboard-upcoming-team-name">${escapeHtml(fixture.AwayTeam)}</div>
-              </div>
-            </div>
-            <div class="dashboard-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
-          </div>
-        </a>
-      `;
-    }).join("");
-  }
-
   fetch("/api/me/dashboard")
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Failed to load dashboard");
+        throw new Error("Unable to load dashboard.");
       }
 
       return response.json();
     })
     .then((payload) => {
+      clearPageError();
       const data = payload?.data || {};
       renderFavouriteTeams(Array.isArray(data.favourite_teams) ? data.favourite_teams : []);
-      renderRecentFixtures(Array.isArray(data.recent_fixtures) ? data.recent_fixtures : []);
-      renderUpcomingFixtures(Array.isArray(data.upcoming_fixtures) ? data.upcoming_fixtures : []);
+      window.KickoffRecentFixtures.render(
+        recentFixturesEl,
+        Array.isArray(data.recent_fixtures) ? data.recent_fixtures : []
+      );
+      renderUpcomingFixtures(
+        upcomingFixturesEl,
+        Array.isArray(data.upcoming_fixtures) ? data.upcoming_fixtures : []
+      );
     })
     .catch(() => {
-      const errorCard = renderErrorMessage("Dashboard unavailable.");
-      favouriteTeamsEl.innerHTML = errorCard;
-      recentFixturesEl.innerHTML = errorCard;
-      upcomingFixturesEl.innerHTML = errorCard;
+      renderPageError("Unable to load dashboard.");
+      favouriteTeamsEl.innerHTML = '<div class="dashboard-empty-card">Dashboard data unavailable.</div>';
+      recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
+      upcomingFixturesEl.innerHTML = '<div class="dashboard-empty-card">Upcoming fixtures unavailable.</div>';
     });
 </script>
 {% endblock %}

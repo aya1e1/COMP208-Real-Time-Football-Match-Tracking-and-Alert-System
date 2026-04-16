@@ -14,6 +14,7 @@
   <div class="match-back">
     <a href="/fixtures">&larr; Back to fixtures</a>
   </div>
+  <div id="match-error-banner" class="page-error-banner" aria-live="polite"></div>
 
   <div class="fixture-view-page">
   <div id="match-h2h" class="fixture-empty">Loading head-to-head fixtures...</div>
@@ -68,9 +69,12 @@
   </div>
 </main>
 
+<script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
+<script src="{{ url_for('static', filename='js/overview_tables.js') }}"></script>
 <script>
   const page = document.querySelector(".match-page");
   let currentMatchId = page?.dataset.matchId;
+  const errorBannerEl = document.getElementById("match-error-banner");
   const headerEl = document.getElementById("match-header");
   const summaryEl = document.getElementById("match-summary");
   const h2hEl = document.getElementById("match-h2h");
@@ -84,6 +88,14 @@
   let activeRequestId = 0;
   let currentFixturePayload = null;
   const pendingVoteEventIds = new Set();
+
+  function clearPageError() {
+    errorBannerEl.innerHTML = "";
+  }
+
+  function renderPageError(message) {
+    errorBannerEl.innerHTML = window.KickoffUIErrors.render(message);
+  }
 
   function formatDateTime(dateString) {
     if (!dateString) {
@@ -111,6 +123,22 @@
 
   function formatScoreValue(score) {
     return score !== null && score !== undefined ? score : "-";
+  }
+
+  function getFixtureOutcomeClasses(fixture) {
+    const homeScore = Number(fixture?.HomeScore);
+    const awayScore = Number(fixture?.AwayScore);
+
+    if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore) || homeScore === awayScore) {
+      return {
+        home: "",
+        away: ""
+      };
+    }
+
+    return homeScore > awayScore
+      ? { home: "is-winner", away: "is-loser" }
+      : { home: "is-loser", away: "is-winner" };
   }
 
   function formatDateLabel(dateString) {
@@ -197,6 +225,17 @@
     return value !== null && value !== undefined && value !== "" ? `${value}${suffix}` : "-";
   }
 
+  function getLeagueSeasonHref(fixture) {
+    const leagueId = Number(fixture?.LeagueID);
+    const seasonYear = Number(fixture?.Year);
+
+    if (!Number.isFinite(leagueId) || !Number.isFinite(seasonYear)) {
+      return null;
+    }
+
+    return `/leagues/${leagueId}?season=${seasonYear}`;
+  }
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replace(/&/g, "&amp;")
@@ -204,15 +243,6 @@
       .replace(/>/g, "&gt;")
       .replace(/\"/g, "&quot;")
       .replace(/'/g, "&#39;");
-  }
-
-  function renderErrorMessage(message) {
-    return `
-      <div class="ui-error-state" role="alert">
-        <div class="ui-error-label">Error</div>
-        <p class="ui-error-message">${escapeHtml(message)}</p>
-      </div>
-    `;
   }
 
   function renderFormDots(form) {
@@ -349,21 +379,31 @@
   }
 
   function clearVoteStatus() {
-    if (!voteStatusEl) {
-      return;
+    if (voteStatusEl) {
+      voteStatusEl.textContent = "";
+      voteStatusEl.classList.remove("error");
     }
 
-    voteStatusEl.textContent = "";
-    voteStatusEl.classList.remove("error");
+    clearPageError();
   }
 
   function setVoteStatus(message, { isError = false } = {}) {
-    if (!voteStatusEl) {
+    if (voteStatusEl) {
+      voteStatusEl.textContent = "";
+      voteStatusEl.classList.remove("error");
+    }
+
+    if (!message) {
+      clearPageError();
       return;
     }
 
-    voteStatusEl.textContent = message || "";
-    voteStatusEl.classList.toggle("error", Boolean(message) && isError);
+    if (isError) {
+      renderPageError(message);
+      return;
+    }
+
+    clearPageError();
   }
 
   function getEventVoteSummary(event) {
@@ -562,6 +602,7 @@
   function renderSummary(fixture) {
     const statusLabel = fixture.Status || "VS";
     const relativeMatchDate = formatRelativeMatchDate(fixture.MatchDate);
+    const outcomeClasses = getFixtureOutcomeClasses(fixture);
     const homeLogo = fixture.HomeTeamLogoURL
       ? `
           <div class="fixture-team-logo-wrap">
@@ -595,13 +636,13 @@
     summaryEl.innerHTML = `
       <div class="card-body">
         <div class="fixture-score-grid">
-          <a href="/teams/${fixture.HomeTeamID}" class="fixture-team-block home">
+          <a href="/teams/${fixture.HomeTeamID}" class="fixture-team-block home ${outcomeClasses.home}">
             ${homeLogo}
             <div class="fixture-team-score">${formatScoreValue(fixture.HomeScore)}</div>
             <div class="fixture-team-name">${fixture.HomeTeam || "Home Team"}</div>
           </a>
           <div class="fixture-score-separator">${statusLabel}</div>
-          <a href="/teams/${fixture.AwayTeamID}" class="fixture-team-block away">
+          <a href="/teams/${fixture.AwayTeamID}" class="fixture-team-block away ${outcomeClasses.away}">
             ${awayLogo}
             <div class="fixture-team-score">${formatScoreValue(fixture.AwayScore)}</div>
             <div class="fixture-team-name">${fixture.AwayTeam || "Away Team"}</div>
@@ -722,49 +763,46 @@
     const homeLabel = fixture.HomeTeamAbbreviation || fixture.HomeTeam || "Home Team";
     const awayLabel = fixture.AwayTeamAbbreviation || fixture.AwayTeam || "Away Team";
 
-    overviewEl.innerHTML = `
-      <table class="overview-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>${homeLabel}</th>
-            <th>${awayLabel}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th class="row-label">Score</th>
-            <td class="team-value">${formatScoreValue(fixture.HomeScore)}</td>
-            <td class="team-value">${formatScoreValue(fixture.AwayScore)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Possession</th>
-            <td class="team-value">${formatStatValue(homeStats?.BallPossession, "%")}</td>
-            <td class="team-value">${formatStatValue(awayStats?.BallPossession, "%")}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Total shots</th>
-            <td class="team-value">${formatStatValue(homeStats?.TotalShots)}</td>
-            <td class="team-value">${formatStatValue(awayStats?.TotalShots)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Shots on goal</th>
-            <td class="team-value">${formatStatValue(homeStats?.ShotsOnGoal)}</td>
-            <td class="team-value">${formatStatValue(awayStats?.ShotsOnGoal)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Accurate passes</th>
-            <td class="team-value">${formatStatValue(homeStats?.PassesAccurate)}</td>
-            <td class="team-value">${formatStatValue(awayStats?.PassesAccurate)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Expected goals</th>
-            <td class="team-value">${formatStatValue(homeStats?.ExpectedGoals)}</td>
-            <td class="team-value">${formatStatValue(awayStats?.ExpectedGoals)}</td>
-          </tr>
-        </tbody>
-      </table>
-    `;
+    overviewEl.innerHTML = window.KickoffOverviewTables.renderTable({
+      className: "overview-table",
+      headers: [
+        { content: "" },
+        { content: homeLabel },
+        { content: awayLabel }
+      ],
+      rows: [
+        [
+          { tag: "th", className: "row-label", content: "Score" },
+          { className: "team-value", content: formatScoreValue(fixture.HomeScore) },
+          { className: "team-value", content: formatScoreValue(fixture.AwayScore) }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "Possession" },
+          { className: "team-value", content: formatStatValue(homeStats?.BallPossession, "%") },
+          { className: "team-value", content: formatStatValue(awayStats?.BallPossession, "%") }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "Total shots" },
+          { className: "team-value", content: formatStatValue(homeStats?.TotalShots) },
+          { className: "team-value", content: formatStatValue(awayStats?.TotalShots) }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "Shots on goal" },
+          { className: "team-value", content: formatStatValue(homeStats?.ShotsOnGoal) },
+          { className: "team-value", content: formatStatValue(awayStats?.ShotsOnGoal) }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "Accurate passes" },
+          { className: "team-value", content: formatStatValue(homeStats?.PassesAccurate) },
+          { className: "team-value", content: formatStatValue(awayStats?.PassesAccurate) }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "Expected goals" },
+          { className: "team-value", content: formatStatValue(homeStats?.ExpectedGoals) },
+          { className: "team-value", content: formatStatValue(awayStats?.ExpectedGoals) }
+        ]
+      ]
+    });
   }
 
   function renderTeamOverview(fixture, teamLocationStatistics) {
@@ -777,73 +815,87 @@
     const homeValues = homeTeamStats?.Values || {};
     const awayValues = awayTeamStats?.Values || {};
 
-    teamOverviewEl.innerHTML = `
-      <table class="overview-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>
-              <div class="team-heading">
-                <span class="team-heading-main">At Home</span>
-                <span class="team-heading-main">${homeLabel}</span>
-              </div>
-            </th>
-            <th>
-              <div class="team-heading">
-                <span class="team-heading-main">At Away</span>
-                <span class="team-heading-main">${awayLabel}</span>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th class="row-label">Form</th>
-            <td class="team-value">${renderFormDots(homeValues.last_five_form)}</td>
-            <td class="team-value">${renderFormDots(awayValues.last_five_form)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Wins</th>
-            <td class="team-value">${formatStatValue(homeValues.wins)}</td>
-            <td class="team-value">${formatStatValue(awayValues.wins)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Losses</th>
-            <td class="team-value">${formatStatValue(homeValues.losses)}</td>
-            <td class="team-value">${formatStatValue(awayValues.losses)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">GF average</th>
-            <td class="team-value">${formatStatValue(homeValues.goals_for_average)}</td>
-            <td class="team-value">${formatStatValue(awayValues.goals_for_average)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">GA average</th>
-            <td class="team-value">${formatStatValue(homeValues.goals_against_average)}</td>
-            <td class="team-value">${formatStatValue(awayValues.goals_against_average)}</td>
-          </tr>
-          <tr>
-            <th class="row-label">Failed to score</th>
-            <td class="team-value">${formatStatValue(homeValues.failed_to_score)}</td>
-            <td class="team-value">${formatStatValue(awayValues.failed_to_score)}</td>
-          </tr>
-        </tbody>
-      </table>
-    `;
+    teamOverviewEl.innerHTML = window.KickoffOverviewTables.renderTable({
+      className: "overview-table",
+      headers: [
+        { content: "" },
+        {
+          content: `
+            <div class="team-heading">
+              <span class="team-heading-main">At Home</span>
+              <span class="team-heading-main">${escapeHtml(homeLabel)}</span>
+            </div>
+          `,
+          raw: true
+        },
+        {
+          content: `
+            <div class="team-heading">
+              <span class="team-heading-main">At Away</span>
+              <span class="team-heading-main">${escapeHtml(awayLabel)}</span>
+            </div>
+          `,
+          raw: true
+        }
+      ],
+      rows: [
+        [
+          { tag: "th", className: "row-label", content: "Form" },
+          { className: "team-value", content: renderFormDots(homeValues.last_five_form), raw: true },
+          { className: "team-value", content: renderFormDots(awayValues.last_five_form), raw: true }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "Wins" },
+          { className: "team-value", content: formatStatValue(homeValues.wins) },
+          { className: "team-value", content: formatStatValue(awayValues.wins) }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "Losses" },
+          { className: "team-value", content: formatStatValue(homeValues.losses) },
+          { className: "team-value", content: formatStatValue(awayValues.losses) }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "GF average" },
+          { className: "team-value", content: formatStatValue(homeValues.goals_for_average) },
+          { className: "team-value", content: formatStatValue(awayValues.goals_for_average) }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "GA average" },
+          { className: "team-value", content: formatStatValue(homeValues.goals_against_average) },
+          { className: "team-value", content: formatStatValue(awayValues.goals_against_average) }
+        ],
+        [
+          { tag: "th", className: "row-label", content: "Failed to score" },
+          { className: "team-value", content: formatStatValue(homeValues.failed_to_score) },
+          { className: "team-value", content: formatStatValue(awayValues.failed_to_score) }
+        ]
+      ]
+    });
   }
 
   function renderInfo(fixture) {
     const kickoff = formatDateTime(fixture.MatchDate);
+    const leagueSeasonHref = getLeagueSeasonHref(fixture);
+    const leagueInfoMarkup = leagueSeasonHref
+      ? `
+        <a class="fixture-meta-side fixture-meta-side-link" href="${leagueSeasonHref}">
+          <div>${escapeHtml(fixture.LeagueName || "League")}</div>
+          <div class="fixture-meta-subtle">Season ${escapeHtml(fixture.Year || "-")}</div>
+        </a>
+      `
+      : `
+        <div class="fixture-meta-side">
+          <div>${escapeHtml(fixture.LeagueName || "League")}</div>
+          <div class="fixture-meta-subtle">Season ${escapeHtml(fixture.Year || "-")}</div>
+        </div>
+      `;
 
     infoEl.innerHTML = `
       <div class="fixture-meta-main">
-        <div>@ ${fixture.Location || "Venue TBC"}</div>
-        <div>${kickoff.date}${kickoff.time ? `, ${kickoff.time}` : ""}</div>
+        <div>@ ${escapeHtml(fixture.Location || "Venue TBC")}</div>
+        <div>${escapeHtml(kickoff.date)}${kickoff.time ? `, ${escapeHtml(kickoff.time)}` : ""}</div>
       </div>
-      <div class="fixture-meta-side">
-        <div>${fixture.LeagueName || "League"}</div>
-        <div class="fixture-meta-subtle">Season ${fixture.Year || "-"}</div>
-      </div>
+      ${leagueInfoMarkup}
     `;
   }
 
@@ -902,25 +954,27 @@
 
   function renderError(message) {
     clearVoteStatus();
+    renderPageError(message);
     headerEl.innerHTML = `
       <div class="fixture-relative-date">Error</div>
-      <h1 class="fixture-headline">Match details unavailable</h1>
+      <h1 class="fixture-headline">Unable to load match details</h1>
     `;
     summaryEl.innerHTML = `
       <div class="card-body">
-        ${renderErrorMessage(message)}
+        <div class="match-loading">Match details unavailable.</div>
       </div>
     `;
-    h2hEl.innerHTML = renderErrorMessage(message);
-    infoEl.innerHTML = renderErrorMessage(message);
-    overviewEl.innerHTML = renderErrorMessage(message);
-    teamOverviewEl.innerHTML = renderErrorMessage(message);
-    eventsEl.innerHTML = renderErrorMessage(message);
+    h2hEl.innerHTML = '<div class="fixture-empty">Head-to-head fixtures unavailable.</div>';
+    infoEl.innerHTML = '<div class="fixture-empty">Match info unavailable.</div>';
+    overviewEl.innerHTML = '<div class="fixture-empty">Overview unavailable.</div>';
+    teamOverviewEl.innerHTML = '<div class="fixture-empty">Team overview unavailable.</div>';
+    eventsEl.innerHTML = '<div class="fixture-empty">Timeline unavailable.</div>';
   }
 
   function renderFixturePayload(payload) {
     currentFixturePayload = payload;
     clearVoteStatus();
+    clearPageError();
     const fixture = Array.isArray(payload.data) ? payload.data[0] : null;
     const h2h = payload?.h2h || {};
     const events = Array.isArray(payload.events) ? payload.events : [];
@@ -930,7 +984,7 @@
       : [];
 
     if (!fixture) {
-      throw new Error("Match data is unavailable.");
+      throw new Error("Unable to load match details.");
     }
 
     renderSummary(fixture);
@@ -978,7 +1032,7 @@
       })
       .catch((error) => {
         if (requestId === activeRequestId) {
-          renderError(error.message || "Unable to load match details.");
+          renderError(window.KickoffUIErrors.resolveMessage(error, "Unable to load match details."));
         }
       })
       .finally(() => {

@@ -1,5 +1,6 @@
 import hashlib
 import os
+import sqlite3
 
 from backend.db import database
 
@@ -363,3 +364,172 @@ def delete_notification_preference(user_id: int, team_id: int | None) -> None:
         """,
         (user_id, team_id),
     )
+
+
+def get_event_vote(user_id: int, fixture_id: int, event_id: int) -> dict | None:
+    return _fetch_one(
+        """
+        SELECT VoteID, UserID, FixtureID, EventID, VoteType, CreatedDate, UpdatedDate
+        FROM EventVotes
+        WHERE UserID = ? AND FixtureID = ? AND EventID = ?
+        LIMIT 1
+        """,
+        (user_id, fixture_id, event_id),
+    )
+
+
+def update_event_vote(user_id: int, fixture_id: int, event_id: int, vote_type: str) -> dict | None:
+    if vote_type not in {"like", "dislike"}:
+        raise ValueError("vote_type must be 'like' or 'dislike'")
+
+    existing_vote = get_event_vote(user_id, fixture_id, event_id)
+
+    if existing_vote:
+        database.execute(
+            """
+            UPDATE EventVotes
+            SET VoteType = ?, UpdatedDate = CURRENT_TIMESTAMP
+            WHERE VoteID = ?
+            """,
+            (vote_type, existing_vote["VoteID"]),
+        )
+        return get_event_vote(user_id, fixture_id, event_id)
+
+    try:
+        database.execute(
+            """
+            INSERT INTO EventVotes (UserID, FixtureID, EventID, VoteType)
+            VALUES (?, ?, ?, ?)
+            """,
+            (user_id, fixture_id, event_id, vote_type),
+        )
+    except sqlite3.IntegrityError as exc:
+        raise ValueError("fixture_id and event_id must reference a valid event") from exc
+
+    return get_event_vote(user_id, fixture_id, event_id)
+
+
+def remove_event_vote(user_id: int, fixture_id: int, event_id: int) -> None:
+    database.execute(
+        """
+        DELETE FROM EventVotes
+        WHERE UserID = ? AND FixtureID = ? AND EventID = ?
+        """,
+        (user_id, fixture_id, event_id),
+    )
+
+
+def list_event_votes(user_id: int) -> list[dict]:
+    return database.query(
+        """
+        SELECT
+            ev.VoteID,
+            ev.UserID,
+            ev.FixtureID,
+            ev.EventID,
+            ev.VoteType,
+            ev.CreatedDate,
+            ev.UpdatedDate,
+            e.PlayerID,
+            e.PlayerName,
+            e.AssistPlayerID,
+            e.AssistPlayerName,
+            e.TeamID,
+            t.Name AS TeamName,
+            e.EventType,
+            e.Detail,
+            e.Comments,
+            e.EventMinute,
+            e.ExtraMinute,
+            f.LeagueID,
+            l.Name AS LeagueName,
+            f.Year,
+            f.HomeTeamID,
+            ht.Name AS HomeTeam,
+            f.AwayTeamID,
+            at.Name AS AwayTeam,
+            f.MatchDate,
+            f.Status,
+            COALESCE(vs.LikeCount, 0) AS Likes,
+            COALESCE(vs.DislikeCount, 0) AS Dislikes
+        FROM EventVotes ev
+        JOIN Events e
+            ON ev.FixtureID = e.FixtureID
+           AND ev.EventID = e.EventID
+        LEFT JOIN Teams t
+            ON e.TeamID = t.TeamID
+        JOIN Fixtures f
+            ON ev.FixtureID = f.FixtureID
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+        LEFT JOIN (
+            SELECT
+                FixtureID,
+                EventID,
+                SUM(CASE WHEN VoteType = 'like' THEN 1 ELSE 0 END) AS LikeCount,
+                SUM(CASE WHEN VoteType = 'dislike' THEN 1 ELSE 0 END) AS DislikeCount
+            FROM EventVotes
+            GROUP BY FixtureID, EventID
+        ) vs
+            ON ev.FixtureID = vs.FixtureID
+           AND ev.EventID = vs.EventID
+        WHERE ev.UserID = ?
+        ORDER BY f.MatchDate DESC, e.EventMinute ASC, e.ExtraMinute ASC, e.EventID ASC
+        """,
+        (user_id,),
+    )
+
+
+def get_event_vote_summaries(
+    fixture_id: int,
+    *,
+    user_id: int | None = None,
+) -> dict[tuple[int, int], dict]:
+    vote_rows = database.query(
+        """
+        SELECT
+            ev.FixtureID,
+            ev.EventID,
+            SUM(CASE WHEN ev.VoteType = 'like' THEN 1 ELSE 0 END) AS LikeCount,
+            SUM(CASE WHEN ev.VoteType = 'dislike' THEN 1 ELSE 0 END) AS DislikeCount
+        FROM EventVotes ev
+        WHERE ev.FixtureID = ?
+        GROUP BY ev.FixtureID, ev.EventID
+        """,
+        (fixture_id,),
+    )
+
+    summary_by_event = {
+        (row["FixtureID"], row["EventID"]): {
+            "likes": row["LikeCount"] or 0,
+            "dislikes": row["DislikeCount"] or 0,
+            "user_vote": None,
+        }
+        for row in vote_rows
+    }
+
+    if user_id is None:
+        return summary_by_event
+
+    user_votes = database.query(
+        """
+        SELECT FixtureID, EventID, VoteType
+        FROM EventVotes
+        WHERE UserID = ? AND FixtureID = ?
+        """,
+        (user_id, fixture_id),
+    )
+
+    for row in user_votes:
+        event_key = (row["FixtureID"], row["EventID"])
+        summary = summary_by_event.setdefault(
+            event_key,
+            {"likes": 0, "dislikes": 0, "user_vote": None},
+        )
+        summary["user_vote"] = row["VoteType"]
+
+    return summary_by_event

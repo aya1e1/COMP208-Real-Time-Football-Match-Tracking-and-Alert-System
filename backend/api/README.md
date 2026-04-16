@@ -280,6 +280,123 @@ Status codes:
 - `200` when updated
 - `400` if `team_id` is provided but is not an integer
 
+### `GET /api/me/event-votes`
+
+Returns all events the logged-in user has voted on.
+
+Auth required: yes
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "VoteID": 1,
+      "UserID": 1,
+      "FixtureID": 1208399,
+      "EventID": 3,
+      "VoteType": "like",
+      "CreatedDate": "2026-04-16 12:00:00",
+      "UpdatedDate": "2026-04-16 12:05:00",
+      "PlayerID": 138908,
+      "PlayerName": "E. Haaland",
+      "AssistPlayerID": 11111,
+      "AssistPlayerName": "K. De Bruyne",
+      "TeamID": 50,
+      "TeamName": "Manchester City",
+      "EventType": "Goal",
+      "Detail": "Normal Goal",
+      "Comments": null,
+      "EventMinute": 22,
+      "ExtraMinute": 0,
+      "LeagueID": 39,
+      "LeagueName": "Premier League",
+      "Year": 2024,
+      "HomeTeamID": 41,
+      "HomeTeam": "Southampton",
+      "AwayTeamID": 50,
+      "AwayTeam": "Manchester City",
+      "MatchDate": "2026-04-16 15:00:00",
+      "Status": "FT",
+      "Likes": 5,
+      "Dislikes": 1
+    }
+  ]
+}
+```
+
+### `PUT /api/me/event-votes`
+
+Updates the logged-in user's vote for an event.
+
+Auth required: yes
+
+Request body:
+
+```json
+{
+  "fixture_id": 1208399,
+  "event_id": 3,
+  "vote_type": "like"
+}
+```
+
+`vote_type` must be either `like` or `dislike`. A user can only have one vote per event, so sending a new value replaces the old one.
+
+Success response:
+
+```json
+{
+  "data": {
+    "FixtureID": 1208399,
+    "EventID": 3,
+    "Likes": 5,
+    "Dislikes": 1,
+    "UserVote": "like"
+  }
+}
+```
+
+Status codes:
+
+- `200` when updated
+- `400` if `fixture_id` or `event_id` is missing/invalid, `vote_type` is invalid, or the event does not exist
+
+### `DELETE /api/me/event-votes`
+
+Removes the logged-in user's vote for an event.
+
+Auth required: yes
+
+Request body:
+
+```json
+{
+  "fixture_id": 1208399,
+  "event_id": 3
+}
+```
+
+Success response:
+
+```json
+{
+  "data": {
+    "FixtureID": 1208399,
+    "EventID": 3,
+    "Likes": 4,
+    "Dislikes": 1,
+    "UserVote": null
+  }
+}
+```
+
+Status codes:
+
+- `200` on success
+- `400` if `fixture_id` or `event_id` is missing or invalid
+
 ### `GET /api/leagues`
 
 Returns all leagues currently stored in the database.
@@ -436,10 +553,35 @@ Response shape:
 }
 ```
 
+Example event object:
+
+```json
+{
+  "FixtureID": 1208399,
+  "EventID": 3,
+  "PlayerID": 138908,
+  "PlayerName": "E. Haaland",
+  "AssistPlayerID": 11111,
+  "AssistPlayerName": "K. De Bruyne",
+  "TeamID": 50,
+  "TeamName": "Manchester City",
+  "EventType": "Goal",
+  "Detail": "Normal Goal",
+  "Comments": null,
+  "EventMinute": 22,
+  "ExtraMinute": 0,
+  "Likes": 5,
+  "Dislikes": 1,
+  "UserVote": "like"
+}
+```
+
 Notes:
 
 - This endpoint refreshes fixture events, fixture statistics, and team statistics before returning the response.
 - `data` is returned as a one-item array rather than a single object.
+- Each event now includes `Likes`, `Dislikes`, and `UserVote`.
+- `UserVote` is `null` when the current user is not logged in or has not voted on that event.
 - `h2h.home_vs_away` contains recent matches where the current home team was home.
 - `h2h.away_vs_home` contains recent matches where the current away team was home.
 
@@ -447,4 +589,3 @@ Status codes:
 
 - `200` on success
 - `404` if the fixture is not found
-

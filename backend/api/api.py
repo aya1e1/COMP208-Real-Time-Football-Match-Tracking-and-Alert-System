@@ -116,6 +116,21 @@ def _require_integer_field(name: str) -> int | None:
         return None
 
 
+def _get_event_vote_payload(fixture_id: int, event_id: int) -> dict:
+    user_id = current_user.id if getattr(current_user, "is_authenticated", False) else None
+    vote_summary = user_repo.get_event_vote_summaries(fixture_id, user_id=user_id).get(
+        (fixture_id, event_id),
+        {"likes": 0, "dislikes": 0, "user_vote": None},
+    )
+    return {
+        "FixtureID": fixture_id,
+        "EventID": event_id,
+        "Likes": vote_summary["likes"],
+        "Dislikes": vote_summary["dislikes"],
+        "UserVote": vote_summary["user_vote"],
+    }
+
+
 @api_bp.route("/me")
 @login_required
 def me():
@@ -206,6 +221,54 @@ def update_notification_preferences():
     )
     preference = user_repo.get_notification_preference(current_user.id, team_id)
     return jsonify({"data": preference})
+
+
+@api_bp.route("/me/event-votes")
+@login_required
+def event_votes():
+    votes = user_repo.list_event_votes(current_user.id)
+    return jsonify({"data": votes})
+
+
+@api_bp.route("/me/event-votes", methods=["PUT"])
+@login_required
+def update_event_vote():
+    fixture_id = _require_integer_field("fixture_id")
+    event_id = _require_integer_field("event_id")
+    payload = request.get_json(silent=True) or {}
+    vote_type = payload.get("vote_type")
+
+    if fixture_id is None:
+        return jsonify({"error": "fixture_id is required and must be an integer"}), 400
+
+    if event_id is None:
+        return jsonify({"error": "event_id is required and must be an integer"}), 400
+
+    if vote_type not in {"like", "dislike"}:
+        return jsonify({"error": "vote_type is required and must be 'like' or 'dislike'"}), 400
+
+    try:
+        user_repo.update_event_vote(current_user.id, fixture_id, event_id, vote_type)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    return jsonify({"data": _get_event_vote_payload(fixture_id, event_id)})
+
+
+@api_bp.route("/me/event-votes", methods=["DELETE"])
+@login_required
+def delete_event_vote():
+    fixture_id = _require_integer_field("fixture_id")
+    event_id = _require_integer_field("event_id")
+
+    if fixture_id is None:
+        return jsonify({"error": "fixture_id is required and must be an integer"}), 400
+
+    if event_id is None:
+        return jsonify({"error": "event_id is required and must be an integer"}), 400
+
+    user_repo.remove_event_vote(current_user.id, fixture_id, event_id)
+    return jsonify({"data": _get_event_vote_payload(fixture_id, event_id)})
 
 
 @api_bp.route("/leagues")
@@ -398,6 +461,18 @@ def fixture(fixture_id):
         ORDER BY e.EventMinute ASC, e.ExtraMinute ASC, e.EventID ASC
     """
     events = database.query(events_sql, (fixture_id,))
+    event_vote_summaries = user_repo.get_event_vote_summaries(
+        fixture_id,
+        user_id=current_user.id if getattr(current_user, "is_authenticated", False) else None,
+    )
+    for event in events:
+        vote_summary = event_vote_summaries.get(
+            (event["FixtureID"], event["EventID"]),
+            {"likes": 0, "dislikes": 0, "user_vote": None},
+        )
+        event["Likes"] = vote_summary["likes"]
+        event["Dislikes"] = vote_summary["dislikes"]
+        event["UserVote"] = vote_summary["user_vote"]
 
     statistics_sql = """
         SELECT

@@ -42,8 +42,25 @@ CREATE TABLE IF NOT EXISTS Favourites (
   CONSTRAINT UQ_Favourites UNIQUE (UserID, TeamID, PlayerID)
 );
 
+-- Event votes: users can like or dislike an event, but only one vote per event
+CREATE TABLE IF NOT EXISTS EventVotes (
+  VoteID       INTEGER PRIMARY KEY AUTOINCREMENT,
+  UserID       INTEGER NOT NULL,
+  FixtureID    INT NOT NULL,
+  EventID      INT NOT NULL,
+  VoteType     VARCHAR(10) NOT NULL,
+  CreatedDate  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UpdatedDate  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT FK_EventVotes_User FOREIGN KEY (UserID) REFERENCES Users(UserID),
+  CONSTRAINT FK_EventVotes_Event FOREIGN KEY (FixtureID, EventID) REFERENCES Events(FixtureID, EventID),
+  CONSTRAINT CHK_EventVotes_Type CHECK (VoteType IN ('like', 'dislike')),
+  CONSTRAINT UQ_EventVotes UNIQUE (UserID, FixtureID, EventID)
+);
+
 -- Performance indexes for user data
 CREATE INDEX IF NOT EXISTS idx_UserPrefs_UserID   ON UserNotificationPreferences(UserID);
 CREATE INDEX IF NOT EXISTS idx_UserPrefs_TeamID   ON UserNotificationPreferences(TeamID);
 CREATE INDEX IF NOT EXISTS idx_Favourites_UserID  ON Favourites(UserID);
 CREATE INDEX IF NOT EXISTS idx_Favourites_TeamID  ON Favourites(TeamID);
+CREATE INDEX IF NOT EXISTS idx_EventVotes_Event   ON EventVotes(FixtureID, EventID);
+CREATE INDEX IF NOT EXISTS idx_EventVotes_UserID  ON EventVotes(UserID);

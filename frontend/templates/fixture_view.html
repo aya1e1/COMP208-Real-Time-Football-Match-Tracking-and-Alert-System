@@ -317,7 +317,7 @@
     line-height: 1.4;
     display: grid;
     grid-template-columns: 78px minmax(0, 1fr);
-    min-height: 76px;
+    min-height: 64px;
   }
 
   .fixture-event-card.goal {
@@ -329,7 +329,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 8px;
+    padding: 8px 8px;
     border-right: 1px solid #e4e4e4;
     font-size: 1rem;
     font-weight: 600;
@@ -339,22 +339,128 @@
   }
 
   .fixture-event-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 8px 14px;
+    min-height: 64px;
     min-width: 0;
   }
 
   .fixture-event-title {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    min-width: 0;
     font-size: 0.86rem;
     font-weight: 600;
     color: #111;
   }
 
+  .fixture-event-copy {
+    display: contents;
+  }
+
+  .fixture-event-detail {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: center;
+    min-width: 0;
+  }
+
   .fixture-event-detail.soft {
     color: var(--text-2);
+  }
+
+  .fixture-event-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 14px;
+  }
+
+  .fixture-event-votes {
+    display: contents;
+  }
+
+  .fixture-vote-control {
+    color: #202020;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: end;
+    min-height: 24px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    gap: 2px;
+    justify-self: end;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s ease;
+  }
+
+  .fixture-vote-control:focus,
+  .fixture-vote-control:focus-visible {
+    outline: none;
+  }
+
+  .fixture-vote-control.active[data-vote-type="like"] {
+    color: #1f7a3d;
+  }
+
+  .fixture-vote-control.active[data-vote-type="dislike"] {
+    color: #b93838;
+  }
+
+  .fixture-vote-control.is-disabled {
+    opacity: 0.62;
+    cursor: wait;
+    pointer-events: none;
+  }
+
+  .fixture-event-votes .fixture-vote-control:first-child {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .fixture-event-votes .fixture-vote-control:last-child {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .fixture-vote-icon {
+    width: 18px;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .fixture-vote-count {
+    min-width: 24px;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: right;
+    padding: 0 8px 0 0;
+  }
+
+  .fixture-vote-status {
+    margin: -8px 0 12px;
+    min-height: 1.2rem;
+  }
+
+  .fixture-vote-status.error {
+    color: #b42318;
   }
 
   .fixture-empty {
@@ -431,9 +537,36 @@
     .overview-table .team-value {
       font-size: 0.9rem;
     }
+
+    .fixture-event-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .fixture-event-minute {
+      font-size: 0.84rem;
+    }
+
+    .fixture-event-card {
+      grid-template-columns: 68px minmax(0, 1fr);
+    }
+
+    .fixture-event-header {
+      align-items: flex-start;
+    }
+
+    .fixture-event-body {
+      column-gap: 12px;
+      row-gap: 6px;
+    }
   }
 </style>
-<main class="page match-page" data-match-id="{{ match_id }}">
+<main
+  class="page match-page"
+  data-match-id="{{ match_id }}"
+  data-user-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}"
+  data-login-url="{{ url_for('auth.login_page') }}"
+>
   <div class="match-back">
     <a href="/fixtures">&larr; Back to fixtures</a>
   </div>
@@ -480,6 +613,7 @@
       <section class="card fixture-timeline-card">
         <div class="card-body">
           <h2 class="fixture-section-title">Timeline</h2>
+          <div id="event-vote-status" class="fixture-empty fixture-vote-status" aria-live="polite"></div>
           <div id="match-events" class="fixture-timeline-list">
             <div class="fixture-empty">Loading events...</div>
           </div>
@@ -500,7 +634,12 @@
   const teamOverviewEl = document.getElementById("team-overview");
   const infoEl = document.getElementById("match-info");
   const eventsEl = document.getElementById("match-events");
+  const voteStatusEl = document.getElementById("event-vote-status");
+  const loginUrl = page?.dataset.loginUrl || "/auth/login";
+  const isUserAuthenticated = page?.dataset.userAuthenticated === "true";
   let activeRequestId = 0;
+  let currentFixturePayload = null;
+  const pendingVoteEventIds = new Set();
 
   function formatDateTime(dateString) {
     if (!dateString) {
@@ -745,6 +884,162 @@
     }
 
     return playerLabel;
+  }
+
+  function clearVoteStatus() {
+    if (!voteStatusEl) {
+      return;
+    }
+
+    voteStatusEl.textContent = "";
+    voteStatusEl.classList.remove("error");
+  }
+
+  function setVoteStatus(message, { isError = false } = {}) {
+    if (!voteStatusEl) {
+      return;
+    }
+
+    voteStatusEl.textContent = message || "";
+    voteStatusEl.classList.toggle("error", Boolean(message) && isError);
+  }
+
+  function getEventVoteSummary(event) {
+    return {
+      likes: Number(event?.Likes) || 0,
+      dislikes: Number(event?.Dislikes) || 0,
+      userVote: event?.UserVote === "like" || event?.UserVote === "dislike"
+        ? event.UserVote
+        : null
+    };
+  }
+
+  function renderEventVotes(event) {
+    const voteSummary = getEventVoteSummary(event);
+    const eventId = Number(event.EventID);
+    const isPending = pendingVoteEventIds.has(eventId);
+    const upActive = voteSummary.userVote === "like";
+    const downActive = voteSummary.userVote === "dislike";
+    const loginHint = isUserAuthenticated ? "" : " Sign in to vote.";
+
+    return `
+      <div class="fixture-event-votes" aria-label="Event voting">
+        <span
+          class="fixture-vote-control ${upActive ? "active" : ""} ${isPending ? "is-disabled" : ""}"
+          data-event-id="${eventId}"
+          data-vote-type="like"
+          role="button"
+          tabindex="${isPending ? "-1" : "0"}"
+          title="Up vote.${loginHint}"
+          aria-label="Up vote"
+        >
+          <span class="fixture-vote-count">${voteSummary.likes}</span>
+          <span class="fixture-vote-icon" aria-hidden="true">&uarr;</span>
+        </span>
+        <span
+          class="fixture-vote-control ${downActive ? "active" : ""} ${isPending ? "is-disabled" : ""}"
+          data-event-id="${eventId}"
+          data-vote-type="dislike"
+          role="button"
+          tabindex="${isPending ? "-1" : "0"}"
+          title="Down vote.${loginHint}"
+          aria-label="Down vote"
+        >
+          <span class="fixture-vote-count">${voteSummary.dislikes}</span>
+          <span class="fixture-vote-icon" aria-hidden="true">&darr;</span>
+        </span>
+      </div>
+    `;
+  }
+
+  function updateEventVoteInPayload(eventId, voteData) {
+    const events = currentFixturePayload?.events;
+    if (!Array.isArray(events)) {
+      return;
+    }
+
+    const targetEvent = events.find((event) => Number(event.EventID) === Number(eventId));
+    if (!targetEvent) {
+      return;
+    }
+
+    targetEvent.Likes = Number(voteData?.Likes) || 0;
+    targetEvent.Dislikes = Number(voteData?.Dislikes) || 0;
+    targetEvent.UserVote = voteData?.UserVote === "like" || voteData?.UserVote === "dislike"
+      ? voteData.UserVote
+      : null;
+  }
+
+  function rerenderCurrentEvents() {
+    const fixture = Array.isArray(currentFixturePayload?.data) ? currentFixturePayload.data[0] : null;
+    const events = Array.isArray(currentFixturePayload?.events) ? currentFixturePayload.events : [];
+
+    if (!fixture) {
+      return;
+    }
+
+    renderEvents(events, fixture);
+  }
+
+  async function handleEventVote(eventId, voteType) {
+    if (!currentMatchId) {
+      return;
+    }
+
+    if (!isUserAuthenticated) {
+      window.location.href = loginUrl;
+      return;
+    }
+
+    if (pendingVoteEventIds.has(eventId)) {
+      return;
+    }
+
+    const events = Array.isArray(currentFixturePayload?.events) ? currentFixturePayload.events : [];
+    const targetEvent = events.find((event) => Number(event.EventID) === Number(eventId));
+    const currentVote = targetEvent?.UserVote || null;
+    const isRemovingVote = currentVote === voteType;
+    const requestBody = {
+      fixture_id: Number(currentMatchId),
+      event_id: Number(eventId)
+    };
+
+    if (!isRemovingVote) {
+      requestBody.vote_type = voteType;
+    }
+
+    pendingVoteEventIds.add(eventId);
+    clearVoteStatus();
+    rerenderCurrentEvents();
+
+    try {
+      const response = await fetch("/api/me/event-votes", {
+        method: isRemovingVote ? "DELETE" : "PUT",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.redirected || response.status === 401) {
+        window.location.href = response.url || loginUrl;
+        return;
+      }
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to save your vote.");
+      }
+
+      updateEventVoteInPayload(eventId, payload.data);
+      rerenderCurrentEvents();
+    } catch (error) {
+      setVoteStatus(error.message || "Unable to save your vote.", { isError: true });
+    } finally {
+      pendingVoteEventIds.delete(eventId);
+      rerenderCurrentEvents();
+    }
   }
 
   function matchHasReachedHalftime(fixture) {
@@ -1131,8 +1426,11 @@
           <div class="fixture-event-card ${goalClass}">
             <div class="fixture-event-team">${getEventTeamAbbreviation(event, fixture)}</div>
             <div class="fixture-event-body">
-              <div class="fixture-event-title">${eventLabel}</div>
-              <div class="fixture-event-detail ${subtitle ? "" : "soft"}">${subtitle || eventLabel}</div>
+              <div class="fixture-event-copy">
+                <div class="fixture-event-title">${eventLabel}</div>
+                <div class="fixture-event-detail ${subtitle ? "" : "soft"}">${subtitle || eventLabel}</div>
+              </div>
+              ${renderEventVotes(event)}
             </div>
           </div>
         </article>
@@ -1141,6 +1439,7 @@
   }
 
   function renderError(message) {
+    clearVoteStatus();
     headerEl.innerHTML = `
       <div class="fixture-relative-date">Match date unavailable</div>
       <h1 class="fixture-headline">Match Details</h1>
@@ -1160,6 +1459,8 @@
   }
 
   function renderFixturePayload(payload) {
+    currentFixturePayload = payload;
+    clearVoteStatus();
     const fixture = Array.isArray(payload.data) ? payload.data[0] : null;
     const h2h = payload?.h2h || {};
     const events = Array.isArray(payload.events) ? payload.events : [];
@@ -1228,6 +1529,36 @@
   }
 
   function setupFixtureNavigation() {
+    document.addEventListener("click", (event) => {
+      const voteControl = event.target.closest(".fixture-vote-control");
+      if (!voteControl) {
+        return;
+      }
+
+      event.preventDefault();
+      handleEventVote(
+        Number(voteControl.dataset.eventId),
+        voteControl.dataset.voteType
+      );
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const voteControl = event.target.closest(".fixture-vote-control");
+      if (!voteControl) {
+        return;
+      }
+
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      event.preventDefault();
+      handleEventVote(
+        Number(voteControl.dataset.eventId),
+        voteControl.dataset.voteType
+      );
+    });
+
     document.addEventListener("click", (event) => {
       const link = event.target.closest('a[href]');
       if (!link) {

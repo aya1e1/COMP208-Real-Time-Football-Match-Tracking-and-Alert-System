@@ -37,6 +37,7 @@ def _build_location_stats(team_stats: dict, venue: str) -> dict:
     is_home = venue == "home"
 
     wins = team_stats["WinsHome"] if is_home else team_stats["WinsAway"]
+    draws = team_stats["DrawsHome"] if is_home else team_stats["DrawsAway"]
     losses = team_stats["LossesHome"] if is_home else team_stats["LossesAway"]
     goals_for_average = (
         team_stats["GoalsForAverageHome"]
@@ -57,10 +58,18 @@ def _build_location_stats(team_stats: dict, venue: str) -> dict:
     return {
         "last_five_form": _last_five_form_chars(team_stats.get("Form")),
         "wins": wins,
+        "draws": draws,
         "losses": losses,
         "goals_for_average": goals_for_average,
         "goals_against_average": goals_against_average,
         "failed_to_score": failed_to_score,
+    }
+
+
+def _build_team_overview(team_stats: dict) -> dict:
+    return {
+        "home": _build_location_stats(team_stats, "home"),
+        "away": _build_location_stats(team_stats, "away"),
     }
 
 
@@ -260,6 +269,8 @@ def _get_team_statistics_row(team_id: int) -> dict | None:
             ts.Form,
             ts.WinsHome,
             ts.WinsAway,
+            ts.DrawsHome,
+            ts.DrawsAway,
             ts.LossesHome,
             ts.LossesAway,
             ts.GoalsForAverageHome,
@@ -740,7 +751,7 @@ def team(team_id):
         **team_data,
         "IsFavourite": _is_favourite_team(team_id),
         "Overview": (
-            _build_location_stats(statistics_row, "home")
+            _build_team_overview(statistics_row)
             if statistics_row
             else None
         ),
@@ -889,6 +900,8 @@ def fixture(fixture_id):
             ts.Form,
             ts.WinsHome,
             ts.WinsAway,
+            ts.DrawsHome,
+            ts.DrawsAway,
             ts.LossesHome,
             ts.LossesAway,
             ts.GoalsForAverageHome,

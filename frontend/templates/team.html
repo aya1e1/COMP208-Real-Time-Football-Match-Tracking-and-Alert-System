@@ -409,34 +409,62 @@
       return;
     }
 
+    const homeOverview = overview.home;
+    const awayOverview = overview.away;
+
+    if (!homeOverview || !awayOverview) {
+      teamOverviewEl.innerHTML = '<div class="team-empty">No overview available</div>';
+      return;
+    }
+
     const context = team.StatisticsContext;
     teamOverviewEl.innerHTML = `
       ${window.KickoffOverviewTables.renderTable({
         className: "overview-table",
+        headers: [
+          { content: "" },
+          { content: "Home" },
+          { content: "Away" }
+        ],
         rows: [
           [
             { tag: "th", className: "row-label", content: "Form" },
-            { className: "team-value", content: renderFormDots(overview.last_five_form), raw: true }
+            {
+              className: "team-value",
+              content: renderFormDots(homeOverview.last_five_form),
+              raw: true,
+              colspan: 2
+            }
           ],
           [
             { tag: "th", className: "row-label", content: "Wins" },
-            { className: "team-value", content: overview.wins ?? "-" }
+            { className: "team-value", content: homeOverview.wins ?? "-" },
+            { className: "team-value", content: awayOverview.wins ?? "-" }
+          ],
+          [
+            { tag: "th", className: "row-label", content: "Draws" },
+            { className: "team-value", content: homeOverview.draws ?? "-" },
+            { className: "team-value", content: awayOverview.draws ?? "-" }
           ],
           [
             { tag: "th", className: "row-label", content: "Losses" },
-            { className: "team-value", content: overview.losses ?? "-" }
+            { className: "team-value", content: homeOverview.losses ?? "-" },
+            { className: "team-value", content: awayOverview.losses ?? "-" }
           ],
           [
             { tag: "th", className: "row-label", content: "GF average" },
-            { className: "team-value", content: overview.goals_for_average ?? "-" }
+            { className: "team-value", content: homeOverview.goals_for_average ?? "-" },
+            { className: "team-value", content: awayOverview.goals_for_average ?? "-" }
           ],
           [
             { tag: "th", className: "row-label", content: "GA average" },
-            { className: "team-value", content: overview.goals_against_average ?? "-" }
+            { className: "team-value", content: homeOverview.goals_against_average ?? "-" },
+            { className: "team-value", content: awayOverview.goals_against_average ?? "-" }
           ],
           [
             { tag: "th", className: "row-label", content: "Failed To Score" },
-            { className: "team-value", content: overview.failed_to_score ?? "-" }
+            { className: "team-value", content: homeOverview.failed_to_score ?? "-" },
+            { className: "team-value", content: awayOverview.failed_to_score ?? "-" }
           ]
         ]
       })}

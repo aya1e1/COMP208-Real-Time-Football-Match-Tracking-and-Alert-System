@@ -174,19 +174,19 @@ def list_favourite_teams(user_id: int) -> list[dict]:
     return database.query(
         """
         SELECT
-            ft.FavouriteTeamID,
-            ft.UserID,
-            ft.TeamID,
-            ft.CreatedDate,
+            uft.rowid AS FavouriteTeamID,
+            uft.UserID,
+            uft.TeamID,
+            NULL AS CreatedDate,
             t.Name,
             t.Abbreviation,
             t.LogoURL,
             t.City,
             t.Stadium
-        FROM FavouriteTeams ft
+        FROM UserFavouriteTeams uft
         JOIN Teams t
-            ON ft.TeamID = t.TeamID
-        WHERE ft.UserID = ?
+            ON uft.TeamID = t.TeamID
+        WHERE uft.UserID = ?
         ORDER BY t.Name
         """,
         (user_id,),
@@ -194,9 +194,21 @@ def list_favourite_teams(user_id: int) -> list[dict]:
 
 
 def add_favourite_team(user_id: int, team_id: int) -> int:
+    existing = _fetch_one(
+        """
+        SELECT rowid AS FavouriteTeamID
+        FROM UserFavouriteTeams
+        WHERE UserID = ? AND TeamID = ?
+        LIMIT 1
+        """,
+        (user_id, team_id),
+    )
+    if existing:
+        return existing["FavouriteTeamID"]
+
     return database.execute(
         """
-        INSERT INTO FavouriteTeams (UserID, TeamID)
+        INSERT INTO UserFavouriteTeams (UserID, TeamID)
         VALUES (?, ?)
         """,
         (user_id, team_id),
@@ -206,7 +218,7 @@ def add_favourite_team(user_id: int, team_id: int) -> int:
 def remove_favourite_team(user_id: int, team_id: int) -> None:
     database.execute(
         """
-        DELETE FROM FavouriteTeams
+        DELETE FROM UserFavouriteTeams
         WHERE UserID = ? AND TeamID = ?
         """,
         (user_id, team_id),
@@ -217,19 +229,19 @@ def list_favourite_players(user_id: int) -> list[dict]:
     return database.query(
         """
         SELECT
-            fp.FavouritePlayerID,
-            fp.UserID,
-            fp.PlayerID,
-            fp.CreatedDate,
+            ufp.rowid AS FavouritePlayerID,
+            ufp.UserID,
+            ufp.PlayerID,
+            NULL AS CreatedDate,
             p.FirstName,
             p.LastName,
             p.Name,
             p.MainPosition,
             p.Nationality
-        FROM FavouritePlayers fp
+        FROM UserFavouritePlayers ufp
         JOIN Player p
-            ON fp.PlayerID = p.PlayerID
-        WHERE fp.UserID = ?
+            ON ufp.PlayerID = p.PlayerID
+        WHERE ufp.UserID = ?
         ORDER BY p.Name
         """,
         (user_id,),
@@ -237,9 +249,21 @@ def list_favourite_players(user_id: int) -> list[dict]:
 
 
 def add_favourite_player(user_id: int, player_id: int) -> int:
+    existing = _fetch_one(
+        """
+        SELECT rowid AS FavouritePlayerID
+        FROM UserFavouritePlayers
+        WHERE UserID = ? AND PlayerID = ?
+        LIMIT 1
+        """,
+        (user_id, player_id),
+    )
+    if existing:
+        return existing["FavouritePlayerID"]
+
     return database.execute(
         """
-        INSERT INTO FavouritePlayers (UserID, PlayerID)
+        INSERT INTO UserFavouritePlayers (UserID, PlayerID)
         VALUES (?, ?)
         """,
         (user_id, player_id),
@@ -249,7 +273,7 @@ def add_favourite_player(user_id: int, player_id: int) -> int:
 def remove_favourite_player(user_id: int, player_id: int) -> None:
     database.execute(
         """
-        DELETE FROM FavouritePlayers
+        DELETE FROM UserFavouritePlayers
         WHERE UserID = ? AND PlayerID = ?
         """,
         (user_id, player_id),

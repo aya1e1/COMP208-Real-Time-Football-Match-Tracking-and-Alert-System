@@ -1,569 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Kickoff — Match Details{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
+{% endblock %}
 
 {% block content %}
-<style>
-  .fixture-view-page {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .fixture-view-page .card {
-    border-radius: 0;
-  }
-
-  .fixture-scoreboard {
-    background: #f5f5f5;
-    border: 1px solid #ececec;
-  }
-
-  .fixture-h2h-nav {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 12px 24px;
-    padding: 2px 0 6px;
-  }
-
-  .fixture-h2h-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 18px;
-  }
-
-  .fixture-h2h-group.right {
-    justify-content: flex-end;
-  }
-
-  .fixture-h2h-link {
-    color: #5f5f5f;
-    font-size: 0.92rem;
-    font-weight: 500;
-    line-height: 1.8;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .fixture-h2h-link:hover {
-    color: #1f2937;
-  }
-
-  .match-page.is-loading {
-    cursor: progress;
-  }
-
-  .match-page.is-loading .fixture-h2h-link,
-  .match-page.is-loading .match-back a {
-    pointer-events: none;
-    opacity: 0.72;
-  }
-
-  .fixture-h2h-link.active {
-    color: #111;
-  }
-
-  .fixture-scoreboard .card-body {
-    padding: 18px 18px 26px;
-  }
-
-  .fixture-headline {
-    text-align: center;
-    font-size: clamp(1.55rem, 2vw, 2.2rem);
-    font-weight: 600;
-    margin: 0;
-    letter-spacing: -0.03em;
-  }
-
-  .fixture-page-header {
-    padding: 4px 0 2px;
-  }
-
-  .fixture-relative-date {
-    text-align: center;
-    font-size: clamp(0.95rem, 1.2vw, 1.15rem);
-    font-weight: 600;
-    margin: 0 0 6px;
-    letter-spacing: -0.02em;
-    color: #6b7280;
-  }
-
-  .fixture-score-grid {
-    display: grid;
-    grid-template-columns: 1fr 160px 1fr;
-    align-items: center;
-    gap: 20px;
-    min-height: 180px;
-  }
-
-  .fixture-team-block {
-    position: relative;
-    text-align: center;
-    padding: 0 88px;
-    min-height: 132px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .fixture-team-logo-wrap {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 72px;
-    height: 72px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .fixture-team-block.home .fixture-team-logo-wrap {
-    left: 0;
-  }
-
-  .fixture-team-block.away .fixture-team-logo-wrap {
-    right: 0;
-  }
-
-  .fixture-team-logo {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  .fixture-team-score {
-    font-size: clamp(4rem, 8vw, 5.8rem);
-    line-height: 1;
-    font-weight: 600;
-    color: #111;
-  }
-
-  .fixture-team-name {
-    margin-top: 10px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #161616;
-  }
-
-  .fixture-score-separator {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1rem;
-    color: #777;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  .fixture-dashboard {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(340px, 1.15fr);
-    gap: 22px;
-    align-items: start;
-  }
-
-  .fixture-column {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-  }
-
-  .fixture-section .card-body,
-  .fixture-meta-card .card-body,
-  .fixture-timeline-card .card-body {
-    padding: 18px 20px;
-  }
-
-  .fixture-section-title {
-    margin: 0 0 18px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #121826;
-  }
-
-  .overview-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .overview-table th,
-  .overview-table td {
-    padding: 8px 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .overview-table tr:last-child th,
-  .overview-table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .overview-table thead th {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111;
-  }
-
-  .overview-table .team-heading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .overview-table .team-heading-main,
-  .overview-table .team-value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111;
-  }
-
-  .overview-table .row-label {
-    width: 34%;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text-2);
-    text-transform: none;
-  }
-
-  .overview-table .team-value {
-    text-align: center;
-  }
-
-  .form-dots {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-height: 18px;
-  }
-
-  .form-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: #cbd5e1;
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
-  }
-
-  .form-dot.win {
-    background: #16a34a;
-  }
-
-  .form-dot.loss {
-    background: #dc2626;
-  }
-
-  .form-dot.draw {
-    background: #94a3b8;
-  }
-
-  .overview-table .team-value.soft {
-    color: var(--text-2);
-  }
-
-  .fixture-meta-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 14px 18px;
-    align-items: start;
-  }
-
-  .fixture-meta-main,
-  .fixture-meta-side {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #111;
-    line-height: 1.4;
-  }
-
-  .fixture-meta-side {
-    display: flex;
-    flex-direction: column;
-    justify-self: end;
-    text-align: right;
-  }
-
-  .fixture-meta-subtle {
-    color: var(--text-2);
-  }
-
-  .fixture-timeline-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .fixture-event-row {
-    display: grid;
-    grid-template-columns: 58px minmax(0, 1fr);
-    gap: 12px;
-    align-items: stretch;
-  }
-
-  .fixture-event-row.marker {
-    display: block;
-  }
-
-  .fixture-event-minute {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    line-height: 1.35;
-  }
-
-  .fixture-event-card {
-    background: #f6f6f6;
-    border: 1px solid #ececec;
-    padding: 0;
-    line-height: 1.4;
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    min-height: 64px;
-  }
-
-  .fixture-event-card.goal {
-    background: #ffd8d8;
-    border-color: #ffc3c3;
-  }
-
-  .fixture-event-team {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px;
-    min-height: 64px;
-    padding: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .fixture-event-body {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto auto;
-    align-items: center;
-    column-gap: 14px;
-    row-gap: 2px;
-    padding: 8px 14px;
-    min-height: 64px;
-    min-width: 0;
-  }
-
-  .fixture-event-title {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: center;
-    min-width: 0;
-    font-size: 0.86rem;
-    font-weight: 600;
-    color: #111;
-  }
-
-  .fixture-event-copy {
-    display: contents;
-  }
-
-  .fixture-event-detail {
-    grid-column: 1;
-    grid-row: 2;
-    align-self: center;
-    min-width: 0;
-  }
-
-  .fixture-event-detail.soft {
-    color: var(--text-2);
-  }
-
-  .fixture-event-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px 14px;
-  }
-
-  .fixture-event-votes {
-    display: contents;
-  }
-
-  .fixture-vote-control {
-    color: #202020;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: end;
-    min-height: 24px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    gap: 2px;
-    justify-self: end;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    transition: opacity 0.15s ease;
-  }
-
-  .fixture-vote-control:focus,
-  .fixture-vote-control:focus-visible {
-    outline: none;
-  }
-
-  .fixture-vote-control.active[data-vote-type="like"] {
-    color: #1f7a3d;
-  }
-
-  .fixture-vote-control.active[data-vote-type="dislike"] {
-    color: #b93838;
-  }
-
-  .fixture-vote-control.is-disabled {
-    opacity: 0.62;
-    cursor: wait;
-    pointer-events: none;
-  }
-
-  .fixture-event-votes .fixture-vote-control:first-child {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .fixture-event-votes .fixture-vote-control:last-child {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  .fixture-vote-icon {
-    width: 18px;
-    min-height: 24px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    line-height: 1;
-  }
-
-  .fixture-vote-count {
-    min-width: 24px;
-    min-height: 24px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    text-align: right;
-    padding: 0 8px 0 0;
-  }
-
-  .fixture-vote-status {
-    margin: -8px 0 12px;
-    min-height: 1.2rem;
-  }
-
-  .fixture-vote-status.error {
-    color: #b42318;
-  }
-
-  .fixture-empty {
-    color: var(--text-2);
-    font-size: 0.92rem;
-  }
-
-  .fixture-timeline-marker {
-    text-align: center;
-    padding: 6px 0;
-  }
-
-  .fixture-event-minute,
-  .fixture-event-detail,
-  .fixture-timeline-marker {
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #111;
-  }
-
-  @media (max-width: 980px) {
-    .fixture-dashboard {
-      grid-template-columns: 1fr;
-    }
-
-    .fixture-h2h-nav {
-      grid-template-columns: 1fr;
-    }
-
-    .fixture-h2h-group.right {
-      justify-content: flex-start;
-    }
-
-    .fixture-meta-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .fixture-meta-side {
-      text-align: left;
-    }
-  }
-
-  @media (max-width: 720px) {
-    .fixture-score-grid {
-      grid-template-columns: 1fr;
-      gap: 12px;
-      min-height: 0;
-    }
-
-    .fixture-score-separator {
-      order: 2;
-      padding: 4px 0;
-    }
-
-    .fixture-team-block.away {
-      order: 3;
-    }
-
-    .fixture-team-block {
-      padding: 0;
-      min-height: 0;
-      gap: 8px;
-    }
-
-    .fixture-team-logo-wrap {
-      position: static;
-      transform: none;
-      width: 60px;
-      height: 60px;
-      margin: 0 auto;
-    }
-
-    .overview-table .row-label,
-    .overview-table .team-value {
-      font-size: 0.9rem;
-    }
-
-    .fixture-event-row {
-      grid-template-columns: 1fr;
-      gap: 8px;
-    }
-
-    .fixture-event-minute {
-      font-size: 0.84rem;
-    }
-
-    .fixture-event-card {
-      grid-template-columns: 68px minmax(0, 1fr);
-    }
-
-    .fixture-event-header {
-      align-items: flex-start;
-    }
-
-    .fixture-event-body {
-      column-gap: 12px;
-      row-gap: 6px;
-    }
-  }
-</style>
 <main
   class="page match-page"
   data-match-id="{{ match_id }}"
@@ -754,6 +195,24 @@
 
   function formatStatValue(value, suffix = "") {
     return value !== null && value !== undefined && value !== "" ? `${value}${suffix}` : "-";
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function renderErrorMessage(message) {
+    return `
+      <div class="ui-error-state" role="alert">
+        <div class="ui-error-label">Error</div>
+        <p class="ui-error-message">${escapeHtml(message)}</p>
+      </div>
+    `;
   }
 
   function renderFormDots(form) {
@@ -1136,17 +595,17 @@
     summaryEl.innerHTML = `
       <div class="card-body">
         <div class="fixture-score-grid">
-          <div class="fixture-team-block home">
+          <a href="/teams/${fixture.HomeTeamID}" class="fixture-team-block home">
             ${homeLogo}
             <div class="fixture-team-score">${formatScoreValue(fixture.HomeScore)}</div>
             <div class="fixture-team-name">${fixture.HomeTeam || "Home Team"}</div>
-          </div>
+          </a>
           <div class="fixture-score-separator">${statusLabel}</div>
-          <div class="fixture-team-block away">
+          <a href="/teams/${fixture.AwayTeamID}" class="fixture-team-block away">
             ${awayLogo}
             <div class="fixture-team-score">${formatScoreValue(fixture.AwayScore)}</div>
             <div class="fixture-team-name">${fixture.AwayTeam || "Away Team"}</div>
-          </div>
+          </a>
         </div>
       </div>
     `;
@@ -1444,21 +903,19 @@
   function renderError(message) {
     clearVoteStatus();
     headerEl.innerHTML = `
-      <div class="fixture-relative-date">Match date unavailable</div>
-      <h1 class="fixture-headline">Match Details</h1>
+      <div class="fixture-relative-date">Error</div>
+      <h1 class="fixture-headline">Match details unavailable</h1>
     `;
     summaryEl.innerHTML = `
       <div class="card-body">
-        <div class="match-loading">${message}</div>
+        ${renderErrorMessage(message)}
       </div>
     `;
-    h2hEl.innerHTML = `<div class="fixture-empty">${message}</div>`;
-    infoEl.innerHTML = `
-      <div class="fixture-empty">Unavailable</div>
-    `;
-    overviewEl.innerHTML = `<div class="fixture-empty">${message}</div>`;
-    teamOverviewEl.innerHTML = `<div class="fixture-empty">${message}</div>`;
-    eventsEl.innerHTML = `<div class="fixture-empty">${message}</div>`;
+    h2hEl.innerHTML = renderErrorMessage(message);
+    infoEl.innerHTML = renderErrorMessage(message);
+    overviewEl.innerHTML = renderErrorMessage(message);
+    teamOverviewEl.innerHTML = renderErrorMessage(message);
+    eventsEl.innerHTML = renderErrorMessage(message);
   }
 
   function renderFixturePayload(payload) {

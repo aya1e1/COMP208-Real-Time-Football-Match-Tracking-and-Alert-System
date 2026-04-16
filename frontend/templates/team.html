@@ -1,1 +1,740 @@
+{% extends "base.html" %}
+{% block title %}Kickoff — Team{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
+<style>
+  .team-page {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
 
+  .team-page .card {
+    border-radius: 0;
+  }
+
+  .team-page-header {
+    padding: 4px 0 2px;
+    text-align: center;
+  }
+
+  .team-header-crest {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 14px;
+    object-fit: contain;
+  }
+
+  .team-headline {
+    margin: 0;
+    font-size: clamp(1.55rem, 2vw, 2.2rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .team-subline {
+    margin: 8px 0 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .team-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+
+  .team-column {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .team-section .card-body,
+  .team-summary-card .card-body {
+    padding: 18px 20px;
+  }
+
+  .team-summary-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .team-summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .team-summary-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .team-summary-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .team-summary-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-1);
+    text-align: right;
+  }
+
+  .team-favourite-action {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    padding: 8px 14px;
+    color: var(--text-2);
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: color .12s ease;
+    cursor: pointer;
+  }
+
+  .team-favourite-action:hover {
+    color: var(--text-1);
+  }
+
+  .team-favourite-action.active {
+    color: #b88a00;
+  }
+
+  .team-favourite-action.is-disabled {
+    opacity: 0.7;
+    cursor: progress;
+    pointer-events: none;
+  }
+
+  .team-action-status {
+    font-size: 0.9rem;
+    color: var(--text-2);
+  }
+
+  .team-action-status:not(:empty) {
+    margin-top: 10px;
+  }
+
+  .team-action-status.error {
+    color: #b42318;
+  }
+
+  .team-overview-note,
+  .team-fixtures-note {
+    margin-top: 14px;
+    font-size: 0.82rem;
+    color: var(--text-2);
+  }
+
+  .team-fixture-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .team-fixture-card {
+    display: block;
+    border: 1px solid #ececec;
+    background: #f7f7f6;
+    color: inherit;
+    transition: border-color .12s;
+  }
+
+  .team-fixture-card:hover {
+    border-color: #d8d8d8;
+  }
+
+  .team-fixture-card .card-body {
+    padding: 16px 18px;
+  }
+
+  .team-fixture-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.82rem;
+    color: var(--text-2);
+  }
+
+  .team-fixture-kickoff,
+  .team-fixture-status {
+    font-weight: 600;
+  }
+
+  .team-fixture-matchup {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+  }
+
+  .team-fixture-side {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .team-fixture-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+
+  .team-fixture-team {
+    font-size: 0.94rem;
+    font-weight: 600;
+    color: var(--text-1);
+  }
+
+  .team-fixture-center {
+    text-align: center;
+  }
+
+  .team-fixture-score {
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #111;
+  }
+
+  .team-fixture-vs {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #777;
+  }
+
+  .team-fixture-league {
+    margin-top: 14px;
+    text-align: center;
+    font-size: 0.84rem;
+    color: var(--text-2);
+  }
+
+  .team-empty {
+    color: var(--text-2);
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 860px) {
+    .team-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .team-header-crest {
+      width: 60px;
+      height: 60px;
+    }
+
+    .team-fixture-matchup {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .team-summary-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .team-summary-value {
+      text-align: left;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main
+  class="page team-page"
+  data-team-id="{{ team_id }}"
+  data-user-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}"
+  data-login-url="{{ url_for('auth.login_page') }}"
+>
+  <div class="match-back">
+    <a href="/fixtures">&larr; Back to fixtures</a>
+  </div>
+
+  <header class="team-page-header" id="team-header">
+    <div class="team-empty">Loading team...</div>
+  </header>
+
+  <section class="team-layout">
+    <div class="team-column">
+      <section class="card team-summary-card">
+        <div class="card-body">
+          <h2 class="fixture-section-title">Team Details</h2>
+          <div id="team-summary" class="team-empty">Loading team details...</div>
+        </div>
+      </section>
+
+      <section class="card team-section">
+        <div class="card-body">
+          <h2 class="fixture-section-title">Team Overview</h2>
+          <div id="team-overview" class="team-empty">Loading overview...</div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="team-column">
+      <section class="dashboard-section">
+        <h2 class="fixture-section-title">Upcoming Fixture</h2>
+        <div id="team-upcoming-fixture" class="team-empty">Loading upcoming fixture...</div>
+      </section>
+
+      <section class="dashboard-section">
+        <h2 class="fixture-section-title">Recent Games</h2>
+        <div id="team-recent-fixtures" class="team-empty">Loading recent fixtures...</div>
+      </section>
+    </aside>
+  </section>
+</main>
+
+<script>
+  const teamPage = document.querySelector(".team-page");
+  const teamId = Number(teamPage?.dataset.teamId);
+  const isUserAuthenticated = teamPage?.dataset.userAuthenticated === "true";
+  const loginUrl = teamPage?.dataset.loginUrl || "/auth/login";
+  const teamHeaderEl = document.getElementById("team-header");
+  const teamSummaryEl = document.getElementById("team-summary");
+  const teamOverviewEl = document.getElementById("team-overview");
+  const upcomingFixtureEl = document.getElementById("team-upcoming-fixture");
+  const recentFixturesEl = document.getElementById("team-recent-fixtures");
+  let currentTeamPayload = null;
+  let favouriteRequestPending = false;
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function formatDateTime(dateString) {
+    if (!dateString) {
+      return { date: "TBC", time: "" };
+    }
+
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+      return { date: escapeHtml(dateString), time: "" };
+    }
+
+    return {
+      date: date.toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short"
+      }),
+      time: date.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    };
+  }
+
+  function formatScoreValue(score) {
+    return score !== null && score !== undefined ? score : "-";
+  }
+
+  function renderTeamLogo(url, alt, className) {
+    if (!url) {
+      return "";
+    }
+
+    return `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" class="${className}">`;
+  }
+
+  function renderErrorMessage(message) {
+    return `
+      <div class="ui-error-state" role="alert">
+        <div class="ui-error-label">Error</div>
+        <p class="ui-error-message">${escapeHtml(message)}</p>
+      </div>
+    `;
+  }
+
+  function renderFormDots(form) {
+    if (!form) {
+      return '<span class="team-value soft">-</span>';
+    }
+
+    return `
+      <span class="form-dots" aria-label="Recent form ${escapeHtml(form)}">
+        ${[...form].map((result) => {
+          const normalized = String(result || "").toUpperCase();
+          let dotClass = "draw";
+
+          if (normalized === "W") {
+            dotClass = "win";
+          } else if (normalized === "L") {
+            dotClass = "loss";
+          }
+
+          return `<span class="form-dot ${dotClass}" title="${escapeHtml(normalized)}"></span>`;
+        }).join("")}
+      </span>
+    `;
+  }
+
+  function renderOverviewTable(team) {
+    const overview = team?.Overview;
+    if (!overview) {
+      teamOverviewEl.innerHTML = '<div class="team-empty">No overview available</div>';
+      return;
+    }
+
+    const context = team.StatisticsContext;
+    teamOverviewEl.innerHTML = `
+      <table class="overview-table">
+        <thead>
+          <tr>
+            <th class="row-label">Metric</th>
+            <th>
+              <div class="team-heading">
+                <span class="team-heading-main">${escapeHtml(team.Name)}</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th class="row-label">Form</th>
+            <td class="team-value">${renderFormDots(overview.last_five_form)}</td>
+          </tr>
+          <tr>
+            <th class="row-label">Wins</th>
+            <td class="team-value">${escapeHtml(overview.wins ?? "-")}</td>
+          </tr>
+          <tr>
+            <th class="row-label">Losses</th>
+            <td class="team-value">${escapeHtml(overview.losses ?? "-")}</td>
+          </tr>
+          <tr>
+            <th class="row-label">Goals For Avg</th>
+            <td class="team-value">${escapeHtml(overview.goals_for_average ?? "-")}</td>
+          </tr>
+          <tr>
+            <th class="row-label">Goals Against Avg</th>
+            <td class="team-value">${escapeHtml(overview.goals_against_average ?? "-")}</td>
+          </tr>
+          <tr>
+            <th class="row-label">Failed To Score</th>
+            <td class="team-value">${escapeHtml(overview.failed_to_score ?? "-")}</td>
+          </tr>
+        </tbody>
+      </table>
+      ${context ? `
+        <div class="team-overview-note">
+          Based on ${escapeHtml(context.LeagueName)} ${escapeHtml(context.Year)} team statistics.
+        </div>
+      ` : ""}
+    `;
+  }
+
+  function favouriteButtonLabel(team) {
+    return team?.IsFavourite ? "Favourited" : "Favourite team";
+  }
+
+  function renderTeamSummary(team) {
+    teamSummaryEl.innerHTML = `
+      <div class="team-summary-stack">
+        <div class="team-summary-row">
+          <div class="team-summary-label">Venue</div>
+          <div class="team-summary-value">${escapeHtml(team.Stadium || "Unknown venue")}</div>
+        </div>
+        <div class="team-summary-row">
+          <div class="team-summary-label">City</div>
+          <div class="team-summary-value">${escapeHtml(team.City || "Unknown city")}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderFixtureCard(fixture, options = {}) {
+    const kickoff = formatDateTime(fixture.MatchDate);
+    const status = fixture.Status || (options.upcoming ? "NS" : "FT");
+    const centerLabel = options.upcoming
+      ? `<div class="team-fixture-vs">vs</div>`
+      : `<div class="team-fixture-score">${escapeHtml(formatScoreValue(fixture.HomeScore))} - ${escapeHtml(formatScoreValue(fixture.AwayScore))}</div>`;
+
+    return `
+      <a href="/fixtures/${fixture.FixtureID}" class="card team-fixture-card">
+        <div class="card-body">
+          <div class="team-fixture-meta">
+            <div class="team-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
+            <div class="team-fixture-status">${escapeHtml(status)}</div>
+          </div>
+          <div class="team-fixture-matchup">
+            <div class="team-fixture-side">
+              ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "team-fixture-logo")}
+              <div class="team-fixture-team">${escapeHtml(fixture.HomeTeam)}</div>
+            </div>
+            <div class="team-fixture-center">${centerLabel}</div>
+            <div class="team-fixture-side">
+              ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "team-fixture-logo")}
+              <div class="team-fixture-team">${escapeHtml(fixture.AwayTeam)}</div>
+            </div>
+          </div>
+          <div class="team-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
+        </div>
+      </a>
+    `;
+  }
+
+  function renderRecentFixtureCard(fixture) {
+    const kickoff = formatDateTime(fixture.MatchDate);
+    const status = fixture.Status || "FT";
+
+    return `
+      <a href="/fixtures/${fixture.FixtureID}" class="card dashboard-fixture-card">
+        <div class="card-body">
+          <div class="dashboard-fixture-meta">
+            <div class="dashboard-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
+            <div class="dashboard-fixture-status">${escapeHtml(status)}</div>
+          </div>
+          <div class="dashboard-score-layout">
+            <div class="dashboard-score-side">
+              ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "dashboard-score-logo")}
+              <div class="dashboard-score-value">${escapeHtml(formatScoreValue(fixture.HomeScore))}</div>
+              <div class="dashboard-score-team-name">${escapeHtml(fixture.HomeTeam)}</div>
+            </div>
+            <div class="dashboard-score-divider">vs</div>
+            <div class="dashboard-score-side">
+              ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "dashboard-score-logo")}
+              <div class="dashboard-score-value">${escapeHtml(formatScoreValue(fixture.AwayScore))}</div>
+              <div class="dashboard-score-team-name">${escapeHtml(fixture.AwayTeam)}</div>
+            </div>
+          </div>
+          <div class="dashboard-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
+        </div>
+      </a>
+    `;
+  }
+
+  function renderUpcomingFixture(fixture) {
+    if (!fixture) {
+      upcomingFixtureEl.innerHTML = '<div class="team-empty">No upcoming fixture found</div>';
+      return;
+    }
+
+    const kickoff = formatDateTime(fixture.MatchDate);
+    upcomingFixtureEl.innerHTML = `
+      <a href="/fixtures/${fixture.FixtureID}" class="card dashboard-fixture-card">
+        <div class="card-body">
+          <div class="dashboard-fixture-meta">
+            <div class="dashboard-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
+            <div class="dashboard-fixture-status">${escapeHtml(fixture.Status || "NS")}</div>
+          </div>
+          <div class="dashboard-upcoming-layout">
+            <div class="dashboard-upcoming-team">
+              ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "dashboard-upcoming-team-logo")}
+              <div class="dashboard-upcoming-team-name">${escapeHtml(fixture.HomeTeam)}</div>
+            </div>
+            <div class="dashboard-vs-pill">vs</div>
+            <div class="dashboard-upcoming-team away">
+              ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "dashboard-upcoming-team-logo")}
+              <div class="dashboard-upcoming-team-name">${escapeHtml(fixture.AwayTeam)}</div>
+            </div>
+          </div>
+          <div class="dashboard-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
+        </div>
+      </a>
+    `;
+  }
+
+  function renderRecentFixtures(fixtures) {
+    if (!fixtures.length) {
+      recentFixturesEl.innerHTML = '<div class="team-empty">No recent fixtures found</div>';
+      return;
+    }
+
+    recentFixturesEl.innerHTML = `
+      <div class="team-fixture-stack">
+        ${fixtures.map((fixture) => renderRecentFixtureCard(fixture)).join("")}
+      </div>
+    `;
+  }
+
+  function renderHeader(team) {
+    teamHeaderEl.innerHTML = `
+      ${renderTeamLogo(team.LogoURL, `${team.Name} logo`, "team-header-crest")}
+      <h1 class="team-headline">${escapeHtml(team.Name)}</h1>
+      <div
+        class="team-favourite-action ${team.IsFavourite ? "active" : ""}"
+        id="team-favourite-button"
+        role="button"
+        tabindex="0"
+      >
+        ${escapeHtml(favouriteButtonLabel(team))}
+      </div>
+      <div id="team-action-status" class="team-action-status" aria-live="polite"></div>
+    `;
+  }
+
+  function clearActionStatus() {
+    const statusEl = document.getElementById("team-action-status");
+    if (!statusEl) {
+      return;
+    }
+
+    statusEl.textContent = "";
+    statusEl.classList.remove("error");
+  }
+
+  function setActionStatus(message, { isError = false } = {}) {
+    const statusEl = document.getElementById("team-action-status");
+    if (!statusEl) {
+      return;
+    }
+
+    statusEl.textContent = message || "";
+    statusEl.classList.toggle("error", Boolean(message) && isError);
+  }
+
+  function setFavouriteButtonPending(isPending) {
+    const button = document.getElementById("team-favourite-button");
+    if (!button) {
+      return;
+    }
+
+    favouriteRequestPending = isPending;
+    button.classList.toggle("is-disabled", isPending);
+  }
+
+  function updateFavouriteButton() {
+    const button = document.getElementById("team-favourite-button");
+    if (!button || !currentTeamPayload?.data) {
+      return;
+    }
+
+    const team = currentTeamPayload.data;
+    button.classList.toggle("active", Boolean(team.IsFavourite));
+    button.textContent = favouriteButtonLabel(team);
+  }
+
+  function bindFavouriteAction() {
+    const button = document.getElementById("team-favourite-button");
+    if (!button) {
+      return;
+    }
+
+    button.onclick = toggleFavouriteTeam;
+    button.onkeydown = (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleFavouriteTeam();
+      }
+    };
+  }
+
+  function toggleFavouriteTeam() {
+    if (!currentTeamPayload?.data || favouriteRequestPending) {
+      return;
+    }
+
+    if (!isUserAuthenticated) {
+      window.location.href = loginUrl;
+      return;
+    }
+
+    const team = currentTeamPayload.data;
+    const shouldAdd = !team.IsFavourite;
+    const method = shouldAdd ? "POST" : "DELETE";
+    const url = shouldAdd ? "/api/me/favourite-teams" : `/api/me/favourite-teams/${team.TeamID}`;
+    const options = {
+      method,
+      headers: {}
+    };
+
+    if (shouldAdd) {
+      options.headers["Content-Type"] = "application/json";
+      options.body = JSON.stringify({ team_id: team.TeamID });
+    }
+
+    clearActionStatus();
+    setFavouriteButtonPending(true);
+
+    fetch(url, options)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to update favourite");
+        }
+
+        team.IsFavourite = shouldAdd;
+        updateFavouriteButton();
+      })
+      .catch(() => {
+        setActionStatus("Unable to update favourite team right now.", { isError: true });
+      })
+      .finally(() => {
+        setFavouriteButtonPending(false);
+      });
+  }
+
+  function renderTeamPage(payload) {
+    currentTeamPayload = payload;
+    const team = payload?.data;
+
+    if (!team) {
+      throw new Error("Missing team data");
+    }
+
+    renderHeader(team);
+    renderTeamSummary(team);
+    updateFavouriteButton();
+    bindFavouriteAction();
+    renderOverviewTable(team);
+    renderUpcomingFixture(payload.upcoming_fixture || null);
+    renderRecentFixtures(Array.isArray(payload.recent_fixtures) ? payload.recent_fixtures : []);
+  }
+
+  function renderErrorState(message = "Team page unavailable.") {
+    const errorMessage = renderErrorMessage(message);
+    teamHeaderEl.innerHTML = errorMessage;
+    teamSummaryEl.innerHTML = errorMessage;
+    teamOverviewEl.innerHTML = errorMessage;
+    upcomingFixtureEl.innerHTML = errorMessage;
+    recentFixturesEl.innerHTML = errorMessage;
+  }
+
+  if (!Number.isFinite(teamId)) {
+    renderErrorState();
+  } else {
+    fetch(`/api/teams/${teamId}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to load team");
+        }
+
+        return response.json();
+      })
+      .then((payload) => {
+        renderTeamPage(payload);
+      })
+      .catch(() => {
+        renderErrorState();
+      });
+  }
+</script>
+{% endblock %}

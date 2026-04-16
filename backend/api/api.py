@@ -103,6 +103,132 @@ def _get_h2h_fixtures(
     return database.query(sql, (home_team_id, away_team_id, excluded_fixture_id))
 
 
+def _get_fixtures_for_team_ids(
+    team_ids: list[int],
+    *,
+    limit: int = 5,
+    match_date_before: str | None = None,
+    match_date_after: str | None = None,
+    order: str = "DESC",
+) -> list[dict]:
+    if not team_ids:
+        return []
+
+    normalized_order = "ASC" if order.upper() == "ASC" else "DESC"
+    placeholders = ", ".join("?" for _ in team_ids)
+    sql = f"""
+        SELECT
+            f.FixtureID,
+            f.LeagueID,
+            l.Name AS LeagueName,
+            f.Year,
+            f.HomeTeamID,
+            ht.Name AS HomeTeam,
+            ht.Abbreviation AS HomeTeamAbbreviation,
+            ht.LogoURL AS HomeTeamLogoURL,
+            f.AwayTeamID,
+            at.Name AS AwayTeam,
+            at.Abbreviation AS AwayTeamAbbreviation,
+            at.LogoURL AS AwayTeamLogoURL,
+            f.Location,
+            f.MatchDate,
+            f.HomeScore,
+            f.AwayScore,
+            f.Status,
+            f.Elapsed
+        FROM Fixtures f
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+        WHERE (
+            f.HomeTeamID IN ({placeholders})
+            OR f.AwayTeamID IN ({placeholders})
+        )
+    """
+    params = [*team_ids, *team_ids]
+
+    if match_date_before:
+        sql += " AND f.MatchDate <= ?"
+        params.append(match_date_before)
+
+    if match_date_after:
+        sql += " AND f.MatchDate > ?"
+        params.append(match_date_after)
+
+    sql += f" ORDER BY f.MatchDate {normalized_order} LIMIT ?"
+    params.append(limit)
+    return database.query(sql, tuple(params))
+
+
+def _get_team(team_id: int) -> dict | None:
+    rows = database.query(
+        """
+        SELECT
+            t.TeamID,
+            t.Name,
+            t.Abbreviation,
+            t.LogoURL,
+            t.City,
+            t.Stadium
+        FROM Teams t
+        WHERE t.TeamID = ?
+        LIMIT 1
+        """,
+        (team_id,),
+    )
+    return rows[0] if rows else None
+
+
+def _is_favourite_team(team_id: int) -> bool:
+    if not getattr(current_user, "is_authenticated", False):
+        return False
+
+    rows = database.query(
+        """
+        SELECT 1
+        FROM UserFavouriteTeams
+        WHERE UserID = ? AND TeamID = ?
+        LIMIT 1
+        """,
+        (current_user.id, team_id),
+    )
+    return bool(rows)
+
+
+def _get_team_statistics_row(team_id: int) -> dict | None:
+    rows = database.query(
+        """
+        SELECT
+            ts.LeagueID,
+            l.Name AS LeagueName,
+            ts.Year,
+            ts.TeamID,
+            ts.Form,
+            ts.WinsHome,
+            ts.WinsAway,
+            ts.LossesHome,
+            ts.LossesAway,
+            ts.GoalsForAverageHome,
+            ts.GoalsForAverageAway,
+            ts.GoalsAgainstAverageHome,
+            ts.GoalsAgainstAverageAway,
+            ts.FailedToScoreHome,
+            ts.FailedToScoreAway
+        FROM TeamStatistics ts
+        JOIN League l
+            ON ts.LeagueID = l.LeagueID
+        WHERE ts.TeamID = ?
+        ORDER BY ts.Year DESC, ts.LeagueID ASC
+        LIMIT 1
+        """,
+        (team_id,),
+    )
+    return rows[0] if rows else None
+
+
 def _require_integer_field(name: str) -> int | None:
     payload = request.get_json(silent=True) or {}
     value = payload.get(name)
@@ -142,6 +268,35 @@ def me():
 def favourite_teams():
     teams = user_repo.list_favourite_teams(current_user.id)
     return jsonify({"data": teams})
+
+
+@api_bp.route("/me/dashboard")
+@login_required
+def dashboard():
+    teams = user_repo.list_favourite_teams(current_user.id)
+    team_ids = [int(team["TeamID"]) for team in teams if team.get("TeamID") is not None]
+    current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    recent_fixtures = _get_fixtures_for_team_ids(
+        team_ids,
+        limit=5,
+        match_date_before=current_timestamp,
+        order="DESC",
+    )
+    upcoming_fixtures = _get_fixtures_for_team_ids(
+        team_ids,
+        limit=5,
+        match_date_after=current_timestamp,
+        order="ASC",
+    )
+
+    return jsonify({
+        "data": {
+            "favourite_teams": teams,
+            "recent_fixtures": recent_fixtures,
+            "upcoming_fixtures": upcoming_fixtures,
+        }
+    })
 
 
 @api_bp.route("/me/favourite-teams", methods=["POST"])
@@ -385,6 +540,54 @@ def fixtures():
 
     fixtures = database.query(sql, tuple(params))
     return jsonify(fixtures)
+
+
+@api_bp.route("/teams/<int:team_id>")
+def team(team_id):
+    team_data = _get_team(team_id)
+
+    if not team_data:
+        return jsonify({"error": "Team not found"}), 404
+
+    current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    statistics_row = _get_team_statistics_row(team_id)
+    upcoming_fixtures = _get_fixtures_for_team_ids(
+        [team_id],
+        limit=1,
+        match_date_after=current_timestamp,
+        order="ASC",
+    )
+    recent_fixtures = _get_fixtures_for_team_ids(
+        [team_id],
+        limit=5,
+        match_date_before=current_timestamp,
+        order="DESC",
+    )
+
+    team_payload = {
+        **team_data,
+        "IsFavourite": _is_favourite_team(team_id),
+        "Overview": (
+            _build_location_stats(statistics_row, "home")
+            if statistics_row
+            else None
+        ),
+        "StatisticsContext": (
+            {
+                "LeagueID": statistics_row["LeagueID"],
+                "LeagueName": statistics_row["LeagueName"],
+                "Year": statistics_row["Year"],
+            }
+            if statistics_row
+            else None
+        ),
+    }
+
+    return jsonify({
+        "data": team_payload,
+        "upcoming_fixture": upcoming_fixtures[0] if upcoming_fixtures else None,
+        "recent_fixtures": recent_fixtures,
+    })
 
 
 @api_bp.route("/fixtures/<int:fixture_id>")

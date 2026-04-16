@@ -93,7 +93,7 @@ Response:
       "FavouriteTeamID": 1,
       "UserID": 1,
       "TeamID": 41,
-      "CreatedDate": "2026-04-16 12:00:00",
+      "CreatedDate": null,
       "Name": "Southampton",
       "Abbreviation": "SOU",
       "LogoURL": "https://...",
@@ -145,6 +145,57 @@ Success response:
 }
 ```
 
+### `GET /api/me/dashboard`
+
+Returns the logged-in user's dashboard data, including favourite teams plus recent and upcoming fixtures for those teams.
+
+Auth required: yes
+
+Response:
+
+```json
+{
+  "data": {
+    "favourite_teams": [
+      {
+        "FavouriteTeamID": 1,
+        "UserID": 1,
+        "TeamID": 41,
+        "CreatedDate": null,
+        "Name": "Southampton",
+        "Abbreviation": "SOU",
+        "LogoURL": "https://...",
+        "City": "Southampton",
+        "Stadium": "St. Mary's Stadium"
+      }
+    ],
+    "recent_fixtures": [
+      {
+        "FixtureID": 1208397,
+        "LeagueID": 39,
+        "LeagueName": "Premier League",
+        "Year": 2024,
+        "HomeTeamID": 33,
+        "HomeTeam": "Manchester United",
+        "HomeTeamAbbreviation": "MUN",
+        "HomeTeamLogoURL": "https://...",
+        "AwayTeamID": 66,
+        "AwayTeam": "Aston Villa",
+        "AwayTeamAbbreviation": "AST",
+        "AwayTeamLogoURL": "https://...",
+        "Location": "Old Trafford",
+        "MatchDate": "2025-05-25 15:00:00",
+        "HomeScore": 2,
+        "AwayScore": 0,
+        "Status": "FT",
+        "Elapsed": 0
+      }
+    ],
+    "upcoming_fixtures": []
+  }
+}
+```
+
 ### `GET /api/me/favourite-players`
 
 Returns the logged-in user's favourite players.
@@ -160,7 +211,7 @@ Response:
       "FavouritePlayerID": 1,
       "UserID": 1,
       "PlayerID": 138908,
-      "CreatedDate": "2026-04-16 12:00:00",
+      "CreatedDate": null,
       "FirstName": "Erling",
       "LastName": "Haaland",
       "Name": "E. Haaland",
@@ -444,6 +495,96 @@ Status codes:
 
 - `200` on success
 - `404` if the league is not found
+
+### `GET /api/teams/<team_id>`
+
+Returns a single team's page payload, including core team details, favourite state for the current user, a home-style overview block, the first upcoming fixture, and the five most recent fixtures.
+
+Auth required: no
+
+Response:
+
+```json
+{
+  "data": {
+    "TeamID": 41,
+    "Name": "Southampton",
+    "Abbreviation": "SOU",
+    "LogoURL": "https://...",
+    "City": "Southampton",
+    "Stadium": "St. Mary's Stadium",
+    "IsFavourite": true,
+    "Overview": {
+      "last_five_form": "WLWDW",
+      "wins": 8,
+      "losses": 3,
+      "goals_for_average": 1.4,
+      "goals_against_average": 1.1,
+      "failed_to_score": 2
+    },
+    "StatisticsContext": {
+      "LeagueID": 39,
+      "LeagueName": "Premier League",
+      "Year": 2024
+    }
+  },
+  "upcoming_fixture": {
+    "FixtureID": 1208405,
+    "LeagueID": 39,
+    "LeagueName": "Premier League",
+    "Year": 2024,
+    "HomeTeamID": 41,
+    "HomeTeam": "Southampton",
+    "HomeTeamAbbreviation": "SOU",
+    "HomeTeamLogoURL": "https://...",
+    "AwayTeamID": 50,
+    "AwayTeam": "Manchester City",
+    "AwayTeamAbbreviation": "MCI",
+    "AwayTeamLogoURL": "https://...",
+    "Location": "St. Mary's Stadium",
+    "MatchDate": "2026-04-20 15:00:00",
+    "HomeScore": null,
+    "AwayScore": null,
+    "Status": "NS",
+    "Elapsed": 0
+  },
+  "recent_fixtures": [
+    {
+      "FixtureID": 1208399,
+      "LeagueID": 39,
+      "LeagueName": "Premier League",
+      "Year": 2024,
+      "HomeTeamID": 41,
+      "HomeTeam": "Southampton",
+      "HomeTeamAbbreviation": "SOU",
+      "HomeTeamLogoURL": "https://...",
+      "AwayTeamID": 50,
+      "AwayTeam": "Manchester City",
+      "AwayTeamAbbreviation": "MCI",
+      "AwayTeamLogoURL": "https://...",
+      "Location": "St. Mary's Stadium",
+      "MatchDate": "2026-04-16 15:00:00",
+      "HomeScore": 1,
+      "AwayScore": 3,
+      "Status": "FT",
+      "Elapsed": 90
+    }
+  ]
+}
+```
+
+Notes:
+
+- `IsFavourite` is only `true` when the current user is logged in and has favourited the team.
+- `Overview` is built from the latest stored `TeamStatistics` row for that team and uses the home-stat columns to match the intended team-page summary card.
+- `StatisticsContext` is `null` when no stored team statistics exist for that team.
+- `upcoming_fixture` is `null` when no future fixture exists in the database.
+- `recent_fixtures` may contain fewer than five items when limited history is available.
+
+Status codes:
+
+- `200` on success
+- `404` if the team is not found
 
 ### `GET /api/fixtures`
 

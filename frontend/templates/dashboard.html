@@ -1,1 +1,219 @@
+{% extends "base.html" %}
+{% block title %}Kickoff — Your Dashboard{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
+{% endblock %}
 
+{% block content %}
+<main class="page dashboard-page">
+  <header class="dashboard-page-header">
+
+    <h1 class="dashboard-title">You</h1>
+  </header>
+
+  <section class="dashboard-section">
+    <h2 class="fixture-section-title">Favourite Teams</h2>
+    <div id="dashboard-favourite-teams" class="dashboard-team-grid">
+      <div class="dashboard-empty-card">
+        Loading favourites
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard-section-grid">
+    <section class="dashboard-section">
+      <h2 class="fixture-section-title">Recent Fixtures</h2>
+      <div id="dashboard-recent-fixtures" class="dashboard-fixture-stack">
+        <div class="dashboard-empty-card">
+          Loading recent fixtures
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-section">
+      <h2 class="fixture-section-title">Upcoming Fixtures</h2>
+      <div id="dashboard-upcoming-fixtures" class="dashboard-fixture-stack">
+        <div class="dashboard-empty-card">
+          Loading upcoming fixtures
+        </div>
+      </div>
+    </section>
+  </section>
+</main>
+
+<script>
+  const favouriteTeamsEl = document.getElementById("dashboard-favourite-teams");
+  const recentFixturesEl = document.getElementById("dashboard-recent-fixtures");
+  const upcomingFixturesEl = document.getElementById("dashboard-upcoming-fixtures");
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function formatDateTime(dateString) {
+    if (!dateString) {
+      return { date: "TBC", time: "" };
+    }
+
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+      return { date: escapeHtml(dateString), time: "" };
+    }
+
+    return {
+      date: date.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short"
+      }),
+      time: date.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    };
+  }
+
+  function renderTeamLogo(url, alt, className) {
+    if (!url) {
+      return "";
+    }
+
+    return `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" class="${className}">`;
+  }
+
+  function renderErrorMessage(message) {
+    return `
+      <div class="ui-error-state" role="alert">
+        <div class="ui-error-label">Error</div>
+        <p class="ui-error-message">${escapeHtml(message)}</p>
+      </div>
+    `;
+  }
+
+  function renderFavouriteTeams(teams) {
+    if (!teams.length) {
+      favouriteTeamsEl.innerHTML = `
+        <div class="dashboard-empty-card">
+          No favourite teams yet
+        </div>
+      `;
+      return;
+    }
+
+    favouriteTeamsEl.innerHTML = teams.map((team) => `
+      <a href="/teams/${Number(team.TeamID)}" class="card dashboard-team-card">
+        <div class="card-body">
+          <div class="dashboard-team-card-inner">
+            ${renderTeamLogo(team.LogoURL, `${team.Name} logo`, "dashboard-team-logo")}
+            <div class="dashboard-team-name">${escapeHtml(team.Name)}</div>
+          </div>
+        </div>
+      </a>
+    `).join("");
+  }
+
+  function renderRecentFixtures(fixtures) {
+    if (!fixtures.length) {
+      recentFixturesEl.innerHTML = `
+        <div class="dashboard-empty-card">
+          No recent fixtures found
+        </div>
+      `;
+      return;
+    }
+
+    recentFixturesEl.innerHTML = fixtures.map((fixture) => {
+      const kickoff = formatDateTime(fixture.MatchDate);
+      const status = fixture.Status || "FT";
+
+      return `
+        <a href="/fixtures/${fixture.FixtureID}" class="card dashboard-fixture-card">
+          <div class="card-body">
+            <div class="dashboard-fixture-meta">
+              <div class="dashboard-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
+              <div class="dashboard-fixture-status">${escapeHtml(status)}</div>
+            </div>
+            <div class="dashboard-score-layout">
+              <div class="dashboard-score-side">
+                ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "dashboard-score-logo")}
+                <div class="dashboard-score-value">${fixture.HomeScore ?? "-"}</div>
+                <div class="dashboard-score-team-name">${escapeHtml(fixture.HomeTeam)}</div>
+              </div>
+              <div class="dashboard-score-divider">vs</div>
+              <div class="dashboard-score-side">
+                ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "dashboard-score-logo")}
+                <div class="dashboard-score-value">${fixture.AwayScore ?? "-"}</div>
+                <div class="dashboard-score-team-name">${escapeHtml(fixture.AwayTeam)}</div>
+              </div>
+            </div>
+            <div class="dashboard-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
+          </div>
+        </a>
+      `;
+    }).join("");
+  }
+
+  function renderUpcomingFixtures(fixtures) {
+    if (!fixtures.length) {
+      upcomingFixturesEl.innerHTML = `
+        <div class="dashboard-empty-card">
+          No upcoming fixtures available
+        </div>
+      `;
+      return;
+    }
+
+    upcomingFixturesEl.innerHTML = fixtures.map((fixture) => {
+      const kickoff = formatDateTime(fixture.MatchDate);
+
+      return `
+        <a href="/fixtures/${fixture.FixtureID}" class="card dashboard-fixture-card">
+          <div class="card-body">
+            <div class="dashboard-fixture-meta">
+              <div class="dashboard-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
+              <div class="dashboard-fixture-status">${escapeHtml(fixture.Status || "NS")}</div>
+            </div>
+            <div class="dashboard-upcoming-layout">
+              <div class="dashboard-upcoming-team">
+                ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "dashboard-upcoming-team-logo")}
+                <div class="dashboard-upcoming-team-name">${escapeHtml(fixture.HomeTeam)}</div>
+              </div>
+              <div class="dashboard-vs-pill">vs</div>
+              <div class="dashboard-upcoming-team away">
+                ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "dashboard-upcoming-team-logo")}
+                <div class="dashboard-upcoming-team-name">${escapeHtml(fixture.AwayTeam)}</div>
+              </div>
+            </div>
+            <div class="dashboard-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
+          </div>
+        </a>
+      `;
+    }).join("");
+  }
+
+  fetch("/api/me/dashboard")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to load dashboard");
+      }
+
+      return response.json();
+    })
+    .then((payload) => {
+      const data = payload?.data || {};
+      renderFavouriteTeams(Array.isArray(data.favourite_teams) ? data.favourite_teams : []);
+      renderRecentFixtures(Array.isArray(data.recent_fixtures) ? data.recent_fixtures : []);
+      renderUpcomingFixtures(Array.isArray(data.upcoming_fixtures) ? data.upcoming_fixtures : []);
+    })
+    .catch(() => {
+      const errorCard = renderErrorMessage("Dashboard unavailable.");
+      favouriteTeamsEl.innerHTML = errorCard;
+      recentFixturesEl.innerHTML = errorCard;
+      upcomingFixturesEl.innerHTML = errorCard;
+    });
+</script>
+{% endblock %}

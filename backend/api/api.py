@@ -1,8 +1,26 @@
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
+
+try:
+    from flask_login import current_user, login_required
+except ModuleNotFoundError:
+    def login_required(func):
+        return func
+
+    class _AnonymousUser:
+        is_authenticated = False
+        id = None
+
+    current_user = _AnonymousUser()
+
 from backend.db import database
-from backend.main import sync_events, sync_fixture_statistics, sync_team_statistics
+from backend.db import users as user_repo
+from backend.data_sync import (
+    sync_events,
+    sync_fixture_statistics,
+    sync_team_statistics,
+)
 
 api_bp = Blueprint("api", __name__)
 
@@ -83,6 +101,111 @@ def _get_h2h_fixtures(
         LIMIT 5
     """
     return database.query(sql, (home_team_id, away_team_id, excluded_fixture_id))
+
+
+def _require_integer_field(name: str) -> int | None:
+    payload = request.get_json(silent=True) or {}
+    value = payload.get(name)
+
+    if value is None:
+        return None
+
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+@api_bp.route("/me")
+@login_required
+def me():
+    return jsonify({"user": current_user.to_dict()})
+
+
+@api_bp.route("/me/favourite-teams")
+@login_required
+def favourite_teams():
+    teams = user_repo.list_favourite_teams(current_user.id)
+    return jsonify({"data": teams})
+
+
+@api_bp.route("/me/favourite-teams", methods=["POST"])
+@login_required
+def add_favourite_team():
+    team_id = _require_integer_field("team_id")
+    if team_id is None:
+        return jsonify({"error": "team_id is required and must be an integer"}), 400
+
+    try:
+        user_repo.add_favourite_team(current_user.id, team_id)
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    return jsonify({"success": True}), 201
+
+
+@api_bp.route("/me/favourite-teams/<int:team_id>", methods=["DELETE"])
+@login_required
+def delete_favourite_team(team_id):
+    user_repo.remove_favourite_team(current_user.id, team_id)
+    return jsonify({"success": True})
+
+
+@api_bp.route("/me/favourite-players")
+@login_required
+def favourite_players():
+    players = user_repo.list_favourite_players(current_user.id)
+    return jsonify({"data": players})
+
+
+@api_bp.route("/me/favourite-players", methods=["POST"])
+@login_required
+def add_favourite_player():
+    player_id = _require_integer_field("player_id")
+    if player_id is None:
+        return jsonify({"error": "player_id is required and must be an integer"}), 400
+
+    try:
+        user_repo.add_favourite_player(current_user.id, player_id)
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    return jsonify({"success": True}), 201
+
+
+@api_bp.route("/me/favourite-players/<int:player_id>", methods=["DELETE"])
+@login_required
+def delete_favourite_player(player_id):
+    user_repo.remove_favourite_player(current_user.id, player_id)
+    return jsonify({"success": True})
+
+
+@api_bp.route("/me/notification-preferences")
+@login_required
+def notification_preferences():
+    preferences = user_repo.get_notification_preferences(current_user.id)
+    return jsonify({"data": preferences})
+
+
+@api_bp.route("/me/notification-preferences", methods=["PUT"])
+@login_required
+def update_notification_preferences():
+    payload = request.get_json(silent=True) or {}
+    team_id_value = payload.get("team_id")
+    team_id = None if team_id_value in (None, "") else _require_integer_field("team_id")
+
+    if team_id_value not in (None, "") and team_id is None:
+        return jsonify({"error": "team_id must be an integer when provided"}), 400
+
+    user_repo.upsert_notification_preference(
+        current_user.id,
+        team_id,
+        notify_goals=bool(payload.get("notify_goals", True)),
+        notify_cards=bool(payload.get("notify_cards", True)),
+        notify_substitutions=bool(payload.get("notify_substitutions", False)),
+    )
+    preference = user_repo.get_notification_preference(current_user.id, team_id)
+    return jsonify({"data": preference})
 
 
 @api_bp.route("/leagues")

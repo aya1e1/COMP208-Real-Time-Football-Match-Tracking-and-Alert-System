@@ -62,7 +62,25 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
   animation: pulse 1.4s ease-in-out infinite;
 }
 
-.nav-right { margin-left: auto; }
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-user {
+  font-size: .82rem;
+  color: var(--text-2);
+}
+
+.nav-user strong {
+  color: var(--text-1);
+}
+
+.nav-signout-form {
+  margin: 0;
+}
 
 .btn-ghost {
   font-size: .875rem; color: var(--text-2);

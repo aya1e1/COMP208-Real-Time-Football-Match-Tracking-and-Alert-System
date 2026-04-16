@@ -23,7 +23,7 @@ Backend code for the football match tracking and alert system.
 - `app.py`
   Creates and configures the Flask application.
 
-- `main.py`
+- `data_sync.py`
   Parses and processes data received from the API.
 
 - `external_api.py`

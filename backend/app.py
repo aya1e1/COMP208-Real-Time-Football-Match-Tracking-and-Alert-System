@@ -5,13 +5,14 @@ from dotenv import load_dotenv
 from flask import Flask
 
 from backend.db.database import init_db
+from backend.db.users import init_login_manager
 
 load_dotenv()
 
 
 def setup_data() -> None:
 
-    from backend.main import (
+    from backend.data_sync import (
         USE_MOCKS,
         sync_events,
         sync_fixture_statistics,
@@ -51,6 +52,7 @@ def create_app():
 
     # Secret key used by Flask to secure user sessions (login cookies)
     app.secret_key = os.getenv("SECRET_KEY", "dev-secret-change-in-production")
+    init_login_manager(app)
 
     # Initialise the database and sync baseline data used by the app
     setup_data()

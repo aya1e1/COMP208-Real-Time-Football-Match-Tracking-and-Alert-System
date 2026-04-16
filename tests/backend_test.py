@@ -23,7 +23,7 @@ CORE_DB_PATH = ROOT_DIR / "database" / "core.db"
 SCHEMA_PATH = ROOT_DIR / "database" / "schema.sql"
 SCHEMA_DIR = ROOT_DIR / "database" / "schema"
 DUMMY_DIR = BACKEND_DIR / "dummy"
-MAIN_PATH = BACKEND_DIR / "main.py"
+MAIN_PATH = BACKEND_DIR / "data_sync.py"
 
 
 def _install_stub_modules() -> None:
@@ -51,7 +51,7 @@ def _ensure_import_paths() -> None:
 
 
 def _load_main_module():
-    """Load backend/main.py the same way the script runs from the backend folder."""
+    """Load backend/data_sync.py the same way the script runs from the backend folder."""
     _install_stub_modules()
     _ensure_import_paths()
 
@@ -428,6 +428,80 @@ class TestExternalApiMocks(unittest.TestCase):
             data = self.external_api.api_get("/not-a-real-endpoint")
 
         self.assertIsNone(data)
+
+
+class TestUserRepository(unittest.TestCase):
+    def setUp(self):
+        _install_stub_modules()
+        _ensure_import_paths()
+        self.conn = _build_memory_db()
+
+        import backend.db.database as database_module
+        import backend.db.users as users_module
+
+        self.database_module = database_module
+        self.users_module = users_module
+        self.original_get_connection = self.database_module.get_connection
+        self.database_module.get_connection = lambda: self.conn
+
+        self.database_module.execute(
+            "INSERT INTO Teams (TeamID, Name) VALUES (?, ?)",
+            (40, "Liverpool"),
+        )
+        self.database_module.execute(
+            "INSERT INTO Player (PlayerID, Name) VALUES (?, ?)",
+            (100, "Mohamed Salah"),
+        )
+
+    def tearDown(self):
+        self.database_module.get_connection = self.original_get_connection
+        self.conn.close()
+
+    def test_create_and_authenticate_user(self):
+        user = self.users_module.create_user("tom", "Tom@example.com", "SecurePass1!")
+
+        self.assertEqual(user.username, "tom")
+        self.assertEqual(user.email, "tom@example.com")
+        self.assertNotEqual(user.password_hash, "SecurePass1!")
+
+        authenticated = self.users_module.authenticate_user("tom", "SecurePass1!")
+        self.assertIsNotNone(authenticated)
+        self.assertEqual(authenticated.id, user.id)
+
+    def test_favourite_team_and_player_round_trip(self):
+        user = self.users_module.create_user("mia", "mia@example.com", "Pass123!")
+
+        self.users_module.add_favourite_team(user.id, 40)
+        self.users_module.add_favourite_player(user.id, 100)
+
+        favourite_teams = self.users_module.list_favourite_teams(user.id)
+        favourite_players = self.users_module.list_favourite_players(user.id)
+
+        self.assertEqual(favourite_teams[0]["TeamID"], 40)
+        self.assertEqual(favourite_players[0]["PlayerID"], 100)
+
+    def test_notification_preferences_can_be_upserted(self):
+        user = self.users_module.create_user("ana", "ana@example.com", "Pass123!")
+
+        self.users_module.upsert_notification_preference(
+            user.id,
+            40,
+            notify_goals=False,
+            notify_cards=True,
+            notify_substitutions=True,
+        )
+        self.users_module.upsert_notification_preference(
+            user.id,
+            40,
+            notify_goals=True,
+            notify_cards=False,
+            notify_substitutions=False,
+        )
+
+        preference = self.users_module.get_notification_preference(user.id, 40)
+        self.assertEqual(preference["NotifyGoals"], 1)
+        self.assertEqual(preference["NotifyCards"], 0)
+        self.assertEqual(preference["NotifySubstitutions"], 0)
 
 
 @unittest.skipIf(Flask is None, "Flask is not installed in this test environment")

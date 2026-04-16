@@ -1,6 +1,7 @@
 
 responses
 flask
+flask-login
 requests
 python-dotenv
 pytest

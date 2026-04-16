@@ -1,1 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Register | Kickoff{% endblock %}
 
+{% block content %}
+<main class="page">
+  <section class="auth-shell">
+    <div class="auth-panel card auth-panel-register">
+      <div class="auth-hero auth-hero-register">
+        <span class="auth-kicker">Create Account</span>
+        <h1>Set up your football alerts in under a minute</h1>
+        <p>Create an account to save favourite teams, follow players, and tune your own notification preferences.</p>
+      </div>
+
+      <div class="auth-form-wrap">
+        {% if error %}
+        <div class="auth-alert" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('auth.register') }}" class="auth-form">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" placeholder="Choose a username" required>
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" required>
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="Create a password" required>
+
+          <button type="submit" class="auth-submit">Create account</button>
+        </form>
+
+        <p class="auth-switch">
+          Already have an account?
+          <a href="{{ url_for('auth.login_page') }}">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<style>
+  .auth-shell {
+    max-width: 980px;
+    margin: 24px auto 48px;
+  }
+
+  .auth-panel {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    min-height: 520px;
+    overflow: hidden;
+  }
+
+  .auth-hero {
+    background:
+      radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent 34%),
+      linear-gradient(135deg, #111110 0%, #16243d 100%);
+    color: #f8f8f6;
+    padding: 48px 42px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .auth-kicker {
+    display: inline-block;
+    width: fit-content;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .auth-hero h1 {
+    font-size: 2.2rem;
+    line-height: 1.05;
+  }
+
+  .auth-hero p {
+    max-width: 32ch;
+    color: rgba(248, 248, 246, 0.76);
+    line-height: 1.6;
+  }
+
+  .auth-form-wrap {
+    padding: 42px 38px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+    background: var(--surface);
+  }
+
+  .auth-form {
+    display: grid;
+    gap: 14px;
+  }
+
+  .auth-form label {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--text-2);
+  }
+
+  .auth-form input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    font: inherit;
+  }
+
+  .auth-form input:focus {
+    outline: 2px solid rgba(59, 130, 246, 0.16);
+    border-color: var(--blue);
+  }
+
+  .auth-submit {
+    margin-top: 8px;
+    padding: 13px 16px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .auth-submit:hover {
+    filter: brightness(0.96);
+  }
+
+  .auth-alert {
+    padding: 12px 14px;
+    border: 1px solid #f4b6bd;
+    border-radius: 10px;
+    background: #fff2f4;
+    color: #9e1d2b;
+    font-size: 0.92rem;
+  }
+
+  .auth-switch {
+    color: var(--text-2);
+    font-size: 0.94rem;
+  }
+
+  .auth-switch a {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  @media (max-width: 860px) {
+    .auth-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .auth-hero,
+    .auth-form-wrap {
+      padding: 28px 22px;
+    }
+
+    .auth-hero h1 {
+      font-size: 1.8rem;
+    }
+  }
+</style>
+{% endblock %}

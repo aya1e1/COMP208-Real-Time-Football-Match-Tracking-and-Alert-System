@@ -19,7 +19,14 @@
       <a href="/fixtures" {% if request.endpoint == 'fixtures_bp.show_fixtures' %}class="active"{% endif %}>Fixtures</a>
     </div>
     <div class="nav-right">
+      {% if current_user.is_authenticated %}
+      <span class="nav-user">Signed in as <strong>{{ current_user.username }}</strong></span>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="nav-signout-form">
+        <button type="submit" class="btn-ghost">Sign out</button>
+      </form>
+      {% else %}
       <a href="/auth/login" class="btn-ghost">Sign in</a>
+      {% endif %}
     </div>
   </div>
 </nav>

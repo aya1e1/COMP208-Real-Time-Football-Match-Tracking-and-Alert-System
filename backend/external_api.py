@@ -48,12 +48,25 @@ def get_mock_file_path(path: str) -> Path:
     return DUMMY_DIR / filename
 
 
+def log_api_errors(path: str, data: dict | None) -> None:
+    if not data:
+        return
+
+    errors = data.get("errors")
+    if not errors:
+        return
+
+    print(f"API response contained errors for {path}: {errors}")
+
+
 def api_get(path: str) -> dict | None:
     if USE_MOCKS:
         file_path = get_mock_file_path(path)
         try:
             with open(file_path, "r", encoding="utf-8") as file:
-                return json.load(file)
+                data = json.load(file)
+                log_api_errors(path, data)
+                return data
         except FileNotFoundError:
             print(f"Mock file not found for {path}: {file_path}")
             return None
@@ -65,6 +78,7 @@ def api_get(path: str) -> dict | None:
         response = requests.get(f"{API_LINK}{path}", headers=headers, timeout=30)
         response.raise_for_status()
         data = response.json()
+        log_api_errors(path, data)
 
         if SAVE_JSON:
             save_api_json(path, data)

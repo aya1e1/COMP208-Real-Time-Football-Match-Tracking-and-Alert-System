@@ -19,6 +19,8 @@ from backend.db import users as user_repo
 from backend.data_sync import (
     sync_events,
     sync_fixture_statistics,
+    sync_fixtures,
+    sync_standings,
     sync_team_statistics,
 )
 
@@ -160,6 +162,55 @@ def _get_fixtures_for_team_ids(
 
     sql += f" ORDER BY f.MatchDate {normalized_order} LIMIT ?"
     params.append(limit)
+    return database.query(sql, tuple(params))
+
+
+def _get_recent_fixtures_for_league_season(
+    league_id: int,
+    year: int,
+    *,
+    limit: int = 5,
+    match_date_before: str | None = None,
+) -> list[dict]:
+    sql = """
+        SELECT
+            f.FixtureID,
+            f.LeagueID,
+            l.Name AS LeagueName,
+            f.Year,
+            f.HomeTeamID,
+            ht.Name AS HomeTeam,
+            ht.Abbreviation AS HomeTeamAbbreviation,
+            ht.LogoURL AS HomeTeamLogoURL,
+            f.AwayTeamID,
+            at.Name AS AwayTeam,
+            at.Abbreviation AS AwayTeamAbbreviation,
+            at.LogoURL AS AwayTeamLogoURL,
+            f.Location,
+            f.MatchDate,
+            f.HomeScore,
+            f.AwayScore,
+            f.Status,
+            f.Elapsed
+        FROM Fixtures f
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+        WHERE f.LeagueID = ?
+          AND f.Year = ?
+    """
+    params = [league_id, year]
+
+    if match_date_before:
+        sql += " AND f.MatchDate <= ?"
+        params.append(match_date_before)
+
+    sql += " ORDER BY f.MatchDate DESC LIMIT ?"
+    params.append(limit)
+
     return database.query(sql, tuple(params))
 
 
@@ -468,6 +519,127 @@ def league_teams(league_id):
     return jsonify({
         "league": league[0],
         "teams": teams
+    })
+
+
+@api_bp.route("/leagues/<int:league_id>/seasons")
+def league_seasons(league_id):
+    league_sql = """
+        SELECT LeagueID, Name
+        FROM League
+        WHERE LeagueID = ?
+    """
+    league = database.query(league_sql, (league_id,))
+
+    if not league:
+        return jsonify({"error": "League not found"}), 404
+
+    seasons_sql = """
+        SELECT
+            Year,
+            StartDate,
+            EndDate,
+            Current
+        FROM Seasons
+        WHERE LeagueID = ?
+        ORDER BY Year DESC
+    """
+    seasons = database.query(seasons_sql, (league_id,))
+
+    return jsonify({
+        "league": league[0],
+        "seasons": seasons,
+    })
+
+
+@api_bp.route("/leagues/<int:league_id>/seasons/<int:year>")
+def league_standings(league_id, year):
+    league_sql = """
+        SELECT
+            l.LeagueID,
+            l.Name,
+            s.Year,
+            s.Current
+        FROM League l
+        LEFT JOIN Seasons s
+            ON l.LeagueID = s.LeagueID
+           AND s.Year = ?
+        WHERE l.LeagueID = ?
+    """
+    league = database.query(league_sql, (year, league_id))
+
+    if not league:
+        return jsonify({"error": "League not found"}), 404
+
+    sync_standings(league_id=league_id, season=year)
+
+    standings_sql = """
+        SELECT
+
+            lt.Year,
+            lt.TeamID,
+            t.Name AS TeamName,
+            t.Abbreviation AS TeamAbbreviation,
+            t.LogoURL AS TeamLogoURL,
+            lt.Position,
+            lt.Description,
+            lt.Points,
+            lt.Played,
+            lt.Won,
+            lt.Drawn,
+            lt.Lost,
+            lt.GF,
+            lt.GA,
+            (lt.GF - lt.GA) AS GD
+        FROM LeagueTable lt
+        JOIN League l
+            ON lt.LeagueID = l.LeagueID
+        JOIN Teams t
+            ON lt.TeamID = t.TeamID
+        WHERE lt.LeagueID = ?
+          AND lt.Year = ?
+        ORDER BY lt.Position ASC, t.Name ASC
+    """
+    standings = database.query(standings_sql, (league_id, year))
+
+    return jsonify({
+        "league": league[0],
+        "standings": standings,
+    })
+
+
+@api_bp.route("/leagues/<int:league_id>/seasons/<int:year>/recent-fixtures")
+def league_recent_fixtures(league_id, year):
+    league_sql = """
+        SELECT
+            l.LeagueID,
+            l.Name,
+            s.Year,
+            s.Current
+        FROM League l
+        LEFT JOIN Seasons s
+            ON l.LeagueID = s.LeagueID
+           AND s.Year = ?
+        WHERE l.LeagueID = ?
+    """
+    league = database.query(league_sql, (year, league_id))
+
+    if not league:
+        return jsonify({"error": "League not found"}), 404
+
+    sync_fixtures(league_id=league_id, season=year)
+
+    current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    recent_fixtures = _get_recent_fixtures_for_league_season(
+        league_id,
+        year,
+        limit=5,
+        match_date_before=current_timestamp,
+    )
+
+    return jsonify({
+        "league": league[0],
+        "recent_fixtures": recent_fixtures,
     })
 
 

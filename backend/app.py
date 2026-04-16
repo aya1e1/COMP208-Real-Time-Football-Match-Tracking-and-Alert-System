@@ -19,6 +19,7 @@ def setup_data() -> None:
         sync_fixtures,
         sync_leagues,
         sync_players,
+        sync_standings,
         sync_team_statistics,
         sync_teams,
     )
@@ -32,6 +33,7 @@ def setup_data() -> None:
     sync_leagues()
     sync_teams(league_id=39, season=2024)
     sync_fixtures(league_id=39, season=2024)
+    sync_standings(league_id=39, season=2024)
     sync_events(fixture_id=1208399)
     sync_fixture_statistics(fixture_id=1208399)
     sync_team_statistics(league_id=39, season=2024, team_id=41)
@@ -60,6 +62,7 @@ def create_app():
     # Import and register all route blueprints
     from backend.routes.main          import main_bp
     from backend.routes.fixtures      import fixtures_bp
+    from backend.routes.leagues       import leagues_bp
     from backend.routes.teams         import teams_bp
     from backend.routes.players       import players_bp
     from backend.routes.auth          import auth_bp
@@ -69,6 +72,7 @@ def create_app():
     # Register each blueprint with its URL prefix
     app.register_blueprint(main_bp)                              # /
     app.register_blueprint(fixtures_bp,  url_prefix="/fixtures") # /fixtures/...
+    app.register_blueprint(leagues_bp,   url_prefix="/leagues")  # /leagues/...
     app.register_blueprint(teams_bp,     url_prefix="/teams")    # /teams/...
     app.register_blueprint(players_bp,   url_prefix="/players")  # /players/...
     app.register_blueprint(auth_bp,      url_prefix="/auth")     # /auth/...

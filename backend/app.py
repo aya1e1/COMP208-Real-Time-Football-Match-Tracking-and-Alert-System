@@ -1,7 +1,40 @@
 """app.py: Flask application factory."""
 import os
+
+from dotenv import load_dotenv
 from flask import Flask
+
 from backend.db.database import init_db
+
+load_dotenv()
+
+
+def setup_data() -> None:
+
+    from backend.main import (
+        USE_MOCKS,
+        sync_events,
+        sync_fixture_statistics,
+        sync_fixtures,
+        sync_leagues,
+        sync_players,
+        sync_team_statistics,
+        sync_teams,
+    )
+
+    if USE_MOCKS:
+        print("Using mock API responses")
+
+    init_db()
+    print("Database initialised")
+
+    sync_leagues()
+    sync_teams(league_id=39, season=2024)
+    sync_fixtures(league_id=39, season=2024)
+    sync_events(fixture_id=1208399)
+    sync_fixture_statistics(fixture_id=1208399)
+    sync_team_statistics(league_id=39, season=2024, team_id=41)
+    sync_players(player_id=138908)
 
 
 def create_app():
@@ -19,8 +52,8 @@ def create_app():
     # Secret key used by Flask to secure user sessions (login cookies)
     app.secret_key = os.getenv("SECRET_KEY", "dev-secret-change-in-production")
 
-    # Initialise the database - creates all tables if they don't exist
-    init_db()
+    # Initialise the database and sync baseline data used by the app
+    setup_data()
 
     # Import and register all route blueprints
     from backend.routes.main          import main_bp

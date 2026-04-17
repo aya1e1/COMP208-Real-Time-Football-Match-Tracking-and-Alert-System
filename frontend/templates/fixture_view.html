@@ -70,6 +70,7 @@
 </main>
 
 <script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
 <script src="{{ url_for('static', filename='js/overview_tables.js') }}"></script>
 <script>
   const page = document.querySelector(".match-page");
@@ -88,61 +89,29 @@
   let activeRequestId = 0;
   let currentFixturePayload = null;
   const pendingVoteEventIds = new Set();
-
-  function clearPageError() {
-    errorBannerEl.innerHTML = "";
-  }
-
-  function renderPageError(message) {
-    errorBannerEl.innerHTML = window.KickoffUIErrors.render(message);
-  }
-
-  function formatDateTime(dateString) {
-    if (!dateString) {
-      return { date: "TBC", time: "" };
+  const {
+    createPageErrorController,
+    escapeHtml,
+    formatDateTime,
+    getFixtureOutcomeClasses,
+    renderTeamLogo
+  } = window.KickoffFixtureCards;
+  const pageError = createPageErrorController(errorBannerEl);
+  const matchDateTimeOptions = {
+    dateOptions: {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
     }
-
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) {
-      return { date: dateString, time: "" };
-    }
-
-    return {
-      date: date.toLocaleDateString("en-GB", {
-        weekday: "short",
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      }),
-      time: date.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    };
-  }
+  };
 
   function formatScoreValue(score) {
     return score !== null && score !== undefined ? score : "-";
   }
 
-  function getFixtureOutcomeClasses(fixture) {
-    const homeScore = Number(fixture?.HomeScore);
-    const awayScore = Number(fixture?.AwayScore);
-
-    if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore) || homeScore === awayScore) {
-      return {
-        home: "",
-        away: ""
-      };
-    }
-
-    return homeScore > awayScore
-      ? { home: "is-winner", away: "is-loser" }
-      : { home: "is-loser", away: "is-winner" };
-  }
-
   function formatDateLabel(dateString) {
-    return formatDateTime(dateString).date;
+    return formatDateTime(dateString, matchDateTimeOptions).date;
   }
 
   function formatRelativeMatchDate(dateString) {
@@ -234,15 +203,6 @@
     }
 
     return `/leagues/${leagueId}?season=${seasonYear}`;
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\"/g, "&quot;")
-      .replace(/'/g, "&#39;");
   }
 
   function renderFormDots(form) {
@@ -384,7 +344,7 @@
       voteStatusEl.classList.remove("error");
     }
 
-    clearPageError();
+    pageError.clear();
   }
 
   function setVoteStatus(message, { isError = false } = {}) {
@@ -394,16 +354,16 @@
     }
 
     if (!message) {
-      clearPageError();
+      pageError.clear();
       return;
     }
 
     if (isError) {
-      renderPageError(message);
+      pageError.render(message);
       return;
     }
 
-    clearPageError();
+    pageError.clear();
   }
 
   function getEventVoteSummary(event) {
@@ -606,24 +566,22 @@
     const homeLogo = fixture.HomeTeamLogoURL
       ? `
           <div class="fixture-team-logo-wrap">
-            <img
-              class="fixture-team-logo"
-              src="${fixture.HomeTeamLogoURL}"
-              alt="${fixture.HomeTeam || "Home Team"} logo"
-              loading="lazy"
-            >
+            ${renderTeamLogo(
+              fixture.HomeTeamLogoURL,
+              `${fixture.HomeTeam || "Home Team"} logo`,
+              "fixture-team-logo"
+            )}
           </div>
         `
       : "";
     const awayLogo = fixture.AwayTeamLogoURL
       ? `
           <div class="fixture-team-logo-wrap">
-            <img
-              class="fixture-team-logo"
-              src="${fixture.AwayTeamLogoURL}"
-              alt="${fixture.AwayTeam || "Away Team"} logo"
-              loading="lazy"
-            >
+            ${renderTeamLogo(
+              fixture.AwayTeamLogoURL,
+              `${fixture.AwayTeam || "Away Team"} logo`,
+              "fixture-team-logo"
+            )}
           </div>
         `
       : "";
@@ -879,7 +837,7 @@
   }
 
   function renderInfo(fixture) {
-    const kickoff = formatDateTime(fixture.MatchDate);
+    const kickoff = formatDateTime(fixture.MatchDate, matchDateTimeOptions);
     const leagueSeasonHref = getLeagueSeasonHref(fixture);
     const leagueInfoMarkup = leagueSeasonHref
       ? `
@@ -959,7 +917,7 @@
 
   function renderError(message) {
     clearVoteStatus();
-    renderPageError(message);
+    pageError.render(message);
     headerEl.innerHTML = `
       <div class="fixture-relative-date">Error</div>
       <h1 class="fixture-headline">Unable to load match details</h1>
@@ -979,7 +937,7 @@
   function renderFixturePayload(payload) {
     currentFixturePayload = payload;
     clearVoteStatus();
-    clearPageError();
+    pageError.clear();
     const fixture = Array.isArray(payload.data) ? payload.data[0] : null;
     const h2h = payload?.h2h || {};
     const events = Array.isArray(payload.events) ? payload.events : [];

@@ -50,15 +50,13 @@
   const favouriteTeamsEl = document.getElementById("dashboard-favourite-teams");
   const recentFixturesEl = document.getElementById("dashboard-recent-fixtures");
   const upcomingFixturesEl = document.getElementById("dashboard-upcoming-fixtures");
-  const { escapeHtml, renderTeamLogo, renderUpcomingFixtures } = window.KickoffFixtureCards;
-
-  function clearPageError() {
-    errorBannerEl.innerHTML = "";
-  }
-
-  function renderPageError(message) {
-    errorBannerEl.innerHTML = window.KickoffUIErrors.render(message);
-  }
+  const {
+    createPageErrorController,
+    escapeHtml,
+    renderTeamLogo,
+    renderUpcomingFixtures
+  } = window.KickoffFixtureCards;
+  const pageError = createPageErrorController(errorBannerEl);
 
   function renderFavouriteTeams(teams) {
     if (!teams.length) {
@@ -91,7 +89,7 @@
       return response.json();
     })
     .then((payload) => {
-      clearPageError();
+      pageError.clear();
       const data = payload?.data || {};
       renderFavouriteTeams(Array.isArray(data.favourite_teams) ? data.favourite_teams : []);
       window.KickoffRecentFixtures.render(
@@ -104,7 +102,7 @@
       );
     })
     .catch(() => {
-      renderPageError("Unable to load dashboard.");
+      pageError.render("Unable to load dashboard.");
       favouriteTeamsEl.innerHTML = '<div class="dashboard-empty-card">Dashboard data unavailable.</div>';
       recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
       upcomingFixturesEl.innerHTML = '<div class="dashboard-empty-card">Upcoming fixtures unavailable.</div>';

@@ -2,274 +2,7 @@
 {% block title %}Kickoff — Team{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
-<style>
-  .team-page {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-  }
-
-  .team-page .card {
-    border-radius: 0;
-  }
-
-  .team-page-header {
-    padding: 4px 0 2px;
-    text-align: center;
-  }
-
-  .team-header-crest {
-    width: 72px;
-    height: 72px;
-    margin: 0 auto 14px;
-    object-fit: contain;
-  }
-
-  .team-headline {
-    margin: 0;
-    font-size: clamp(1.55rem, 2vw, 2.2rem);
-    font-weight: 600;
-    letter-spacing: -0.03em;
-  }
-
-  .team-subline {
-    margin: 8px 0 0;
-    font-size: 0.98rem;
-    font-weight: 600;
-    color: #6b7280;
-  }
-
-  .team-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
-    gap: 22px;
-    align-items: start;
-  }
-
-  .team-column {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-  }
-
-  .team-section .card-body,
-  .team-summary-card .card-body {
-    padding: 18px 20px;
-  }
-
-  .team-summary-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .team-summary-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: center;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .team-summary-row:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-
-  .team-summary-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .team-summary-value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-1);
-    text-align: right;
-  }
-
-  .team-favourite-action {
-    display: inline-flex;
-    align-items: center;
-    align-self: flex-start;
-    padding: 8px 14px;
-    color: var(--text-2);
-    font-size: 0.92rem;
-    font-weight: 600;
-    transition: color .12s ease;
-    cursor: pointer;
-  }
-
-  .team-favourite-action:hover {
-    color: var(--text-1);
-  }
-
-  .team-favourite-action.active {
-    color: #b88a00;
-  }
-
-  .team-favourite-action.is-disabled {
-    opacity: 0.7;
-    cursor: progress;
-    pointer-events: none;
-  }
-
-  .team-action-status {
-    font-size: 0.9rem;
-    color: var(--text-2);
-  }
-
-  .team-action-status:not(:empty) {
-    margin-top: 10px;
-  }
-
-  .team-action-status.error {
-    color: #b42318;
-  }
-
-  .team-overview-note,
-  .team-fixtures-note {
-    margin-top: 14px;
-    font-size: 0.82rem;
-    color: var(--text-2);
-  }
-
-  .team-fixture-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .team-fixture-card {
-    display: block;
-    border: 1px solid #ececec;
-    background: #f7f7f6;
-    color: inherit;
-    transition: border-color .12s;
-  }
-
-  .team-fixture-card:hover {
-    border-color: #d8d8d8;
-  }
-
-  .team-fixture-card .card-body {
-    padding: 16px 18px;
-  }
-
-  .team-fixture-meta {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 14px;
-    font-size: 0.82rem;
-    color: var(--text-2);
-  }
-
-  .team-fixture-kickoff,
-  .team-fixture-status {
-    font-weight: 600;
-  }
-
-  .team-fixture-matchup {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: center;
-    gap: 16px;
-  }
-
-  .team-fixture-side {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
-    text-align: center;
-  }
-
-  .team-fixture-logo {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-  }
-
-  .team-fixture-team {
-    font-size: 0.94rem;
-    font-weight: 600;
-    color: var(--text-1);
-  }
-
-  .team-fixture-card.is-win .team-fixture-team,
-  .team-fixture-card.is-win .team-fixture-score {
-    color: #15803d;
-  }
-
-  .team-fixture-card.is-loss .team-fixture-team,
-  .team-fixture-card.is-loss .team-fixture-score {
-    color: #b42318;
-  }
-
-  .team-fixture-center {
-    text-align: center;
-  }
-
-  .team-fixture-score {
-    font-size: 1.9rem;
-    font-weight: 600;
-    line-height: 1;
-    color: #111;
-  }
-
-  .team-fixture-vs {
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #777;
-  }
-
-  .team-fixture-league {
-    margin-top: 14px;
-    text-align: center;
-    font-size: 0.84rem;
-    color: var(--text-2);
-  }
-
-  .team-empty {
-    color: var(--text-2);
-    font-size: 0.95rem;
-  }
-
-  @media (max-width: 860px) {
-    .team-layout {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .team-header-crest {
-      width: 60px;
-      height: 60px;
-    }
-
-    .team-fixture-matchup {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    .team-summary-row {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .team-summary-value {
-      text-align: left;
-    }
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/team_league_pages.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -334,50 +67,15 @@
   const teamOverviewEl = document.getElementById("team-overview");
   const upcomingFixtureEl = document.getElementById("team-upcoming-fixture");
   const recentFixturesEl = document.getElementById("team-recent-fixtures");
-  const { escapeHtml, formatDateTime, renderTeamLogo, renderUpcomingFixtures } = window.KickoffFixtureCards;
+  const {
+    createPageErrorController,
+    escapeHtml,
+    renderTeamLogo,
+    renderUpcomingFixtures
+  } = window.KickoffFixtureCards;
+  const pageError = createPageErrorController(errorBannerEl);
   let currentTeamPayload = null;
   let favouriteRequestPending = false;
-
-  function clearPageError() {
-    errorBannerEl.innerHTML = "";
-  }
-
-  function renderPageError(message) {
-    errorBannerEl.innerHTML = window.KickoffUIErrors.render(message);
-  }
-
-  function formatScoreValue(score) {
-    return score !== null && score !== undefined ? score : "-";
-  }
-
-  function getTeamFixtureResultClass(fixture, currentTeamId) {
-    const fixtureTeamId = Number(currentTeamId);
-    const homeTeamId = Number(fixture?.HomeTeamID);
-    const awayTeamId = Number(fixture?.AwayTeamID);
-    const homeScore = Number(fixture?.HomeScore);
-    const awayScore = Number(fixture?.AwayScore);
-
-    if (
-      !Number.isFinite(fixtureTeamId)
-      || !Number.isFinite(homeTeamId)
-      || !Number.isFinite(awayTeamId)
-      || !Number.isFinite(homeScore)
-      || !Number.isFinite(awayScore)
-      || homeScore === awayScore
-    ) {
-      return "";
-    }
-
-    const teamIsHome = fixtureTeamId === homeTeamId;
-    const teamIsAway = fixtureTeamId === awayTeamId;
-
-    if (!teamIsHome && !teamIsAway) {
-      return "";
-    }
-
-    const teamWon = teamIsHome ? homeScore > awayScore : awayScore > homeScore;
-    return teamWon ? "is-win" : "is-loss";
-  }
 
   function renderFormDots(form) {
     if (!form) {
@@ -496,44 +194,6 @@
     });
   }
 
-  function renderFixtureCard(fixture, options = {}) {
-    const kickoff = formatDateTime(fixture.MatchDate, {
-      dateOptions: {
-        weekday: "short",
-        day: "2-digit",
-        month: "short"
-      }
-    });
-    const status = fixture.Status || (options.upcoming ? "NS" : "FT");
-    const resultClass = options.upcoming ? "" : getTeamFixtureResultClass(fixture, teamId);
-    const centerLabel = options.upcoming
-      ? `<div class="team-fixture-vs">vs</div>`
-      : `<div class="team-fixture-score">${escapeHtml(formatScoreValue(fixture.HomeScore))} - ${escapeHtml(formatScoreValue(fixture.AwayScore))}</div>`;
-
-    return `
-      <a href="/fixtures/${fixture.FixtureID}" class="card team-fixture-card ${resultClass}">
-        <div class="card-body">
-          <div class="team-fixture-meta">
-            <div class="team-fixture-kickoff">${escapeHtml(kickoff.date)} @ ${escapeHtml(kickoff.time || "TBC")}</div>
-            <div class="team-fixture-status">${escapeHtml(status)}</div>
-          </div>
-          <div class="team-fixture-matchup">
-            <div class="team-fixture-side">
-              ${renderTeamLogo(fixture.HomeTeamLogoURL, `${fixture.HomeTeam} logo`, "team-fixture-logo")}
-              <div class="team-fixture-team">${escapeHtml(fixture.HomeTeam)}</div>
-            </div>
-            <div class="team-fixture-center">${centerLabel}</div>
-            <div class="team-fixture-side">
-              ${renderTeamLogo(fixture.AwayTeamLogoURL, `${fixture.AwayTeam} logo`, "team-fixture-logo")}
-              <div class="team-fixture-team">${escapeHtml(fixture.AwayTeam)}</div>
-            </div>
-          </div>
-          <div class="team-fixture-league">${escapeHtml(fixture.LeagueName || "League fixture")}</div>
-        </div>
-      </a>
-    `;
-  }
-
   function renderUpcomingFixture(fixture) {
     renderUpcomingFixtures(upcomingFixtureEl, fixture ? [fixture] : [], {
       emptyMessage: "No upcoming fixture found",
@@ -573,7 +233,7 @@
 
     statusEl.textContent = "";
     statusEl.classList.remove("error");
-    clearPageError();
+    pageError.clear();
   }
 
   function setActionStatus(message, { isError = false } = {}) {
@@ -586,16 +246,16 @@
     statusEl.classList.remove("error");
 
     if (!message) {
-      clearPageError();
+      pageError.clear();
       return;
     }
 
     if (isError) {
-      renderPageError(message);
+      pageError.render(message);
       return;
     }
 
-    clearPageError();
+    pageError.clear();
   }
 
   function setFavouriteButtonPending(isPending) {
@@ -680,7 +340,7 @@
 
   function renderTeamPage(payload) {
     currentTeamPayload = payload;
-    clearPageError();
+    pageError.clear();
     const team = payload?.data;
 
     if (!team) {
@@ -697,7 +357,7 @@
   }
 
   function renderErrorState(message = "Unable to load team details.") {
-    renderPageError(message);
+    pageError.render(message);
     teamHeaderEl.innerHTML = '<div class="team-empty">Team details unavailable.</div>';
     teamSummaryEl.innerHTML = '<div class="team-empty">Team details unavailable.</div>';
     teamOverviewEl.innerHTML = '<div class="team-empty">Overview unavailable.</div>';

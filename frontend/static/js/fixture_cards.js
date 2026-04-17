@@ -1,4 +1,24 @@
 (function attachFixtureCards() {
+  function createPageErrorController(container) {
+    return {
+      clear() {
+        if (container) {
+          container.innerHTML = "";
+        }
+      },
+      render(message) {
+        if (!container) {
+          return;
+        }
+
+        const renderError = window.KickoffUIErrors?.render;
+        container.innerHTML = typeof renderError === "function"
+          ? renderError(message)
+          : escapeHtml(message);
+      }
+    };
+  }
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replace(/&/g, "&amp;")
@@ -9,13 +29,14 @@
   }
 
   function formatDateTime(dateString, options = {}) {
+    const emptyDateLabel = options.emptyDateLabel || "TBC";
     if (!dateString) {
-      return { date: "TBC", time: "" };
+      return { date: emptyDateLabel, time: "" };
     }
 
     const date = new Date(dateString);
     if (Number.isNaN(date.getTime())) {
-      return { date: escapeHtml(dateString), time: "" };
+      return { date: String(dateString ?? ""), time: "" };
     }
 
     const dateOptions = options.dateOptions || {
@@ -33,12 +54,19 @@
     };
   }
 
-  function renderTeamLogo(url, alt, className) {
+  function renderTeamLogo(url, alt, className, options = {}) {
     if (!url) {
       return "";
     }
 
-    return `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" class="${escapeHtml(className)}" loading="lazy">`;
+    const widthAttribute = options.width !== undefined && options.width !== null
+      ? ` width="${escapeHtml(options.width)}"`
+      : "";
+    const heightAttribute = options.height !== undefined && options.height !== null
+      ? ` height="${escapeHtml(options.height)}"`
+      : "";
+
+    return `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" class="${escapeHtml(className)}"${widthAttribute}${heightAttribute} loading="lazy">`;
   }
 
   function getFixtureOutcomeClasses(fixture) {
@@ -102,6 +130,7 @@
   }
 
   window.KickoffFixtureCards = {
+    createPageErrorController,
     escapeHtml,
     formatDateTime,
     getFixtureOutcomeClasses,

@@ -2,81 +2,7 @@
 {% block title %}Kickoff — League Standings{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
-<style>
-  .league-view-page {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .league-view-page .card {
-    border-radius: 0;
-  }
-
-  .league-page-header {
-    padding: 4px 0 2px;
-    text-align: center;
-  }
-
-  .league-headline {
-    margin: 0;
-    font-size: clamp(1.55rem, 2vw, 2.2rem);
-    font-weight: 600;
-    letter-spacing: -0.03em;
-  }
-
-  .league-season-switcher {
-    padding: 2px 0 2px;
-  }
-
-  .league-season-switcher.fixture-h2h-nav {
-    display: flex;
-    justify-content: flex-start;
-    gap: 0;
-  }
-
-  .league-season-switcher .fixture-h2h-group,
-  .league-season-switcher .fixture-h2h-group.right {
-    justify-content: flex-start;
-  }
-
-  .league-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
-    gap: 22px;
-    align-items: start;
-  }
-
-  .league-column {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-  }
-
-  .league-section .card-body {
-    padding: 18px 20px;
-  }
-
-  .league-fixture-section {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-
-  .league-fixture-section .fixture-section-title {
-    margin-bottom: 0;
-  }
-
-  .league-standings-wrap {
-    overflow-x: auto;
-  }
-
-  @media (max-width: 980px) {
-    .league-layout {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/team_league_pages.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -129,57 +55,16 @@
   const seasonSwitcherEl = document.getElementById("league-season-switcher");
   const standingsEl = document.getElementById("league-standings");
   const recentFixturesEl = document.getElementById("league-recent-fixtures");
+  const {
+    createPageErrorController,
+    escapeHtml,
+    renderTeamLogo
+  } = window.KickoffFixtureCards;
+  const pageError = createPageErrorController(errorBannerEl);
 
   let leagueSeasons = [];
   let selectedSeasonYear = null;
   let leagueName = "League";
-
-  function clearPageError() {
-    errorBannerEl.innerHTML = "";
-  }
-
-  function renderPageError(message) {
-    errorBannerEl.innerHTML = window.KickoffUIErrors.render(message);
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
-  function formatDateTime(dateString) {
-    if (!dateString) {
-      return { date: "TBC", time: "" };
-    }
-
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) {
-      return { date: escapeHtml(dateString), time: "" };
-    }
-
-    return {
-      date: date.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short"
-      }),
-      time: date.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    };
-  }
-
-  function renderTeamLogo(url, alt, className) {
-    if (!url) {
-      return "";
-    }
-
-    return `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" class="${className}" loading="lazy">`;
-  }
 
   function renderHeader() {
     headerEl.innerHTML = `
@@ -248,9 +133,12 @@
         { className: "team-value", content: row.Position },
         {
           className: "team-value",
-          content: row.TeamLogoURL
-            ? `<img src="${escapeHtml(row.TeamLogoURL)}" alt="${escapeHtml(row.TeamName)} logo" width="22" height="22" loading="lazy">`
-            : "",
+          content: renderTeamLogo(
+            row.TeamLogoURL,
+            `${row.TeamName} logo`,
+            "league-standings-team-logo",
+            { width: 22, height: 22 }
+          ),
           raw: true
         },
         {
@@ -283,7 +171,7 @@
     const fixturesPayload = await fixturesResponse.json();
 
     leagueName = standingsPayload?.league?.Name || fixturesPayload?.league?.Name || leagueName;
-    clearPageError();
+    pageError.clear();
     renderHeader();
     renderStandings(Array.isArray(standingsPayload?.standings) ? standingsPayload.standings : []);
     window.KickoffRecentFixtures.render(
@@ -315,13 +203,13 @@
       renderSeasonSwitcher();
       standingsEl.innerHTML = previousStandingsHtml || '<div class="fixture-empty">Standings unavailable.</div>';
       recentFixturesEl.innerHTML = previousRecentFixturesHtml || '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
-      renderPageError(message);
+      pageError.render(message);
     }
   }
 
   async function initialiseLeaguePage() {
     if (!Number.isFinite(leagueId)) {
-      renderPageError("Unable to load league details.");
+      pageError.render("Unable to load league details.");
       renderHeader();
       seasonSwitcherEl.innerHTML = '<div class="fixture-empty">Season data unavailable.</div>';
       standingsEl.innerHTML = '<div class="fixture-empty">Standings unavailable.</div>';
@@ -356,7 +244,7 @@
 
   initialiseLeaguePage().catch((error) => {
     const message = window.KickoffUIErrors.resolveMessage(error, "Unable to load league details.");
-    renderPageError(message);
+    pageError.render(message);
     renderHeader();
     seasonSwitcherEl.innerHTML = '<div class="fixture-empty">Season data unavailable.</div>';
     standingsEl.innerHTML = '<div class="fixture-empty">Standings unavailable.</div>';

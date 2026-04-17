@@ -21,20 +21,7 @@
       return fallbackMessage;
     }
 
-    const normalized = String(message).trim();
-    const lower = normalized.toLowerCase();
-
-    if (
-      lower.includes("networkerror")
-      || lower.includes("failed to fetch")
-      || lower.includes("load failed")
-      || lower.includes("network request failed")
-      || lower.includes("fetch resource")
-    ) {
-      return fallbackMessage;
-    }
-
-    return normalized;
+    return String(message).trim() || fallbackMessage;
   }
 
   window.KickoffUIErrors = {

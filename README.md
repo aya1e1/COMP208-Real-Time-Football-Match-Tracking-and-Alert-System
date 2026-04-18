@@ -116,9 +116,9 @@ All responses are cached in SQLite to stay within the free tier limit.
 
 To do:
 
-- Correct data parsing for leagues in data_sync.py (logo + country not passed through)
-    - Then, pass through the league logo in the API (fixture() function)
-        - Add the league logo to fixture_view.html
+- <s>Correct data parsing for leagues in data_sync.py (logo + country not passed through)--
+    - --Then, pass through the league logo in the API (fixture() function)--
+        - --Add the league logo to fixture_view.html--</s> Done
 
 - Fix frontend homepage
 - Add player pages

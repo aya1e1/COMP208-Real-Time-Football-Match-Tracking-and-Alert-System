@@ -107,8 +107,8 @@ All responses are cached in SQLite to stay within the free tier limit.
 | Jacob Daya | Database & Backend | @kedachii |
 | Aya El Khayat | API Integration, Database, Testing, DevOps | @aya1e1 |
 | Tom Sutton | Backend | @Thomas-Sutton-0 |
-| Best Boonthanomwong | ... | @nongbed |
-| Hamza Al Zudi Garcia-Olalla | ... | @HAZ-GO |
+| Best Boonthanomwong | Frontend | @nongbed |
+| Hamza Al Zudi Garcia-Olalla | Frontend | @HAZ-GO |
 | Balqis Binti Abdul Halim | Database & Backend| @balqishalim |
 | Ziad Azmi | Backend & Frontend | @ziad-304 |
 

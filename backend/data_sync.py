@@ -29,11 +29,12 @@ def parse_leagues(data: dict) -> tuple[list[tuple], list[tuple]]:
         league = item.get("league", {})
         league_id = league.get("id")
         league_name = league.get("name")
+        league_logo = league.get("logo")
 
         if not league_id or not league_name:
             continue
 
-        leagues.append((league_id, league_name))
+        leagues.append((league_id, league_name, country, league_logo))
 
         for season in item.get("seasons", []):
             year = season.get("year")
@@ -48,10 +49,17 @@ def parse_leagues(data: dict) -> tuple[list[tuple], list[tuple]]:
 
 
 def save_leagues(leagues: list[tuple]) -> None:
-    for league_id, league_name in leagues:
+    for league_id, league_name, country, logo_url in leagues:
         database.execute(
-            "INSERT OR IGNORE INTO League (LeagueID, Name) VALUES (?, ?);",
-            (league_id, league_name),
+            """
+            INSERT INTO League (LeagueID, Name, Country, LogoURL)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(LeagueID) DO UPDATE SET
+                Name = excluded.Name,
+                Country = excluded.Country,
+                LogoURL = excluded.LogoURL;
+            """,
+            (league_id, league_name, country, logo_url),
         )
 
 
@@ -88,8 +96,7 @@ def parse_teams(data: dict) -> tuple[list[tuple], list[tuple]]:
         team = item.get("team", {})
         venue = item.get("venue", {})
 
-        if team.get("country") != "England":
-            continue
+
 
         team_id = team.get("id")
         team_name = team.get("name")

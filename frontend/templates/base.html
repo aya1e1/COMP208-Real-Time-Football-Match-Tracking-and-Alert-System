@@ -14,6 +14,7 @@
     <a href="/" class="nav-logo">Kick<span>off</span></a>
     <div class="nav-links">
       <a href="/" {% if request.endpoint == 'main.home' %}class="active"{% endif %}>Home</a>
+      <a href="/leagues" {% if request.endpoint == 'leagues.leagues' %}class="active"{% endif %}>Leagues</a>
       <a href="/live" {% if request.endpoint == 'main.live' %}class="active"{% endif %}>
         Live <span class="nav-live-badge">3</span>
       </a>

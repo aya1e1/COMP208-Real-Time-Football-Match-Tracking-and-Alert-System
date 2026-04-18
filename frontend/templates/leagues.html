@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Kickoff — Leagues{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/team_league_pages.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="page leagues-page">
+  <div id="leagues-error-banner" class="page-error-banner" aria-live="polite"></div>
+
+  <header class="leagues-page-header">
+    <h1 class="leagues-headline">Leagues</h1>
+  </header>
+
+  <section>
+    <div id="leagues-grid" class="dashboard-team-grid" aria-live="polite">
+      <div class="dashboard-empty-card">Loading leagues...</div>
+    </div>
+  </section>
+</main>
+
+<script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
+<script>
+  const errorBannerEl = document.getElementById("leagues-error-banner");
+  const leaguesGridEl = document.getElementById("leagues-grid");
+  const {
+    createPageErrorController,
+    escapeHtml
+  } = window.KickoffFixtureCards;
+  const pageError = createPageErrorController(errorBannerEl);
+
+  function renderLeagueLogo(logoUrl, altText) {
+    if (!logoUrl) {
+      return '<div class="dashboard-team-logo leagues-logo-placeholder" aria-hidden="true"></div>';
+    }
+
+    return `<img class="dashboard-team-logo" src="${escapeHtml(logoUrl)}" alt="${escapeHtml(altText)}" loading="lazy">`;
+  }
+
+  function renderLeagues(leagues) {
+    if (!leagues.length) {
+      leaguesGridEl.innerHTML = '<div class="dashboard-empty-card">No leagues available.</div>';
+      return;
+    }
+
+    leaguesGridEl.innerHTML = leagues.map((league) => `
+      <a href="/leagues/${Number(league.LeagueID)}" class="card dashboard-team-card">
+        <div class="card-body">
+          <div class="dashboard-team-card-inner">
+            ${renderLeagueLogo(league.LogoURL, `${league.Name} logo`)}
+            <h2 class="dashboard-team-name leagues-card-title">${escapeHtml(league.Name || "League")}</h2>
+          </div>
+        </div>
+      </a>
+    `).join("");
+  }
+
+  fetch("/api/leagues")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Unable to load leagues.");
+      }
+
+      return response.json();
+    })
+    .then((leagues) => {
+      pageError.clear();
+      renderLeagues(Array.isArray(leagues) ? leagues : []);
+    })
+    .catch((error) => {
+      const message = window.KickoffUIErrors.resolveMessage(error, "Unable to load leagues.");
+      pageError.render(message);
+      leaguesGridEl.innerHTML = '<div class="dashboard-empty-card">League data unavailable.</div>';
+    });
+</script>
+{% endblock %}

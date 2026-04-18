@@ -4,6 +4,37 @@
   gap: 20px;
 }
 
+.leagues-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.leagues-page .card {
+  border-radius: 0;
+}
+
+.leagues-page-header {
+  padding: 4px 0 2px;
+  text-align: center;
+}
+
+.leagues-headline {
+  margin: 0;
+  font-size: clamp(1.55rem, 2vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.leagues-logo-placeholder {
+  border: 1px solid var(--border);
+  background: #f5f5f5;
+}
+
+.leagues-card-title {
+  margin: 0;
+}
+
 .league-view-page .card {
   border-radius: 0;
 }

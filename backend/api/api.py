@@ -21,6 +21,7 @@ from backend.data_sync import (
     sync_fixture_statistics,
     sync_fixtures,
     sync_standings,
+    sync_teams,
     sync_team_statistics,
 )
 
@@ -291,6 +292,23 @@ def _get_team_statistics_row(team_id: int) -> dict | None:
     return rows[0] if rows else None
 
 
+def _get_team_statistics_context(team_id: int) -> dict | None:
+    rows = database.query(
+        """
+        SELECT
+            LeagueID,
+            Year
+        FROM Fixtures
+        WHERE HomeTeamID = ?
+           OR AwayTeamID = ?
+        ORDER BY MatchDate DESC
+        LIMIT 1
+        """,
+        (team_id, team_id),
+    )
+    return rows[0] if rows else None
+
+
 def _require_integer_field(name: str) -> int | None:
     payload = request.get_json(silent=True) or {}
     value = payload.get(name)
@@ -491,7 +509,7 @@ def delete_event_vote():
 @api_bp.route("/leagues")
 def leagues():
     sql = """
-        SELECT LeagueID, Name
+        SELECT LeagueID, Name, Country, LogoURL
         FROM League
         ORDER BY Name
     """
@@ -503,7 +521,7 @@ def leagues():
 def league_teams(league_id):
 
     league_sql = """
-        SELECT LeagueID, Name
+        SELECT LeagueID, Name, Country, LogoURL
         FROM League
         WHERE LeagueID = ?
     """
@@ -536,7 +554,7 @@ def league_teams(league_id):
 @api_bp.route("/leagues/<int:league_id>/seasons")
 def league_seasons(league_id):
     league_sql = """
-        SELECT LeagueID, Name
+        SELECT LeagueID, Name, Country, LogoURL
         FROM League
         WHERE LeagueID = ?
     """
@@ -569,6 +587,8 @@ def league_standings(league_id, year):
         SELECT
             l.LeagueID,
             l.Name,
+            l.Country,
+            l.LogoURL,
             s.Year,
             s.Current
         FROM League l
@@ -625,6 +645,8 @@ def league_recent_fixtures(league_id, year):
         SELECT
             l.LeagueID,
             l.Name,
+            l.Country,
+            l.LogoURL,
             s.Year,
             s.Current
         FROM League l
@@ -638,6 +660,7 @@ def league_recent_fixtures(league_id, year):
     if not league:
         return jsonify({"error": "League not found"}), 404
 
+    sync_teams(league_id=league_id, season=year)
     sync_fixtures(league_id=league_id, season=year)
 
     current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -731,6 +754,14 @@ def team(team_id):
 
     if not team_data:
         return jsonify({"error": "Team not found"}), 404
+
+    statistics_context = _get_team_statistics_context(team_id)
+    if statistics_context:
+        sync_team_statistics(
+            league_id=statistics_context["LeagueID"],
+            season=statistics_context["Year"],
+            team_id=team_id,
+        )
 
     current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     statistics_row = _get_team_statistics_row(team_id)

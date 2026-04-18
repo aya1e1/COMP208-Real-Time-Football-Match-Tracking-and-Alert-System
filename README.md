@@ -47,7 +47,7 @@ cp .env.example .env
 ### 4. Run the app
 ```bash
 python run.py
-# Visit http://146.59.232.207:5000/
+# Visit http://localhost:5000
 ```
 
 ---

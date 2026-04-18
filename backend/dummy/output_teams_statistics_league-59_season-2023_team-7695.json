@@ -1,0 +1,17 @@
+{
+    "get": "teams/statistics",
+    "parameters": {
+        "league": "59",
+        "season": "2023",
+        "team": "7695"
+    },
+    "errors": {
+        "rateLimit": "Too many requests. Your rate limit is 10 requests per minute."
+    },
+    "results": 0,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": []
+}

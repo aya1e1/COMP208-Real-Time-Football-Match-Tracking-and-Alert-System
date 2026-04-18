@@ -1,0 +1,55 @@
+{
+    "get": "teams",
+    "parameters": {
+        "league": "528",
+        "season": "2023"
+    },
+    "errors": [],
+    "results": 2,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "team": {
+                "id": 42,
+                "name": "Arsenal",
+                "code": "ARS",
+                "country": "England",
+                "founded": 1886,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/42.png"
+            },
+            "venue": {
+                "id": 494,
+                "name": "Emirates Stadium",
+                "address": "Hornsey Road",
+                "city": "London",
+                "capacity": 60383,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/494.png"
+            }
+        },
+        {
+            "team": {
+                "id": 50,
+                "name": "Manchester City",
+                "code": "MCI",
+                "country": "England",
+                "founded": 1880,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/50.png"
+            },
+            "venue": {
+                "id": 555,
+                "name": "Etihad Stadium",
+                "address": "Rowsley Street",
+                "city": "Manchester",
+                "capacity": 55097,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/555.png"
+            }
+        }
+    ]
+}

@@ -1,0 +1,58 @@
+{
+    "get": "fixtures/events",
+    "parameters": {
+        "fixture": "1078317"
+    },
+    "errors": [],
+    "results": 2,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "time": {
+                "elapsed": 75,
+                "extra": null
+            },
+            "team": {
+                "id": 8918,
+                "name": "Rylands",
+                "logo": "https://media.api-sports.io/football/teams/8918.png"
+            },
+            "player": {
+                "id": 53231,
+                "name": "M. Touray"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 90,
+                "extra": 5
+            },
+            "team": {
+                "id": 8918,
+                "name": "Rylands",
+                "logo": "https://media.api-sports.io/football/teams/8918.png"
+            },
+            "player": {
+                "id": null,
+                "name": "B. Hardcastle"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        }
+    ]
+}

@@ -1,0 +1,1855 @@
+{
+    "get": "teams",
+    "parameters": {
+        "league": "48",
+        "season": "2024"
+    },
+    "errors": [],
+    "results": 92,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "team": {
+                "id": 33,
+                "name": "Manchester United",
+                "code": "MUN",
+                "country": "England",
+                "founded": 1878,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/33.png"
+            },
+            "venue": {
+                "id": 556,
+                "name": "Old Trafford",
+                "address": "Sir Matt Busby Way",
+                "city": "Manchester",
+                "capacity": 76212,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/556.png"
+            }
+        },
+        {
+            "team": {
+                "id": 34,
+                "name": "Newcastle",
+                "code": "NEW",
+                "country": "England",
+                "founded": 1892,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/34.png"
+            },
+            "venue": {
+                "id": 562,
+                "name": "St. James' Park",
+                "address": "St. James&apos; Street",
+                "city": "Newcastle upon Tyne",
+                "capacity": 52758,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/562.png"
+            }
+        },
+        {
+            "team": {
+                "id": 35,
+                "name": "Bournemouth",
+                "code": "BOU",
+                "country": "England",
+                "founded": 1899,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/35.png"
+            },
+            "venue": {
+                "id": 504,
+                "name": "Vitality Stadium",
+                "address": "Dean Court, Kings Park",
+                "city": "Bournemouth, Dorset",
+                "capacity": 12000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/504.png"
+            }
+        },
+        {
+            "team": {
+                "id": 36,
+                "name": "Fulham",
+                "code": "FUL",
+                "country": "England",
+                "founded": 1879,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/36.png"
+            },
+            "venue": {
+                "id": 535,
+                "name": "Craven Cottage",
+                "address": "Stevenage Road",
+                "city": "London",
+                "capacity": 29589,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/535.png"
+            }
+        },
+        {
+            "team": {
+                "id": 37,
+                "name": "Huddersfield",
+                "code": "HUD",
+                "country": "England",
+                "founded": 1908,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/37.png"
+            },
+            "venue": {
+                "id": 543,
+                "name": "John Smith's Stadium",
+                "address": "Stadium Way",
+                "city": "Huddersfield, West Yorkshire",
+                "capacity": 24554,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/543.png"
+            }
+        },
+        {
+            "team": {
+                "id": 38,
+                "name": "Watford",
+                "code": "WAT",
+                "country": "England",
+                "founded": 1881,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/38.png"
+            },
+            "venue": {
+                "id": 596,
+                "name": "Vicarage Road",
+                "address": "Vicarage Road",
+                "city": "Watford",
+                "capacity": 22200,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/596.png"
+            }
+        },
+        {
+            "team": {
+                "id": 39,
+                "name": "Wolves",
+                "code": "WOL",
+                "country": "England",
+                "founded": 1877,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/39.png"
+            },
+            "venue": {
+                "id": 600,
+                "name": "Molineux Stadium",
+                "address": "Waterloo Road",
+                "city": "Wolverhampton, West Midlands",
+                "capacity": 34624,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/600.png"
+            }
+        },
+        {
+            "team": {
+                "id": 40,
+                "name": "Liverpool",
+                "code": "LIV",
+                "country": "England",
+                "founded": 1892,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/40.png"
+            },
+            "venue": {
+                "id": 550,
+                "name": "Anfield",
+                "address": "Anfield Road",
+                "city": "Liverpool",
+                "capacity": 61276,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/550.png"
+            }
+        },
+        {
+            "team": {
+                "id": 41,
+                "name": "Southampton",
+                "code": "SOU",
+                "country": "England",
+                "founded": 1885,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/41.png"
+            },
+            "venue": {
+                "id": 585,
+                "name": "St. Mary's Stadium",
+                "address": "Britannia Road",
+                "city": "Southampton, Hampshire",
+                "capacity": 32689,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/585.png"
+            }
+        },
+        {
+            "team": {
+                "id": 42,
+                "name": "Arsenal",
+                "code": "ARS",
+                "country": "England",
+                "founded": 1886,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/42.png"
+            },
+            "venue": {
+                "id": 494,
+                "name": "Emirates Stadium",
+                "address": "Hornsey Road",
+                "city": "London",
+                "capacity": 60383,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/494.png"
+            }
+        },
+        {
+            "team": {
+                "id": 43,
+                "name": "Cardiff",
+                "code": "CAR",
+                "country": "Wales",
+                "founded": 1889,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/43.png"
+            },
+            "venue": {
+                "id": 516,
+                "name": "Cardiff City Stadium",
+                "address": "Leckwith Road",
+                "city": "Caerdydd",
+                "capacity": 33280,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/516.png"
+            }
+        },
+        {
+            "team": {
+                "id": 44,
+                "name": "Burnley",
+                "code": "BUR",
+                "country": "England",
+                "founded": 1882,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/44.png"
+            },
+            "venue": {
+                "id": 512,
+                "name": "Turf Moor",
+                "address": "Harry Potts Way",
+                "city": "Burnley",
+                "capacity": 22546,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/512.png"
+            }
+        },
+        {
+            "team": {
+                "id": 45,
+                "name": "Everton",
+                "code": "EVE",
+                "country": "England",
+                "founded": 1878,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/45.png"
+            },
+            "venue": {
+                "id": 22033,
+                "name": "Hill Dickinson Stadium",
+                "address": "35 Regent Road, Bramley-Moore Dock, Vauxhall",
+                "city": "Liverpool, Merseyside",
+                "capacity": 52888,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/22033.png"
+            }
+        },
+        {
+            "team": {
+                "id": 46,
+                "name": "Leicester",
+                "code": "LEI",
+                "country": "England",
+                "founded": 1884,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/46.png"
+            },
+            "venue": {
+                "id": 547,
+                "name": "King Power Stadium",
+                "address": "Filbert Way",
+                "city": "Leicester, Leicestershire",
+                "capacity": 34310,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/547.png"
+            }
+        },
+        {
+            "team": {
+                "id": 47,
+                "name": "Tottenham",
+                "code": "TOT",
+                "country": "England",
+                "founded": 1882,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/47.png"
+            },
+            "venue": {
+                "id": 593,
+                "name": "Tottenham Hotspur Stadium",
+                "address": "Bill Nicholson Way, 748 High Road",
+                "city": "London",
+                "capacity": 62850,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/593.png"
+            }
+        },
+        {
+            "team": {
+                "id": 48,
+                "name": "West Ham",
+                "code": "WES",
+                "country": "England",
+                "founded": 1895,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/48.png"
+            },
+            "venue": {
+                "id": 598,
+                "name": "London Stadium",
+                "address": "Marshgate Lane, Stratford",
+                "city": "London",
+                "capacity": 64472,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/598.png"
+            }
+        },
+        {
+            "team": {
+                "id": 49,
+                "name": "Chelsea",
+                "code": "CHE",
+                "country": "England",
+                "founded": 1905,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/49.png"
+            },
+            "venue": {
+                "id": 519,
+                "name": "Stamford Bridge",
+                "address": "Fulham Road",
+                "city": "London",
+                "capacity": 41841,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/519.png"
+            }
+        },
+        {
+            "team": {
+                "id": 50,
+                "name": "Manchester City",
+                "code": "MCI",
+                "country": "England",
+                "founded": 1880,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/50.png"
+            },
+            "venue": {
+                "id": 555,
+                "name": "Etihad Stadium",
+                "address": "Rowsley Street",
+                "city": "Manchester",
+                "capacity": 55097,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/555.png"
+            }
+        },
+        {
+            "team": {
+                "id": 51,
+                "name": "Brighton",
+                "code": "BRI",
+                "country": "England",
+                "founded": 1901,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/51.png"
+            },
+            "venue": {
+                "id": 508,
+                "name": "American Express Stadium",
+                "address": "Village Way",
+                "city": "Falmer, East Sussex",
+                "capacity": 31872,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/508.png"
+            }
+        },
+        {
+            "team": {
+                "id": 52,
+                "name": "Crystal Palace",
+                "code": "CRY",
+                "country": "England",
+                "founded": 1861,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/52.png"
+            },
+            "venue": {
+                "id": 525,
+                "name": "Selhurst Park",
+                "address": "Holmesdale Road",
+                "city": "London",
+                "capacity": 26309,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/525.png"
+            }
+        },
+        {
+            "team": {
+                "id": 53,
+                "name": "Reading",
+                "code": "REA",
+                "country": "England",
+                "founded": 1871,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/53.png"
+            },
+            "venue": {
+                "id": 12052,
+                "name": "Select Car Leasing Stadium",
+                "address": "Shooters Way / Junction 11, M4",
+                "city": "Reading, Berkshire",
+                "capacity": 24200,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/12052.png"
+            }
+        },
+        {
+            "team": {
+                "id": 54,
+                "name": "Birmingham",
+                "code": "BIR",
+                "country": "England",
+                "founded": 1875,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/54.png"
+            },
+            "venue": {
+                "id": 12596,
+                "name": "St Andrew's Stadium",
+                "address": "St. Andrew&apos;s Road",
+                "city": "Birmingham",
+                "capacity": 30009,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/12596.png"
+            }
+        },
+        {
+            "team": {
+                "id": 55,
+                "name": "Brentford",
+                "code": "BRE",
+                "country": "England",
+                "founded": 1889,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/55.png"
+            },
+            "venue": {
+                "id": 10503,
+                "name": "Gtech Community Stadium",
+                "address": "166 Lionel Rd N, Brentford",
+                "city": "Brentford, Middlesex",
+                "capacity": 17250,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/10503.png"
+            }
+        },
+        {
+            "team": {
+                "id": 56,
+                "name": "Bristol City",
+                "code": "BRI",
+                "country": "England",
+                "founded": 1894,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/56.png"
+            },
+            "venue": {
+                "id": 20106,
+                "name": "Ashton Gate Stadium",
+                "address": "Ashton Road",
+                "city": "Bristol",
+                "capacity": 27000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/20106.png"
+            }
+        },
+        {
+            "team": {
+                "id": 57,
+                "name": "Ipswich",
+                "code": "IPS",
+                "country": "England",
+                "founded": 1878,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/57.png"
+            },
+            "venue": {
+                "id": 545,
+                "name": "Portman Road",
+                "address": "Portman Road",
+                "city": "Ipswich, Suffolk",
+                "capacity": 30311,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/545.png"
+            }
+        },
+        {
+            "team": {
+                "id": 58,
+                "name": "Millwall",
+                "code": "MIL",
+                "country": "England",
+                "founded": 1885,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/58.png"
+            },
+            "venue": {
+                "id": 559,
+                "name": "The Den",
+                "address": "Zampa Road, Bermondsey",
+                "city": "London",
+                "capacity": 20146,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/559.png"
+            }
+        },
+        {
+            "team": {
+                "id": 59,
+                "name": "Preston",
+                "code": "PRE",
+                "country": "England",
+                "founded": 1863,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/59.png"
+            },
+            "venue": {
+                "id": 574,
+                "name": "Deepdale",
+                "address": "Deepdale Road",
+                "city": "Preston",
+                "capacity": 23408,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/574.png"
+            }
+        },
+        {
+            "team": {
+                "id": 60,
+                "name": "West Brom",
+                "code": "WES",
+                "country": "England",
+                "founded": 1878,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/60.png"
+            },
+            "venue": {
+                "id": 597,
+                "name": "The Hawthorns",
+                "address": "Halfords Lane",
+                "city": "West Bromwich",
+                "capacity": 28003,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/597.png"
+            }
+        },
+        {
+            "team": {
+                "id": 61,
+                "name": "Wigan",
+                "code": "WIG",
+                "country": "England",
+                "founded": 1932,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/61.png"
+            },
+            "venue": {
+                "id": 599,
+                "name": "DW Stadium",
+                "address": "Robin Park, Loire Drive",
+                "city": "Wigan",
+                "capacity": 25138,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/599.png"
+            }
+        },
+        {
+            "team": {
+                "id": 62,
+                "name": "Sheffield Utd",
+                "code": "SHE",
+                "country": "England",
+                "founded": 1889,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/62.png"
+            },
+            "venue": {
+                "id": 581,
+                "name": "Bramall Lane",
+                "address": "Bramall Lane",
+                "city": "Sheffield",
+                "capacity": 32702,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/581.png"
+            }
+        },
+        {
+            "team": {
+                "id": 63,
+                "name": "Leeds",
+                "code": "LEE",
+                "country": "England",
+                "founded": 1919,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/63.png"
+            },
+            "venue": {
+                "id": 546,
+                "name": "Elland Road",
+                "address": "Elland Road",
+                "city": "Leeds, West Yorkshire",
+                "capacity": 40204,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/546.png"
+            }
+        },
+        {
+            "team": {
+                "id": 64,
+                "name": "Hull City",
+                "code": "HUL",
+                "country": "England",
+                "founded": 1904,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/64.png"
+            },
+            "venue": {
+                "id": 12051,
+                "name": "The MKM Stadium",
+                "address": "Walton Street / Anlaby Road",
+                "city": "Hull",
+                "capacity": 25504,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/12051.png"
+            }
+        },
+        {
+            "team": {
+                "id": 65,
+                "name": "Nottingham Forest",
+                "code": "NOT",
+                "country": "England",
+                "founded": 1865,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/65.png"
+            },
+            "venue": {
+                "id": 566,
+                "name": "The City Ground",
+                "address": "Pavilion Road",
+                "city": "Nottingham, Nottinghamshire",
+                "capacity": 30576,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/566.png"
+            }
+        },
+        {
+            "team": {
+                "id": 66,
+                "name": "Aston Villa",
+                "code": "AST",
+                "country": "England",
+                "founded": 1874,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/66.png"
+            },
+            "venue": {
+                "id": 495,
+                "name": "Villa Park",
+                "address": "Trinity Road",
+                "city": "Birmingham",
+                "capacity": 42824,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/495.png"
+            }
+        },
+        {
+            "team": {
+                "id": 67,
+                "name": "Blackburn",
+                "code": "BLA",
+                "country": "England",
+                "founded": 1875,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/67.png"
+            },
+            "venue": {
+                "id": 500,
+                "name": "Ewood Park",
+                "address": "Nuttall Street",
+                "city": "Blackburn, Lancashire",
+                "capacity": 31367,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/500.png"
+            }
+        },
+        {
+            "team": {
+                "id": 68,
+                "name": "Bolton",
+                "code": "BOL",
+                "country": "England",
+                "founded": 1874,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/68.png"
+            },
+            "venue": {
+                "id": 19923,
+                "name": "Toughsheet Community Stadium",
+                "address": "Burnden Way",
+                "city": "Bolton",
+                "capacity": 28723,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19923.png"
+            }
+        },
+        {
+            "team": {
+                "id": 69,
+                "name": "Derby",
+                "code": "DER",
+                "country": "England",
+                "founded": 1884,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/69.png"
+            },
+            "venue": {
+                "id": 527,
+                "name": "Pride Park Stadium",
+                "address": "Pride Park, Royal Way",
+                "city": "Derby",
+                "capacity": 33597,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/527.png"
+            }
+        },
+        {
+            "team": {
+                "id": 70,
+                "name": "Middlesbrough",
+                "code": "MID",
+                "country": "England",
+                "founded": 1876,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/70.png"
+            },
+            "venue": {
+                "id": 558,
+                "name": "Riverside Stadium",
+                "address": "Dockside Road",
+                "city": "Middlesbrough",
+                "capacity": 34988,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/558.png"
+            }
+        },
+        {
+            "team": {
+                "id": 71,
+                "name": "Norwich",
+                "code": "NOR",
+                "country": "England",
+                "founded": 1902,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/71.png"
+            },
+            "venue": {
+                "id": 565,
+                "name": "Carrow Road",
+                "address": "Carrow Road",
+                "city": "Norwich, Norfolk",
+                "capacity": 27606,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/565.png"
+            }
+        },
+        {
+            "team": {
+                "id": 72,
+                "name": "QPR",
+                "code": "QPR",
+                "country": "England",
+                "founded": 1885,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/72.png"
+            },
+            "venue": {
+                "id": 20414,
+                "name": "MATRADE Loftus Road",
+                "address": "South Africa Road, Shepherd&apos;s Bush",
+                "city": "London",
+                "capacity": 18360,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/20414.png"
+            }
+        },
+        {
+            "team": {
+                "id": 73,
+                "name": "Rotherham",
+                "code": "ROT",
+                "country": "England",
+                "founded": 1870,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/73.png"
+            },
+            "venue": {
+                "id": 578,
+                "name": "AESSEAL New York Stadium",
+                "address": "Don Street",
+                "city": "Rotherham, South Yorkshire",
+                "capacity": 12021,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/578.png"
+            }
+        },
+        {
+            "team": {
+                "id": 74,
+                "name": "Sheffield Wednesday",
+                "code": "SHE",
+                "country": "England",
+                "founded": 1867,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/74.png"
+            },
+            "venue": {
+                "id": 582,
+                "name": "Hillsborough",
+                "address": "Penistone Road North, Hillsborough",
+                "city": "Sheffield",
+                "capacity": 39814,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/582.png"
+            }
+        },
+        {
+            "team": {
+                "id": 75,
+                "name": "Stoke City",
+                "code": "STO",
+                "country": "England",
+                "founded": 1868,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/75.png"
+            },
+            "venue": {
+                "id": 588,
+                "name": "bet365 Stadium",
+                "address": "Stanley Matthews Way",
+                "city": "Stoke-on-Trent, Staffordshire",
+                "capacity": 30089,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/588.png"
+            }
+        },
+        {
+            "team": {
+                "id": 76,
+                "name": "Swansea",
+                "code": "SWA",
+                "country": "Wales",
+                "founded": 1912,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/76.png"
+            },
+            "venue": {
+                "id": 12273,
+                "name": "Swansea.com Stadium",
+                "address": "Normandy Road",
+                "city": "Swansea",
+                "capacity": 21028,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/12273.png"
+            }
+        },
+        {
+            "team": {
+                "id": 746,
+                "name": "Sunderland",
+                "code": "SUN",
+                "country": "England",
+                "founded": 1879,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/746.png"
+            },
+            "venue": {
+                "id": 589,
+                "name": "Stadium of Light",
+                "address": "Millenium Way",
+                "city": "Sunderland",
+                "capacity": 49000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/589.png"
+            }
+        },
+        {
+            "team": {
+                "id": 747,
+                "name": "Barnsley",
+                "code": "BAR",
+                "country": "England",
+                "founded": 1887,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/747.png"
+            },
+            "venue": {
+                "id": 497,
+                "name": "Oakwell",
+                "address": "Grove Street",
+                "city": "Barnsley, South Yorkshire",
+                "capacity": 23009,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/497.png"
+            }
+        },
+        {
+            "team": {
+                "id": 748,
+                "name": "Burton Albion",
+                "code": "BUR",
+                "country": "England",
+                "founded": 1950,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/748.png"
+            },
+            "venue": {
+                "id": 513,
+                "name": "Pirelli Stadium",
+                "address": "Princess Way",
+                "city": "Burton-upon-Trent, Staffordshire",
+                "capacity": 6912,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/513.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1333,
+                "name": "AFC Wimbledon",
+                "code": "WIM",
+                "country": "England",
+                "founded": 2002,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1333.png"
+            },
+            "venue": {
+                "id": 12456,
+                "name": "The Cherry Red Records Stadium",
+                "address": "Plough Lane, Wimbledon",
+                "city": "London",
+                "capacity": 9300,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/12456.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1334,
+                "name": "Bristol Rovers",
+                "code": "BRI",
+                "country": "England",
+                "founded": 1883,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1334.png"
+            },
+            "venue": {
+                "id": 510,
+                "name": "Memorial Stadium",
+                "address": "Filton Avenue, Horfield",
+                "city": "Bristol, Gloucestershire",
+                "capacity": 11916,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/510.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1335,
+                "name": "Charlton",
+                "code": "CHA",
+                "country": "England",
+                "founded": 1905,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1335.png"
+            },
+            "venue": {
+                "id": 518,
+                "name": "The Valley",
+                "address": "Floyd Road, Charlton",
+                "city": "London",
+                "capacity": 27111,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/518.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1336,
+                "name": "Fleetwood Town",
+                "code": "FLE",
+                "country": "England",
+                "founded": 1908,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1336.png"
+            },
+            "venue": {
+                "id": 533,
+                "name": "Highbury Stadium",
+                "address": "Park Avenue",
+                "city": "Fleetwood, Lancashire",
+                "capacity": 5327,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/533.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1337,
+                "name": "Northampton",
+                "code": "NOR",
+                "country": "England",
+                "founded": 1897,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1337.png"
+            },
+            "venue": {
+                "id": 11881,
+                "name": "Sixfields Stadium",
+                "address": "Upton Way",
+                "city": "Northampton, East Midlands",
+                "capacity": 7798,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11881.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1338,
+                "name": "Oxford United",
+                "code": "OXF",
+                "country": "England",
+                "founded": 1893,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1338.png"
+            },
+            "venue": {
+                "id": 569,
+                "name": "The Kassam Stadium",
+                "address": "Grenoble Road",
+                "city": "Oxford, Oxfordshire",
+                "capacity": 12500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/569.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1342,
+                "name": "Walsall",
+                "code": "WAL",
+                "country": "England",
+                "founded": 1888,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1342.png"
+            },
+            "venue": {
+                "id": 18620,
+                "name": "Poundland Bescot Stadium",
+                "address": "Bescot Crescent, Bescot",
+                "city": "Walsall, West Midlands",
+                "capacity": 11300,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/18620.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1343,
+                "name": "Bradford",
+                "code": "BRA",
+                "country": "England",
+                "founded": 1903,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1343.png"
+            },
+            "venue": {
+                "id": 19198,
+                "name": "University of Bradford Stadium",
+                "address": "Valley Parade",
+                "city": "Bradford, West Yorkshire",
+                "capacity": 25136,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19198.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1345,
+                "name": "Chesterfield",
+                "code": "CHE",
+                "country": "England",
+                "founded": 1867,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1345.png"
+            },
+            "venue": {
+                "id": 19924,
+                "name": "SMH Group Stadium",
+                "address": "1866 Sheffield Road, Whittington Moor",
+                "city": "Chesterfield, Derbyshire",
+                "capacity": 10338,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19924.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1346,
+                "name": "Coventry",
+                "code": "COV",
+                "country": "England",
+                "founded": 1883,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1346.png"
+            },
+            "venue": {
+                "id": 11896,
+                "name": "The Coventry Building Society Arena",
+                "address": "Phoenix Way, Rowleys Green",
+                "city": "Coventry, West Midlands",
+                "capacity": 32609,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11896.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1347,
+                "name": "Gillingham",
+                "code": "GIL",
+                "country": "England",
+                "founded": 1893,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1347.png"
+            },
+            "venue": {
+                "id": 537,
+                "name": "Priestfield Stadium",
+                "address": "Redfern Avenue",
+                "city": "Gillingham, Kent",
+                "capacity": 11582,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/537.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1348,
+                "name": "Milton Keynes Dons",
+                "code": "MIL",
+                "country": "England",
+                "founded": 2004,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1348.png"
+            },
+            "venue": {
+                "id": 560,
+                "name": "Stadium mk",
+                "address": "Stadium Way West",
+                "city": "Milton Keynes, Buckinghamshire",
+                "capacity": 30500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/560.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1350,
+                "name": "Peterborough",
+                "code": "PET",
+                "country": "England",
+                "founded": 1934,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1350.png"
+            },
+            "venue": {
+                "id": 570,
+                "name": "Weston Homes Stadium",
+                "address": "London Road",
+                "city": "Peterborough",
+                "capacity": 15142,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/570.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1351,
+                "name": "Port Vale",
+                "code": "POR",
+                "country": "England",
+                "founded": 1876,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1351.png"
+            },
+            "venue": {
+                "id": 572,
+                "name": "Vale Park",
+                "address": "Hamil Road, Burslem",
+                "city": "Stoke-on-Trent, Staffordshire",
+                "capacity": 19052,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/572.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1352,
+                "name": "Shrewsbury",
+                "code": "SHR",
+                "country": "England",
+                "founded": 1886,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1352.png"
+            },
+            "venue": {
+                "id": 19925,
+                "name": "The Croud Meadow",
+                "address": "Oteley Road",
+                "city": "Shrewsbury, Shropshire",
+                "capacity": 9875,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19925.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1353,
+                "name": "Swindon Town",
+                "code": "SWI",
+                "country": "England",
+                "founded": 1879,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1353.png"
+            },
+            "venue": {
+                "id": 592,
+                "name": "The County Ground",
+                "address": "County Road",
+                "city": "Swindon, Wiltshire",
+                "capacity": 15728,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/592.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1354,
+                "name": "Doncaster",
+                "code": "DON",
+                "country": "England",
+                "founded": 1879,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1354.png"
+            },
+            "venue": {
+                "id": 12676,
+                "name": "Eco-Power Stadium",
+                "address": "Stadium Way, Lakeside",
+                "city": "Doncaster, South Yorkshire",
+                "capacity": 15231,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/12676.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1355,
+                "name": "Portsmouth",
+                "code": "POR",
+                "country": "England",
+                "founded": 1898,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1355.png"
+            },
+            "venue": {
+                "id": 573,
+                "name": "Fratton Park",
+                "address": "Frogmore Road",
+                "city": "Portsmouth",
+                "capacity": 20821,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/573.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1356,
+                "name": "Blackpool",
+                "code": "BLA",
+                "country": "England",
+                "founded": 1887,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1356.png"
+            },
+            "venue": {
+                "id": 501,
+                "name": "Bloomfield Road",
+                "address": "Seasiders Way",
+                "city": "Blackpool, Lancashire",
+                "capacity": 17625,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/501.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1357,
+                "name": "Plymouth",
+                "code": "PLY",
+                "country": "England",
+                "founded": 1886,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1357.png"
+            },
+            "venue": {
+                "id": 571,
+                "name": "Home Park",
+                "address": "Gilbert Lane",
+                "city": "Plymouth",
+                "capacity": 19500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/571.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1358,
+                "name": "Wycombe",
+                "code": "WYC",
+                "country": "England",
+                "founded": 1887,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1358.png"
+            },
+            "venue": {
+                "id": 602,
+                "name": "Adams Park",
+                "address": "Hillbottom Road",
+                "city": "High Wycombe, Buckinghamshire",
+                "capacity": 10000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/602.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1359,
+                "name": "Luton",
+                "code": "LUT",
+                "country": "England",
+                "founded": 1885,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1359.png"
+            },
+            "venue": {
+                "id": 551,
+                "name": "Kenilworth Road",
+                "address": "1 Maple Road",
+                "city": "Luton, Bedfordshire",
+                "capacity": 11500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/551.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1360,
+                "name": "Accrington ST",
+                "code": "ACC",
+                "country": "England",
+                "founded": 1891,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1360.png"
+            },
+            "venue": {
+                "id": 490,
+                "name": "Wham Stadium",
+                "address": "Livingston Road",
+                "city": "Accrington, Lancashire",
+                "capacity": 5397,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/490.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1361,
+                "name": "Colchester",
+                "code": "COL",
+                "country": "England",
+                "founded": 1937,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1361.png"
+            },
+            "venue": {
+                "id": 522,
+                "name": "JobServe Community Stadium",
+                "address": "United Way",
+                "city": "Colchester, Essex",
+                "capacity": 10083,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/522.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1362,
+                "name": "Crawley Town",
+                "code": "CRA",
+                "country": "England",
+                "founded": 1896,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1362.png"
+            },
+            "venue": {
+                "id": 19200,
+                "name": "Broadfield Stadium",
+                "address": "Brighton Road",
+                "city": "Crawley, West Sussex",
+                "capacity": 6134,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19200.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1363,
+                "name": "Crewe",
+                "code": "CRE",
+                "country": "England",
+                "founded": 1877,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1363.png"
+            },
+            "venue": {
+                "id": 11876,
+                "name": "Mornflake Stadium",
+                "address": "Gresty Road",
+                "city": "Crewe, Cheshire",
+                "capacity": 10153,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11876.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1364,
+                "name": "Exeter City",
+                "code": "EXE",
+                "country": "England",
+                "founded": 1904,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1364.png"
+            },
+            "venue": {
+                "id": 532,
+                "name": "St James Park",
+                "address": "Stadium Way",
+                "city": "Exeter, Devon",
+                "capacity": 8830,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/532.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1365,
+                "name": "Grimsby",
+                "code": "GRI",
+                "country": "England",
+                "founded": 1878,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1365.png"
+            },
+            "venue": {
+                "id": 538,
+                "name": "Blundell Park",
+                "address": "Blundell Park",
+                "city": "Cleethorpes, North East Lincolnshire",
+                "capacity": 9546,
+                "surface": null,
+                "image": "https://media.api-sports.io/football/venues/538.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1367,
+                "name": "Newport County",
+                "code": "NEW",
+                "country": "Wales",
+                "founded": 1989,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1367.png"
+            },
+            "venue": {
+                "id": 563,
+                "name": "Rodney Parade",
+                "address": "Rodney Road",
+                "city": "Casnewydd",
+                "capacity": 11676,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/563.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1368,
+                "name": "Stevenage",
+                "code": "STE",
+                "country": "England",
+                "founded": 1976,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1368.png"
+            },
+            "venue": {
+                "id": 587,
+                "name": "The Lamex Stadium",
+                "address": "Broadhall Way",
+                "city": "Stevenage, Hertfordshire",
+                "capacity": 7100,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/587.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1370,
+                "name": "Cambridge United",
+                "code": "CAM",
+                "country": "England",
+                "founded": 1912,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1370.png"
+            },
+            "venue": {
+                "id": 515,
+                "name": "Abbey Stadium",
+                "address": "Newmarket Road",
+                "city": "Cambridge, Cambridgeshire",
+                "capacity": 10847,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/515.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1371,
+                "name": "Carlisle",
+                "code": "CAR",
+                "country": "England",
+                "founded": 1903,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1371.png"
+            },
+            "venue": {
+                "id": 517,
+                "name": "Brunton Park",
+                "address": "Warwick Road",
+                "city": "Carlisle, Cumbria",
+                "capacity": 18202,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/517.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1372,
+                "name": "Cheltenham",
+                "code": "CHE",
+                "country": "England",
+                "founded": 1887,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1372.png"
+            },
+            "venue": {
+                "id": 18617,
+                "name": "Completely-Suzuki Stadium",
+                "address": "Whaddon Road",
+                "city": "Cheltenham, Gloucestershire",
+                "capacity": 7066,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/18617.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1373,
+                "name": "Leyton Orient",
+                "code": "LEY",
+                "country": "England",
+                "founded": 1881,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1373.png"
+            },
+            "venue": {
+                "id": 18618,
+                "name": "Brisbane Road",
+                "address": "Brisbane Road, Leyton",
+                "city": "London",
+                "capacity": 9271,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/18618.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1374,
+                "name": "Mansfield Town",
+                "code": "MAN",
+                "country": "England",
+                "founded": 1897,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1374.png"
+            },
+            "venue": {
+                "id": 557,
+                "name": "One Call Stadium",
+                "address": "Quarry Lane",
+                "city": "Mansfield, Nottinghamshire",
+                "capacity": 9186,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/557.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1375,
+                "name": "Morecambe",
+                "code": "MOR",
+                "country": "England",
+                "founded": 1920,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1375.png"
+            },
+            "venue": {
+                "id": 11880,
+                "name": "Mazuma Stadium",
+                "address": "Morecambe Road",
+                "city": "Morecambe, Lancashire",
+                "capacity": 6476,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11880.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1376,
+                "name": "Notts County",
+                "code": "NOT",
+                "country": "England",
+                "founded": 1862,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1376.png"
+            },
+            "venue": {
+                "id": 567,
+                "name": "Meadow Lane",
+                "address": "Meadow Lane",
+                "city": "Nottingham, Nottinghamshire",
+                "capacity": 19588,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/567.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1379,
+                "name": "Lincoln",
+                "code": "LNC",
+                "country": "England",
+                "founded": 1884,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1379.png"
+            },
+            "venue": {
+                "id": 10610,
+                "name": "LNER Stadium",
+                "address": "Sincil Bank",
+                "city": "Lincoln, Lincolnshire",
+                "capacity": 10780,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/10610.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1381,
+                "name": "Tranmere",
+                "code": "TRA",
+                "country": "England",
+                "founded": 1884,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1381.png"
+            },
+            "venue": {
+                "id": 594,
+                "name": "Prenton Park",
+                "address": "Prenton Road West",
+                "city": "Birkenhead, Merseyside",
+                "capacity": 16567,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/594.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1819,
+                "name": "Barrow",
+                "code": "BAR",
+                "country": "England",
+                "founded": 1901,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1819.png"
+            },
+            "venue": {
+                "id": 19197,
+                "name": "SO Legal Stadium",
+                "address": "Holker Street",
+                "city": "Barrow-in-Furness, Cumbria",
+                "capacity": 6500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19197.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1832,
+                "name": "Bromley",
+                "code": "BRO",
+                "country": "England",
+                "founded": 1892,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1832.png"
+            },
+            "venue": {
+                "id": 20413,
+                "name": "RELOC8 EM Community Stadium",
+                "address": "Hayes Lane, Bromley",
+                "city": "London",
+                "capacity": 5150,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/20413.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1837,
+                "name": "Wrexham",
+                "code": "WRE",
+                "country": "Wales",
+                "founded": 1872,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1837.png"
+            },
+            "venue": {
+                "id": 19926,
+                "name": "ST\u014dK Cae Ras",
+                "address": "Mold Road",
+                "city": "Wrecsam",
+                "capacity": 19118,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19926.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1842,
+                "name": "Harrogate Town",
+                "code": "HAR",
+                "country": "England",
+                "founded": 1914,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1842.png"
+            },
+            "venue": {
+                "id": 11878,
+                "name": "EnviroVent Stadium",
+                "address": "Wetherby Road",
+                "city": "Harrogate, North Yorkshire",
+                "capacity": 3800,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11878.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1844,
+                "name": "Salford City",
+                "code": null,
+                "country": "England",
+                "founded": null,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1844.png"
+            },
+            "venue": {
+                "id": 579,
+                "name": "The Peninsula Stadium",
+                "address": "Moor Lane",
+                "city": "Salford, Greater Manchester",
+                "capacity": 5100,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/579.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4686,
+                "name": "Stockport County",
+                "code": "STO",
+                "country": "England",
+                "founded": 1883,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4686.png"
+            },
+            "venue": {
+                "id": 3535,
+                "name": "Edgeley Park",
+                "address": "Hardcastle Road, Edgeley",
+                "city": "Stockport, Greater Manchester",
+                "capacity": 10852,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3535.png"
+            }
+        }
+    ]
+}

@@ -1,0 +1,80 @@
+{
+    "get": "fixtures/events",
+    "parameters": {
+        "fixture": "1078280"
+    },
+    "errors": [],
+    "results": 3,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "time": {
+                "elapsed": 51,
+                "extra": null
+            },
+            "team": {
+                "id": 7236,
+                "name": "Ilkeston Town",
+                "logo": "https://media.api-sports.io/football/teams/7236.png"
+            },
+            "player": {
+                "id": null,
+                "name": "T. Cursons"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 70,
+                "extra": null
+            },
+            "team": {
+                "id": 7236,
+                "name": "Ilkeston Town",
+                "logo": "https://media.api-sports.io/football/teams/7236.png"
+            },
+            "player": {
+                "id": null,
+                "name": "C. Minkley"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 90,
+                "extra": 5
+            },
+            "team": {
+                "id": 7236,
+                "name": "Ilkeston Town",
+                "logo": "https://media.api-sports.io/football/teams/7236.png"
+            },
+            "player": {
+                "id": null,
+                "name": "B. Hutchinson"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        }
+    ]
+}

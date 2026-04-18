@@ -1,0 +1,124 @@
+{
+    "get": "fixtures/events",
+    "parameters": {
+        "fixture": "1078024"
+    },
+    "errors": [],
+    "results": 5,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "time": {
+                "elapsed": 8,
+                "extra": null
+            },
+            "team": {
+                "id": 7236,
+                "name": "Ilkeston Town",
+                "logo": "https://media.api-sports.io/football/teams/7236.png"
+            },
+            "player": {
+                "id": null,
+                "name": "A. Marshall"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 49,
+                "extra": null
+            },
+            "team": {
+                "id": 7694,
+                "name": "Atherton Collieries",
+                "logo": "https://media.api-sports.io/football/teams/7694.png"
+            },
+            "player": {
+                "id": null,
+                "name": "D. Thompson"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 75,
+                "extra": null
+            },
+            "team": {
+                "id": 7694,
+                "name": "Atherton Collieries",
+                "logo": "https://media.api-sports.io/football/teams/7694.png"
+            },
+            "player": {
+                "id": null,
+                "name": "E. Lusiama"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 81,
+                "extra": null
+            },
+            "team": {
+                "id": 7236,
+                "name": "Ilkeston Town",
+                "logo": "https://media.api-sports.io/football/teams/7236.png"
+            },
+            "player": {
+                "id": null,
+                "name": "J. Walker"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Penalty",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 90,
+                "extra": 3
+            },
+            "team": {
+                "id": 7236,
+                "name": "Ilkeston Town",
+                "logo": "https://media.api-sports.io/football/teams/7236.png"
+            },
+            "player": {
+                "id": null,
+                "name": "B. Swakali"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        }
+    ]
+}

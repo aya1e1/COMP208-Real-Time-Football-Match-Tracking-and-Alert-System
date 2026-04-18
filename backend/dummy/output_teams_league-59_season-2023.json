@@ -1,0 +1,455 @@
+{
+    "get": "teams",
+    "parameters": {
+        "league": "59",
+        "season": "2023"
+    },
+    "errors": [],
+    "results": 22,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "team": {
+                "id": 1380,
+                "name": "Macclesfield",
+                "code": "MAC",
+                "country": "England",
+                "founded": 2020,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1380.png"
+            },
+            "venue": {
+                "id": 12213,
+                "name": "The Leasing.com Stadium",
+                "address": "London Road",
+                "city": "Macclesfield, Cheshire",
+                "capacity": 6355,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/12213.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1824,
+                "name": "Guiseley AFC",
+                "code": "GUI",
+                "country": "England",
+                "founded": 1909,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1824.png"
+            },
+            "venue": {
+                "id": 2691,
+                "name": "Nethermoor Park",
+                "address": "Otley Road",
+                "city": "Guiseley, West Yorkshire",
+                "capacity": 3000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/2691.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4691,
+                "name": "Gainsborough Trinity",
+                "code": "GAI",
+                "country": "England",
+                "founded": 1873,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4691.png"
+            },
+            "venue": {
+                "id": 21316,
+                "name": "Kal Group Stadium",
+                "address": "North Street",
+                "city": "Gainsborough, Lincolnshire",
+                "capacity": 4304,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/21316.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4694,
+                "name": "Hyde United",
+                "code": "HYD",
+                "country": "England",
+                "founded": 1919,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4694.png"
+            },
+            "venue": {
+                "id": 21317,
+                "name": "Project Solar UK Stadium",
+                "address": "Grange Road",
+                "city": "Hyde, Cheshire",
+                "capacity": 4100,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/21317.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7236,
+                "name": "Ilkeston Town",
+                "code": "ILK",
+                "country": "England",
+                "founded": 2017,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7236.png"
+            },
+            "venue": {
+                "id": 5237,
+                "name": "New Manor Ground",
+                "address": "Awsworth Road",
+                "city": "Ilkeston, Derbyshire",
+                "capacity": 3500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5237.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7265,
+                "name": "Workington",
+                "code": "WOR",
+                "country": "England",
+                "founded": 1921,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7265.png"
+            },
+            "venue": {
+                "id": 5265,
+                "name": "Borough Park",
+                "address": "New Bridge Road",
+                "city": "Workington, Cumbria",
+                "capacity": 3101,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5265.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7266,
+                "name": "Worksop Town",
+                "code": null,
+                "country": "England",
+                "founded": 1861,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7266.png"
+            },
+            "venue": {
+                "id": 19723,
+                "name": "Windsor Foodservice Stadium",
+                "address": "Babbage Way / Sandy Lane",
+                "city": "Worksop, Nottinghamshire",
+                "capacity": 3200,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/19723.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7656,
+                "name": "Marine",
+                "code": "MAR",
+                "country": "England",
+                "founded": 1894,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7656.png"
+            },
+            "venue": {
+                "id": 5523,
+                "name": "The Marine Travel Arena",
+                "address": "College Road",
+                "city": "Crosby, Merseyside",
+                "capacity": 2800,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5523.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7658,
+                "name": "Marske United",
+                "code": "MAR",
+                "country": "England",
+                "founded": 1956,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7658.png"
+            },
+            "venue": {
+                "id": 5525,
+                "name": "GER Stadium",
+                "address": "Mount Pleasant Avenue",
+                "city": "Marske-by-the-Sea, Redcar and Cleveland",
+                "capacity": 2500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5525.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7693,
+                "name": "Ashton United",
+                "code": null,
+                "country": "England",
+                "founded": 1878,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7693.png"
+            },
+            "venue": {
+                "id": 5555,
+                "name": "Hurst Cross",
+                "address": "Surrey Street",
+                "city": "Ashton-under-Lyne, Greater Manchester",
+                "capacity": 4500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5555.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7694,
+                "name": "Atherton Collieries",
+                "code": null,
+                "country": "England",
+                "founded": null,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7694.png"
+            },
+            "venue": {
+                "id": 5556,
+                "name": "The Skuna Stadium",
+                "address": "Alder Street",
+                "city": "Atherton, Greater Manchester",
+                "capacity": 2500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5556.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7695,
+                "name": "Bamber Bridge",
+                "code": null,
+                "country": "England",
+                "founded": 1974,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7695.png"
+            },
+            "venue": {
+                "id": 5557,
+                "name": "Sir Tom Finney Stadium",
+                "address": "Brownedge Road, Bamber Bridge",
+                "city": "Preston, Lancashire",
+                "capacity": 2264,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5557.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7698,
+                "name": "Basford United",
+                "code": null,
+                "country": "England",
+                "founded": null,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7698.png"
+            },
+            "venue": {
+                "id": 5560,
+                "name": "Greenwich Avenue",
+                "address": "Greenwich Avenue, Basford",
+                "city": "Nottingham, Nottinghamshire",
+                "capacity": 1000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5560.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7726,
+                "name": "Lancaster City",
+                "code": null,
+                "country": "England",
+                "founded": 1905,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7726.png"
+            },
+            "venue": {
+                "id": 19710,
+                "name": "Giant Axe Stadium",
+                "address": "West Road",
+                "city": "Lancaster, Lancashire",
+                "capacity": 3513,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19710.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7731,
+                "name": "Matlock Town",
+                "code": "MAT",
+                "country": "England",
+                "founded": 1878,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7731.png"
+            },
+            "venue": {
+                "id": 5589,
+                "name": "The Proctor Cars Stadium",
+                "address": "Causeway Lane",
+                "city": "Matlock, Derbyshire",
+                "capacity": 2757,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5589.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7734,
+                "name": "Morpeth Town",
+                "code": null,
+                "country": "England",
+                "founded": null,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7734.png"
+            },
+            "venue": {
+                "id": 5592,
+                "name": "Craik Park",
+                "address": null,
+                "city": "Morpeth, Northumberland",
+                "capacity": 1637,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5592.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7740,
+                "name": "Radcliffe",
+                "code": null,
+                "country": "England",
+                "founded": 1949,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7740.png"
+            },
+            "venue": {
+                "id": 10661,
+                "name": "Neuven Stadium",
+                "address": "Pilkington Road",
+                "city": "Radcliffe, Greater Manchester",
+                "capacity": 3100,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/10661.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7748,
+                "name": "Stafford Rangers",
+                "code": "STA",
+                "country": "England",
+                "founded": 1876,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7748.png"
+            },
+            "venue": {
+                "id": 21977,
+                "name": "The Stan Robinson Stadium",
+                "address": "Marston Road",
+                "city": "Stafford, Staffordshire",
+                "capacity": 4150,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/21977.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7754,
+                "name": "United of Manchester",
+                "code": "UNI",
+                "country": "England",
+                "founded": 2005,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7754.png"
+            },
+            "venue": {
+                "id": 5612,
+                "name": "Broadhurst Park",
+                "address": "310 Lightbowne Road. Moston",
+                "city": "Manchester",
+                "capacity": 4400,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/5612.png"
+            }
+        },
+        {
+            "team": {
+                "id": 7757,
+                "name": "Whitby Town",
+                "code": "WHI",
+                "country": "England",
+                "founded": 1880,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/7757.png"
+            },
+            "venue": {
+                "id": 21329,
+                "name": "Towbar Express Stadium at the Turnbull Ground",
+                "address": "Upgang Lane",
+                "city": "Whitby, North Yorkshire",
+                "capacity": 3200,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/21329.png"
+            }
+        },
+        {
+            "team": {
+                "id": 8651,
+                "name": "Bradford (Park Avenue)",
+                "code": "BRA",
+                "country": "England",
+                "founded": 1907,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/8651.png"
+            },
+            "venue": {
+                "id": 6182,
+                "name": "Horsfall Stadium",
+                "address": "Cemetery Road",
+                "city": "Bradford, West Yorkshire",
+                "capacity": 5000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/6182.png"
+            }
+        },
+        {
+            "team": {
+                "id": 8918,
+                "name": "Rylands",
+                "code": null,
+                "country": "England",
+                "founded": 1911,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/8918.png"
+            },
+            "venue": {
+                "id": 21340,
+                "name": "The Hive Arena",
+                "address": "Gorsey Lane",
+                "city": "Warrington, Cheshire",
+                "capacity": 1000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/21340.png"
+            }
+        }
+    ]
+}

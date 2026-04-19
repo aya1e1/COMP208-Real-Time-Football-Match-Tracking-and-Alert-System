@@ -34,11 +34,12 @@
       </div>
 
       <aside class="league-column">
-        <section class="league-fixture-section">
+        <section class="league-fixture-section page-recent-fixture-section">
           <h2 class="fixture-section-title">Recent Fixtures</h2>
           <div id="league-recent-fixtures" class="dashboard-fixture-stack">
             <div class="dashboard-empty-card">Loading recent fixtures...</div>
           </div>
+          <nav id="league-recent-pagination" class="fixture-h2h-nav page-recent-fixture-pagination" aria-label="Recent fixture pages" hidden></nav>
         </section>
       </aside>
     </section>
@@ -48,6 +49,7 @@
 <script src="{{ static_asset('js/ui_errors.js') }}"></script>
 <script src="{{ static_asset('js/fixture_cards.js') }}"></script>
 <script src="{{ static_asset('js/recent_fixtures.js') }}"></script>
+<script src="{{ static_asset('js/page_switcher.js') }}"></script>
 <script src="{{ static_asset('js/overview_tables.js') }}"></script>
 <script>
   const page = document.querySelector(".league-page");
@@ -57,15 +59,18 @@
   const seasonSwitcherEl = document.getElementById("league-season-switcher");
   const standingsEl = document.getElementById("league-standings");
   const recentFixturesEl = document.getElementById("league-recent-fixtures");
+  const recentPaginationEl = document.getElementById("league-recent-pagination");
   const {
     createPageErrorController,
     escapeHtml,
     renderTeamLogo
   } = window.KickoffFixtureCards;
   const pageError = createPageErrorController(errorBannerEl);
+  const recentFixturesPerPage = 5;
 
   let leagueSeasons = [];
   let selectedSeasonYear = null;
+  let currentRecentPage = Number(new URLSearchParams(window.location.search).get("recent_page")) || 1;
   let leagueName = "League";
   let leagueCountry = "";
   let leagueLogoUrl = "";
@@ -155,7 +160,7 @@
           }
 
           return `
-            <a class="fixture-h2h-link" href="/leagues/${leagueId}?season=${year}" data-season-year="${year}">
+            <a class="fixture-h2h-link" href="${buildPageHref({ season: year, recentPage: 1 })}" data-season-year="${year}">
               ${escapeHtml(year)}
             </a>
           `;
@@ -173,6 +178,71 @@
 
         selectSeason(year);
       });
+    });
+  }
+
+  function buildPageHref({ season = selectedSeasonYear, recentPage = currentRecentPage } = {}) {
+    const url = new URL(window.location.href);
+
+    if (Number.isFinite(Number(season))) {
+      url.searchParams.set("season", String(season));
+    } else {
+      url.searchParams.delete("season");
+    }
+
+    if (Number(recentPage) > 1) {
+      url.searchParams.set("recent_page", String(recentPage));
+    } else {
+      url.searchParams.delete("recent_page");
+    }
+
+    return `${url.pathname}${url.search}`;
+  }
+
+  function updateUrlState({ season = selectedSeasonYear, recentPage = currentRecentPage } = {}) {
+    window.history.replaceState({}, "", buildPageHref({ season, recentPage }));
+  }
+
+  function buildRecentFixturesApiHref(year, pageNumber = currentRecentPage) {
+    const query = new URLSearchParams({
+      page: String(pageNumber),
+      per_page: String(recentFixturesPerPage)
+    });
+
+    return `/api/leagues/${leagueId}/seasons/${year}/recent-fixtures?${query.toString()}`;
+  }
+
+  function setRecentFixturesLoading(message = "Loading recent fixtures...") {
+    recentPaginationEl.hidden = true;
+    recentPaginationEl.innerHTML = "";
+    recentFixturesEl.innerHTML = `<div class="dashboard-empty-card">${escapeHtml(message)}</div>`;
+  }
+
+  function renderRecentFixtures(fixtures, pagination) {
+    const resolvedPagination = pagination || {
+      page: 1,
+      total_pages: 1,
+      has_previous: false,
+      has_next: false
+    };
+
+    currentRecentPage = Number(resolvedPagination.page) || 1;
+    updateUrlState();
+    window.KickoffRecentFixtures.render(
+      recentFixturesEl,
+      Array.isArray(fixtures) ? fixtures : [],
+      { fallbackLeagueName: leagueName }
+    );
+    window.KickoffPageSwitcher.render(recentPaginationEl, resolvedPagination, {
+      showDisabledNext: true,
+      buildHref: (pageNumber) => buildPageHref({ recentPage: pageNumber }),
+      onSelect: (nextPage) => {
+        if (nextPage === currentRecentPage) {
+          return;
+        }
+
+        loadRecentFixturesPage(selectedSeasonYear, nextPage);
+      }
     });
   }
 
@@ -215,10 +285,46 @@
     });
   }
 
+  async function loadRecentFixturesPage(year, pageNumber) {
+    const previousRecentPage = currentRecentPage;
+    const previousPaginationHtml = recentPaginationEl.innerHTML;
+    const previousPaginationHidden = recentPaginationEl.hidden;
+    const previousRecentFixturesHtml = recentFixturesEl.innerHTML;
+
+    currentRecentPage = pageNumber;
+    updateUrlState();
+    setRecentFixturesLoading();
+
+    try {
+      const fixturesResponse = await fetch(buildRecentFixturesApiHref(year, pageNumber));
+      if (!fixturesResponse.ok) {
+        throw new Error("Unable to load recent fixtures.");
+      }
+
+      const fixturesPayload = await fixturesResponse.json();
+      leagueName = fixturesPayload?.league?.Name || leagueName;
+      leagueCountry = fixturesPayload?.league?.Country || leagueCountry;
+      leagueLogoUrl = fixturesPayload?.league?.LogoURL || leagueLogoUrl;
+      pageError.clear();
+      renderHeader();
+      renderRecentFixtures(
+        Array.isArray(fixturesPayload?.recent_fixtures) ? fixturesPayload.recent_fixtures : [],
+        fixturesPayload?.pagination || null
+      );
+    } catch (error) {
+      currentRecentPage = previousRecentPage;
+      updateUrlState();
+      recentPaginationEl.hidden = previousPaginationHidden;
+      recentPaginationEl.innerHTML = previousPaginationHtml;
+      recentFixturesEl.innerHTML = previousRecentFixturesHtml || '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
+      pageError.render(window.KickoffUIErrors.resolveMessage(error, "Unable to load recent fixtures."));
+    }
+  }
+
   async function loadSeasonData(year) {
     const [standingsResponse, fixturesResponse] = await Promise.all([
       fetch(`/api/leagues/${leagueId}/seasons/${year}`),
-      fetch(`/api/leagues/${leagueId}/seasons/${year}/recent-fixtures`)
+      fetch(buildRecentFixturesApiHref(year, currentRecentPage))
     ]);
 
     if (!standingsResponse.ok) {
@@ -239,36 +345,40 @@
     pageError.clear();
     renderHeader();
     renderStandings(standings);
-    window.KickoffRecentFixtures.render(
-      recentFixturesEl,
+    renderRecentFixtures(
       Array.isArray(fixturesPayload?.recent_fixtures) ? fixturesPayload.recent_fixtures : [],
-      { fallbackLeagueName: leagueName }
+      fixturesPayload?.pagination || null
     );
   }
 
   async function selectSeason(year) {
     const previousSelectedSeasonYear = selectedSeasonYear;
+    const previousRecentPage = currentRecentPage;
     const previousStandingsHtml = standingsEl.innerHTML;
+    const previousRecentPaginationHtml = recentPaginationEl.innerHTML;
+    const previousRecentPaginationHidden = recentPaginationEl.hidden;
     const previousRecentFixturesHtml = recentFixturesEl.innerHTML;
     selectedSeasonYear = year;
+    currentRecentPage = 1;
     selectedSeasonMeta = leagueSeasons.find((season) => Number(season.Year) === Number(year)) || null;
     renderHeader();
     renderSeasonSwitcher();
     standingsEl.innerHTML = renderStandingsMessage("Loading standings...");
-    recentFixturesEl.innerHTML = `<div class="dashboard-empty-card">Loading recent fixtures...</div>`;
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("season", String(year));
-    window.history.replaceState({}, "", url);
+    setRecentFixturesLoading();
+    updateUrlState({ season: year, recentPage: 1 });
 
     try {
       await loadSeasonData(year);
     } catch (error) {
       const message = window.KickoffUIErrors.resolveMessage(error, "Unable to load league details.");
       selectedSeasonYear = previousSelectedSeasonYear;
+      currentRecentPage = previousRecentPage;
       selectedSeasonMeta = leagueSeasons.find((season) => Number(season.Year) === Number(previousSelectedSeasonYear)) || null;
+      updateUrlState({ season: previousSelectedSeasonYear, recentPage: previousRecentPage });
       renderSeasonSwitcher();
       standingsEl.innerHTML = previousStandingsHtml || renderStandingsMessage("Standings unavailable.");
+      recentPaginationEl.hidden = previousRecentPaginationHidden;
+      recentPaginationEl.innerHTML = previousRecentPaginationHtml;
       recentFixturesEl.innerHTML = previousRecentFixturesHtml || '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
       renderHeader();
       pageError.render(message);
@@ -306,6 +416,8 @@
       renderSeasonSwitcher();
       standingsEl.innerHTML = renderStandingsMessage("No seasons available for this league.");
       recentFixturesEl.innerHTML = `<div class="dashboard-empty-card">No recent fixtures available.</div>`;
+      recentPaginationEl.hidden = true;
+      recentPaginationEl.innerHTML = "";
       return;
     }
 
@@ -318,6 +430,8 @@
     renderHeader();
     seasonSwitcherEl.innerHTML = '<div class="fixture-empty">Season data unavailable.</div>';
     standingsEl.innerHTML = renderStandingsMessage("Standings unavailable.");
+    recentPaginationEl.hidden = true;
+    recentPaginationEl.innerHTML = "";
     recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
   });
 </script>

@@ -498,11 +498,78 @@ Status codes:
 - `200` on success
 - `404` if the league season is not found
 
-### `GET /api/teams/<team_id>`
+### `GET /api/leagues/<league_id>/seasons/<year>/recent-fixtures`
 
-Returns a single team's page payload, including core team details, favourite state for the current user, a home-style overview block, the first upcoming fixture, and the five most recent fixtures.
+Returns a paginated list of finished recent fixtures for a specific league season.
 
 Auth required: no
+
+Query parameters:
+
+- `page` optional, integer, default `1`
+- `per_page` optional, integer, default `5`, maximum `50`
+
+Response:
+
+```json
+{
+  "league": {
+    "LeagueID": 39,
+    "Name": "Premier League",
+    "Country": "England",
+    "LogoURL": "https://...",
+    "Year": 2024,
+    "Current": 1
+  },
+  "recent_fixtures": [
+    {
+      "FixtureID": 1208399,
+      "LeagueID": 39,
+      "LeagueName": "Premier League",
+      "Year": 2024,
+      "HomeTeamID": 41,
+      "HomeTeam": "Southampton",
+      "HomeTeamAbbreviation": "SOU",
+      "HomeTeamLogoURL": "https://...",
+      "AwayTeamID": 50,
+      "AwayTeam": "Manchester City",
+      "AwayTeamAbbreviation": "MCI",
+      "AwayTeamLogoURL": "https://...",
+      "Location": "St. Mary's Stadium",
+      "MatchDate": "2026-04-16 15:00:00",
+      "HomeScore": 1,
+      "AwayScore": 3,
+      "Status": "FT",
+      "Elapsed": 90
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 5,
+    "total_fixtures": 12,
+    "total_pages": 3,
+    "has_previous": false,
+    "has_next": true
+  }
+}
+```
+
+Status codes:
+
+- `200` on success
+- `400` if `page` or `per_page` are invalid
+- `404` if the league is not found
+
+### `GET /api/teams/<team_id>`
+
+Returns a single team's page payload, including core team details, favourite state for the current user, a home-style overview block, the first upcoming fixture, and a paginated recent-fixtures list.
+
+Auth required: no
+
+Query parameters:
+
+- `recent_page` optional, integer, default `1`
+- `recent_per_page` optional, integer, default `5`, maximum `50`
 
 Response:
 
@@ -571,7 +638,15 @@ Response:
       "Status": "FT",
       "Elapsed": 90
     }
-  ]
+  ],
+  "recent_fixtures_pagination": {
+    "page": 1,
+    "per_page": 5,
+    "total_fixtures": 12,
+    "total_pages": 3,
+    "has_previous": false,
+    "has_next": true
+  }
 }
 ```
 
@@ -581,11 +656,13 @@ Notes:
 - `Overview` is built from the latest stored `TeamStatistics` row for that team and uses the home-stat columns to match the intended team-page summary card.
 - `StatisticsContext` is `null` when no stored team statistics exist for that team.
 - `upcoming_fixture` is `null` when no future fixture exists in the database.
-- `recent_fixtures` may contain fewer than five items when limited history is available.
+- `recent_fixtures` may contain fewer than `recent_per_page` items when limited history is available.
+- `recent_fixtures_pagination` is always returned, even when no recent fixtures exist.
 
 Status codes:
 
 - `200` on success
+- `400` if `recent_page` or `recent_per_page` are invalid
 - `404` if the team is not found
 
 ### `GET /api/fixtures`

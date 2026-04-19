@@ -132,7 +132,13 @@
 .league-fixture-section {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
+}
+
+.page-recent-fixture-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .league-standings-section {
@@ -142,8 +148,15 @@
 }
 
 .league-standings-section .fixture-section-title,
-.league-fixture-section .fixture-section-title {
+.league-fixture-section .fixture-section-title,
+.page-recent-fixture-section .fixture-section-title {
   margin-bottom: 0;
+}
+
+.page-recent-fixture-pagination.fixture-h2h-nav {
+  width: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .league-standings-wrap {
@@ -309,7 +322,7 @@
 
 .team-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
   gap: 22px;
   align-items: start;
 }

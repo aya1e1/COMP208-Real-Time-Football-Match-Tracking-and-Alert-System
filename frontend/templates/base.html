@@ -71,6 +71,30 @@
   const currentPath = window.location.pathname;
   const hasServerRenderedTeams = premierLeagueTeamsEl.children.length > 0;
 
+  function readSessionStorage(key) {
+    try {
+      return window.sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  function writeSessionStorage(key, value) {
+    try {
+      window.sessionStorage.setItem(key, value);
+    } catch {
+
+    }
+  }
+
+  function removeSessionStorage(key) {
+    try {
+      window.sessionStorage.removeItem(key);
+    } catch {
+
+    }
+  }
+
   function renderPremierLeagueTeams(teams) {
     if (!teams.length) {
       premierLeagueTitleEl.hidden = true;
@@ -88,13 +112,13 @@
     `).join("");
   }
 
-  const cachedPremierLeagueTeams = sessionStorage.getItem(premierLeagueCacheKey);
+  const cachedPremierLeagueTeams = readSessionStorage(premierLeagueCacheKey);
 
   if (!hasServerRenderedTeams && cachedPremierLeagueTeams) {
     try {
       renderPremierLeagueTeams(JSON.parse(cachedPremierLeagueTeams));
     } catch {
-      sessionStorage.removeItem(premierLeagueCacheKey);
+      removeSessionStorage(premierLeagueCacheKey);
     }
   }
 
@@ -110,7 +134,7 @@
     .then((payload) => {
       const teams = Array.isArray(payload?.teams) ? payload.teams : [];
       if (teams.length) {
-        sessionStorage.setItem(premierLeagueCacheKey, JSON.stringify(teams));
+        writeSessionStorage(premierLeagueCacheKey, JSON.stringify(teams));
       }
       renderPremierLeagueTeams(teams);
     })

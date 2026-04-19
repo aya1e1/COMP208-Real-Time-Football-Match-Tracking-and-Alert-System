@@ -78,12 +78,36 @@
   let currentTeamPayload = null;
   let favouriteRequestPending = false;
 
+  function readSessionStorage(key) {
+    try {
+      return window.sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  function writeSessionStorage(key, value) {
+    try {
+      window.sessionStorage.setItem(key, value);
+    } catch {
+      // Storage can be unavailable in some deployed browser contexts.
+    }
+  }
+
+  function removeSessionStorage(key) {
+    try {
+      window.sessionStorage.removeItem(key);
+    } catch {
+      // Ignore storage cleanup failures and continue with network data.
+    }
+  }
+
   function getCachedTeamPayload() {
     if (!teamCacheKey) {
       return null;
     }
 
-    const cachedPayload = sessionStorage.getItem(teamCacheKey);
+    const cachedPayload = readSessionStorage(teamCacheKey);
     if (!cachedPayload) {
       return null;
     }
@@ -91,7 +115,7 @@
     try {
       return JSON.parse(cachedPayload);
     } catch {
-      sessionStorage.removeItem(teamCacheKey);
+      removeSessionStorage(teamCacheKey);
       return null;
     }
   }
@@ -101,7 +125,7 @@
       return;
     }
 
-    sessionStorage.setItem(teamCacheKey, JSON.stringify(payload));
+    writeSessionStorage(teamCacheKey, JSON.stringify(payload));
   }
 
   function renderFormDots(form) {
@@ -420,7 +444,7 @@
       try {
         renderTeamPage(cachedPayload);
       } catch {
-        sessionStorage.removeItem(teamCacheKey);
+        removeSessionStorage(teamCacheKey);
         loadTeamPage();
       }
     } else {

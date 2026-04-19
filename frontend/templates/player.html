@@ -1,1 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Kickoff — Player{% endblock %}
 
+{% block content %}
+<main class="page">
+  <section class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+      <h1 style="margin: 0 0 8px;">Player Profile</h1>
+      <p style="margin: 0; color: var(--text-2);">
+        Detailed player information, current club, and season stats.
+      </p>
+    </div>
+  </section>
+
+  <div class="two-col">
+    <div>
+      <section class="card" style="margin-bottom: 20px;">
+        <div class="card-header">Player Overview</div>
+        <div class="card-body">
+          <p><strong>Name:</strong> Bukayo Saka</p>
+          <p><strong>Position:</strong> Right Wing</p>
+          <p><strong>Nationality:</strong> England</p>
+          <p><strong>Date of Birth:</strong> 05/09/2001</p>
+          <p style="margin-bottom: 0;"><strong>Current Team:</strong> Arsenal</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">Season Performance</div>
+        <div class="card-body">
+          <table class="table-mini">
+            <thead>
+              <tr>
+                <th>Stat</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Appearances</td><td>28</td></tr>
+              <tr><td>Goals</td><td>12</td></tr>
+              <tr><td>Assists</td><td>9</td></tr>
+              <tr><td>Yellow Cards</td><td>3</td></tr>
+              <tr><td>Minutes Played</td><td>2,145</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <aside class="sidebar">
+      <section class="card" style="margin-bottom: 20px;">
+        <div class="card-header">Recent Matches</div>
+        <div class="card-body">
+          <ul style="margin: 0; padding-left: 18px; color: var(--text-2);">
+            <li>Arsenal 2-1 Chelsea</li>
+            <li>Liverpool 1-1 Arsenal</li>
+            <li>Tottenham 0-3 Arsenal</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">Player Status</div>
+        <div class="card-body">
+          <p style="margin: 0 0 8px;"><strong>Availability:</strong> Fit</p>
+          <p style="margin: 0;"><strong>Last Updated:</strong> Today</p>
+        </div>
+      </section>
+    </aside>
+  </div>
+</main>
+{% endblock %}

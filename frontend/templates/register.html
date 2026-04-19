@@ -18,7 +18,7 @@
 
         <form method="post" action="{{ url_for('auth.register') }}" class="auth-form">
           <label for="username">Username</label>
-          <input id="username" name="username" type="text" placeholder="Choose a username" required>
+          <input id="username" name="username" type="text" placeholder="Choose a username" required minlength="3">
 
           <label for="email">Email</label>
           <input id="email" name="email" type="email" placeholder="you@example.com" required>

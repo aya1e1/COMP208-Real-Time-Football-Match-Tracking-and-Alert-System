@@ -5,6 +5,7 @@ import importlib.util
 import json
 import sqlite3
 import sys
+import tempfile
 import types
 import unittest
 from pathlib import Path
@@ -182,8 +183,8 @@ class TestMainSyncScript(MainModuleDatabaseTestCase):
         ).fetchone()[0]
         player_count = self.conn.execute("SELECT COUNT(*) FROM Player").fetchone()[0]
 
-        self.assertEqual(league_count, 46)
-        self.assertEqual(season_count, 329)
+        self.assertEqual(league_count, 45)
+        self.assertEqual(season_count, 613)
         self.assertEqual(team_count, 20)
         self.assertEqual(season_team_count, 20)
         self.assertEqual(fixture_count, 380)
@@ -254,6 +255,26 @@ class TestMainSyncScript(MainModuleDatabaseTestCase):
 
 
 class TestParserFunctions(MainModuleDatabaseTestCase):
+    def test_parse_leagues_keeps_only_important_english_competitions(self):
+        leagues_data = _mock_api_get("/leagues")
+
+        leagues, seasons = self.main_module.parse_leagues(leagues_data)
+
+        league_names = {league[1] for league in leagues}
+
+        self.assertIn("Premier League", league_names)
+        self.assertIn("Championship", league_names)
+        self.assertIn("La Liga", league_names)
+        self.assertIn("Serie A", league_names)
+        self.assertIn("Bundesliga", league_names)
+        self.assertIn("Major League Soccer", league_names)
+        self.assertIn("Liga Profesional Argentina", league_names)
+        self.assertNotIn("FA Cup", league_names)
+        self.assertNotIn("League Cup", league_names)
+        self.assertNotIn("Community Shield", league_names)
+        self.assertEqual(len(leagues), 45)
+        self.assertEqual(len(seasons), 613)
+
     def test_parse_teams_filters_non_english_and_builds_links(self):
         data = {
             "parameters": {"league": 39, "season": 2024},
@@ -428,6 +449,39 @@ class TestExternalApiMocks(unittest.TestCase):
             data = self.external_api.api_get("/not-a-real-endpoint")
 
         self.assertIsNone(data)
+
+    def test_save_api_json_does_not_overwrite_existing_error_file(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            dummy_dir = Path(tmp_dir)
+            file_path = dummy_dir / "output_teams_league-528_season-2025.json"
+            existing_data = {
+                "get": "teams",
+                "parameters": {"league": "528", "season": "2025"},
+                "errors": {
+                    "plan": "Free plans do not have access to this season, try from 2022 to 2024."
+                },
+                "results": 0,
+                "paging": {"current": 1, "total": 1},
+                "response": [],
+            }
+            replacement_data = {
+                "get": "teams",
+                "parameters": {"league": "528", "season": "2025"},
+                "errors": [],
+                "results": 1,
+                "paging": {"current": 1, "total": 1},
+                "response": [{"team": {"id": 1, "name": "Example FC"}}],
+            }
+            file_path.write_text(json.dumps(existing_data, indent=4), encoding="utf-8")
+
+            with patch.object(self.external_api, "DUMMY_DIR", dummy_dir):
+                self.external_api.save_api_json(
+                    "/teams?league=528&season=2025",
+                    replacement_data,
+                )
+
+            saved_data = json.loads(file_path.read_text(encoding="utf-8"))
+            self.assertEqual(saved_data, existing_data)
 
 
 class TestUserRepository(unittest.TestCase):

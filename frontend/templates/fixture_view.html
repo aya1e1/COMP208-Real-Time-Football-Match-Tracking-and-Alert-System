@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Kickoff — Match Details{% endblock %}
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
+<link rel="stylesheet" href="{{ static_asset('css/fixture_cards.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -69,9 +69,9 @@
   </div>
 </main>
 
-<script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
-<script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
-<script src="{{ url_for('static', filename='js/overview_tables.js') }}"></script>
+<script src="{{ static_asset('js/ui_errors.js') }}"></script>
+<script src="{{ static_asset('js/fixture_cards.js') }}"></script>
+<script src="{{ static_asset('js/overview_tables.js') }}"></script>
 <script>
   const page = document.querySelector(".match-page");
   let currentMatchId = page?.dataset.matchId;

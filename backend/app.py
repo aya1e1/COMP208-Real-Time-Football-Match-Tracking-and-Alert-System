@@ -2,7 +2,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, url_for
 
 from backend.db.database import init_db, query
 from backend.db.users import init_login_manager
@@ -81,6 +81,20 @@ def create_app():
 
     @app.context_processor
     def inject_premier_league_sidebar():
+        def static_asset(filename: str) -> str:
+            static_path = os.path.join(app.static_folder, filename)
+            version = None
+
+            try:
+                version = int(os.path.getmtime(static_path))
+            except OSError:
+                pass
+
+            if version is None:
+                return url_for("static", filename=filename)
+
+            return url_for("static", filename=filename, v=version)
+
         teams = query(
             """
             SELECT DISTINCT
@@ -96,6 +110,9 @@ def create_app():
             """,
             (39, 2024),
         )
-        return {"premier_league_sidebar_teams": teams}
+        return {
+            "premier_league_sidebar_teams": teams,
+            "static_asset": static_asset,
+        }
 
     return app

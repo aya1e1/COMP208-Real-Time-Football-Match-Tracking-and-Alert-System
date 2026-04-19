@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Kickoff — Your Dashboard{% endblock %}
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
+<link rel="stylesheet" href="{{ static_asset('css/fixture_cards.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -42,9 +42,9 @@
   </section>
 </main>
 
-<script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
-<script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
-<script src="{{ url_for('static', filename='js/recent_fixtures.js') }}"></script>
+<script src="{{ static_asset('js/ui_errors.js') }}"></script>
+<script src="{{ static_asset('js/fixture_cards.js') }}"></script>
+<script src="{{ static_asset('js/recent_fixtures.js') }}"></script>
 <script>
   const errorBannerEl = document.getElementById("dashboard-error-banner");
   const favouriteTeamsEl = document.getElementById("dashboard-favourite-teams");

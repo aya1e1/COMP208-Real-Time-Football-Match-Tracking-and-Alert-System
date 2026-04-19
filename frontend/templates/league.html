@@ -14,11 +14,11 @@
 
   <div class="league-view-page">
     <nav id="league-season-switcher" class="fixture-h2h-nav league-season-switcher" aria-label="League seasons">
-      <div class="fixture-empty">Loading seasons...</div>
+      <div class="fixture-empty">Loading seasons</div>
     </nav>
 
     <header class="league-page-header" id="league-header">
-      <h1 class="league-headline">Loading league...</h1>
+      <h1 class="league-headline">Loading league</h1>
     </header>
 
     <section class="league-layout">
@@ -27,7 +27,7 @@
           <h2 class="fixture-section-title">League Table</h2>
           <div id="league-standings">
             <div class="league-standings-wrap is-empty">
-              <div class="league-standings-empty">Loading standings...</div>
+              <div class="league-standings-empty">Loading standings</div>
             </div>
           </div>
         </section>
@@ -37,7 +37,7 @@
         <section class="league-fixture-section page-recent-fixture-section">
           <h2 class="fixture-section-title">Recent Fixtures</h2>
           <div id="league-recent-fixtures" class="dashboard-fixture-stack">
-            <div class="dashboard-empty-card">Loading recent fixtures...</div>
+            <div class="dashboard-empty-card">Loading recent fixtures</div>
           </div>
           <nav id="league-recent-pagination" class="fixture-h2h-nav page-recent-fixture-pagination" aria-label="Recent fixture pages" hidden></nav>
         </section>
@@ -212,7 +212,7 @@
     return `/api/leagues/${leagueId}/seasons/${year}/recent-fixtures?${query.toString()}`;
   }
 
-  function setRecentFixturesLoading(message = "Loading recent fixtures...") {
+  function setRecentFixturesLoading(message = "Loading recent fixtures") {
     recentPaginationEl.hidden = true;
     recentPaginationEl.innerHTML = "";
     recentFixturesEl.innerHTML = `<div class="dashboard-empty-card">${escapeHtml(message)}</div>`;
@@ -363,7 +363,7 @@
     selectedSeasonMeta = leagueSeasons.find((season) => Number(season.Year) === Number(year)) || null;
     renderHeader();
     renderSeasonSwitcher();
-    standingsEl.innerHTML = renderStandingsMessage("Loading standings...");
+    standingsEl.innerHTML = renderStandingsMessage("Loading standings");
     setRecentFixturesLoading();
     updateUrlState({ season: year, recentPage: 1 });
 

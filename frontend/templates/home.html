@@ -19,10 +19,10 @@
       <section class="league-fixture-section page-recent-fixture-section">
         <h2 class="fixture-section-title">Recent Fixtures</h2>
         <div id="home-fixtures" class="dashboard-fixture-stack">
-          <div class="dashboard-empty-card">Loading matches...</div>
+          <div class="dashboard-empty-card">Loading matches</div>
         </div>
         <nav id="home-pagination" class="fixture-h2h-nav page-recent-fixture-pagination" aria-label="Match pages">
-          <div class="fixture-empty">Loading pages...</div>
+          <div class="fixture-empty">Loading pages</div>
         </nav>
       </section>
     </div>
@@ -33,7 +33,7 @@
         <div id="home-league-error-banner" class="page-error-banner" aria-live="polite"></div>
         <div id="home-league-standings">
           <div class="league-standings-wrap is-empty">
-            <div class="league-standings-empty">Loading standings...</div>
+            <div class="league-standings-empty">Loading standings</div>
           </div>
         </div>
       </section>
@@ -50,50 +50,54 @@
 <script src="{{ static_asset('js/page_switcher.js') }}"></script>
 <script>
 (function() {
-  var premierLeagueId = 39;
-  var premierLeagueSeason = 2024;
-  var fixturesPerPage = 6;
-  var initialPage = Number(new URLSearchParams(window.location.search).get('page'));
-  var currentPage = Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1;
-  var homeErrorEl = document.getElementById('home-error-banner');
-  var paginationEl = document.getElementById('home-pagination');
-  var recentFixturesEl = document.getElementById('home-fixtures');
-  var standingsEl = document.getElementById('home-league-standings');
-  var standingsErrorEl = document.getElementById('home-league-error-banner');
-  var standingsHeaderEl = document.getElementById('home-league-card-header');
-  var homePageError = window.KickoffFixtureCards.createPageErrorController(homeErrorEl);
-  var pageError = window.KickoffFixtureCards.createPageErrorController(standingsErrorEl);
-  var escapeHtml = window.KickoffFixtureCards.escapeHtml;
-  var renderTeamLogo = window.KickoffFixtureCards.renderTeamLogo;
+  const premierLeagueId = 39;
+  const premierLeagueSeason = 2024;
+  const fixturesPerPage = 6;
+  const initialPage = Number(new URLSearchParams(window.location.search).get("page"));
+  let currentPage = Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1;
+  const homeErrorEl = document.getElementById("home-error-banner");
+  const paginationEl = document.getElementById("home-pagination");
+  const recentFixturesEl = document.getElementById("home-fixtures");
+  const standingsEl = document.getElementById("home-league-standings");
+  const standingsErrorEl = document.getElementById("home-league-error-banner");
+  const standingsHeaderEl = document.getElementById("home-league-card-header");
+  const homePageError = window.KickoffFixtureCards.createPageErrorController(homeErrorEl);
+  const standingsPageError = window.KickoffFixtureCards.createPageErrorController(standingsErrorEl);
+  const escapeHtml = window.KickoffFixtureCards.escapeHtml;
+  const renderTeamLogo = window.KickoffFixtureCards.renderTeamLogo;
 
   function renderStandingsMessage(message) {
-    return '<div class="league-standings-wrap is-empty"><div class="league-standings-empty">' +
-      escapeHtml(message) +
-      '</div></div>';
+    return `
+      <div class="league-standings-wrap is-empty">
+        <div class="league-standings-empty">${escapeHtml(message)}</div>
+      </div>
+    `;
   }
 
   function renderStandingsTeamCell(row) {
-    var teamLabel = row.TeamAbbreviation || row.TeamName || 'Team';
+    const teamLabel = row.TeamAbbreviation || row.TeamName || "Team";
 
-    return '<a class="league-standings-team-link" href="/teams/' + escapeHtml(row.TeamID) + '">' +
-      renderTeamLogo(
+    return `
+      <a class="league-standings-team-link" href="/teams/${escapeHtml(row.TeamID)}">
+        ${renderTeamLogo(
         row.TeamLogoURL,
-        (row.TeamName || 'Team') + ' logo',
-        'league-standings-team-logo',
+        `${row.TeamName || "Team"} logo`,
+        "league-standings-team-logo",
         { width: 22, height: 22 }
-      ) +
-      '<span class="league-standings-team-text">' +
-        '<span class="league-standings-team-name">' + escapeHtml(teamLabel) + '</span>' +
-      '</span>' +
-    '</a>';
+      )}
+        <span class="league-standings-team-text">
+          <span class="league-standings-team-name">${escapeHtml(teamLabel)}</span>
+        </span>
+      </a>
+    `;
   }
 
   function buildPageHref(pageNumber) {
-    var url = new URL(window.location.href);
+    const url = new URL(window.location.href);
     if (pageNumber <= 1) {
-      url.searchParams.delete('page');
+      url.searchParams.delete("page");
     } else {
-      url.searchParams.set('page', String(pageNumber));
+      url.searchParams.set("page", String(pageNumber));
     }
 
     return url.pathname + url.search;
@@ -103,9 +107,9 @@
     window.KickoffPageSwitcher.render(paginationEl, pagination, {
       showDisabledNext: true,
       buildHref: buildPageHref,
-      onSelect: function(nextPage) {
+      onSelect(nextPage) {
         currentPage = nextPage;
-        window.history.replaceState({}, '', buildPageHref(nextPage));
+        window.history.replaceState({}, "", buildPageHref(nextPage));
         return loadFixtures({ preserveScroll: true });
       }
     });
@@ -113,49 +117,49 @@
 
   function renderStandings(standings, seasonYear) {
     if (!standings.length) {
-      standingsEl.innerHTML = renderStandingsMessage('No standings available for this season.');
+      standingsEl.innerHTML = renderStandingsMessage("No standings available for this season.");
       return;
     }
 
     standingsEl.innerHTML = window.KickoffOverviewTables.renderTable({
-      className: 'league-standings-table compact',
-      wrapClassName: 'league-standings-wrap',
+      className: "league-standings-table compact",
+      wrapClassName: "league-standings-wrap",
       headers: [
-        { content: 'Pos' },
-        { content: 'Team' },
-        { content: 'MP' },
-        { content: 'GD' },
-        { content: 'Pts' }
+        { content: "Pos" },
+        { content: "Team" },
+        { content: "MP" },
+        { content: "GD" },
+        { content: "Pts" }
       ],
-      rows: standings.map(function(row) {
+      rows: standings.map((row) => {
         return [
-          { className: 'team-value', content: row.Position },
+          { className: "team-value", content: row.Position },
           {
             content: renderStandingsTeamCell(row),
             raw: true
           },
-          { className: 'team-value', content: row.Played },
-          { className: 'team-value', content: row.GD },
-          { className: 'team-value', content: row.Points }
+          { className: "team-value", content: row.Played },
+          { className: "team-value", content: row.GD },
+          { className: "team-value", content: row.Points }
         ];
       })
     });
 
     if (standingsHeaderEl && seasonYear) {
-      standingsHeaderEl.innerHTML = '<a href="/leagues/' + premierLeagueId + '?season=' + seasonYear + '">Premier League Table</a>';
+      standingsHeaderEl.innerHTML = `<a href="/leagues/${premierLeagueId}?season=${seasonYear}">Premier League Table</a>`;
     }
   }
 
   function loadStandings() {
-    return fetch('/api/leagues/' + premierLeagueId + '/seasons/' + premierLeagueSeason)
-      .then(function(response) {
+    return fetch(`/api/leagues/${premierLeagueId}/seasons/${premierLeagueSeason}`)
+      .then((response) => {
         if (!response.ok) {
-          throw new Error('Unable to load league standings.');
+          throw new Error("Unable to load league standings.");
         }
         return response.json();
       })
-      .then(function(standingsPayload) {
-        pageError.clear();
+      .then((standingsPayload) => {
+        standingsPageError.clear();
         renderStandings(
           Array.isArray(standingsPayload && standingsPayload.standings) ? standingsPayload.standings : [],
           premierLeagueSeason
@@ -163,50 +167,50 @@
       });
   }
 
-  loadStandings().catch(function(error) {
-    var message = window.KickoffUIErrors.resolveMessage(error, 'Unable to load league standings.');
-    standingsEl.innerHTML = renderStandingsMessage('Standings unavailable.');
-    pageError.render(message);
+  loadStandings().catch((error) => {
+    const message = window.KickoffUIErrors.resolveMessage(error, "Unable to load league standings.");
+    standingsEl.innerHTML = renderStandingsMessage("Standings unavailable.");
+    standingsPageError.render(message);
   });
 
   function loadFixtures(options) {
-    var preserveScroll = Boolean(options && options.preserveScroll);
-    var scrollPosition = preserveScroll ? window.scrollY : null;
-    recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading matches...</div>';
+    const preserveScroll = Boolean(options && options.preserveScroll);
+    const scrollPosition = preserveScroll ? window.scrollY : null;
+    recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading matches</div>';
 
-    return fetch('/api/fixtures?page=' + currentPage + '&per_page=' + fixturesPerPage)
-      .then(function(response) {
+    return fetch(`/api/fixtures?page=${currentPage}&per_page=${fixturesPerPage}`)
+      .then((response) => {
         if (!response.ok) {
-          throw new Error('Unable to load matches.');
+          throw new Error("Unable to load matches.");
         }
 
         return response.json();
       })
-      .then(function(payload) {
+      .then((payload) => {
         homePageError.clear();
         renderPagination(payload && payload.pagination);
         window.KickoffRecentFixtures.render(
           recentFixturesEl,
           Array.isArray(payload && payload.fixtures) ? payload.fixtures : [],
           {
-            fallbackLeagueName: 'Match'
+            fallbackLeagueName: "Match"
           }
         );
 
         if (preserveScroll && scrollPosition !== null) {
-          window.requestAnimationFrame(function() {
+          window.requestAnimationFrame(() => {
             window.scrollTo({ top: scrollPosition, behavior: 'auto' });
           });
         }
       })
-      .catch(function(error) {
-        homePageError.render(window.KickoffUIErrors.resolveMessage(error, 'Unable to load matches.'));
+      .catch((error) => {
+        homePageError.render(window.KickoffUIErrors.resolveMessage(error, "Unable to load matches."));
         paginationEl.hidden = true;
-        paginationEl.innerHTML = '';
+        paginationEl.innerHTML = "";
         recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Matches unavailable.</div>';
 
         if (preserveScroll && scrollPosition !== null) {
-          window.requestAnimationFrame(function() {
+          window.requestAnimationFrame(() => {
             window.scrollTo({ top: scrollPosition, behavior: 'auto' });
           });
         }

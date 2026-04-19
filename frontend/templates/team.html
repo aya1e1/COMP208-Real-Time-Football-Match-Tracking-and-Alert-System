@@ -18,7 +18,7 @@
   <div id="team-error-banner" class="page-error-banner" aria-live="polite"></div>
 
   <header class="team-page-header" id="team-header">
-    <div class="team-empty">Loading team...</div>
+    <div class="team-empty">Loading team</div>
   </header>
 
   <section class="team-layout">
@@ -26,14 +26,14 @@
       <section class="card team-summary-card">
         <div class="card-body">
           <h2 class="fixture-section-title">Team Details</h2>
-          <div id="team-summary" class="team-empty">Loading team details...</div>
+          <div id="team-summary" class="team-empty">Loading team details</div>
         </div>
       </section>
 
       <section class="card team-section">
         <div class="card-body">
           <h2 class="fixture-section-title">Team Overview</h2>
-          <div id="team-overview" class="team-empty">Loading overview...</div>
+          <div id="team-overview" class="team-empty">Loading overview</div>
         </div>
       </section>
     </div>
@@ -41,12 +41,12 @@
     <aside class="team-column">
       <section class="dashboard-section">
         <h2 class="fixture-section-title">Upcoming Fixture</h2>
-        <div id="team-upcoming-fixture" class="team-empty">Loading upcoming fixture...</div>
+        <div id="team-upcoming-fixture" class="team-empty">Loading upcoming fixture</div>
       </section>
 
       <section class="dashboard-section page-recent-fixture-section">
         <h2 class="fixture-section-title">Recent Games</h2>
-        <div id="team-recent-fixtures" class="team-fixture-stack">Loading recent fixtures...</div>
+        <div id="team-recent-fixtures" class="team-fixture-stack">Loading recent fixtures</div>
         <nav id="team-recent-pagination" class="fixture-h2h-nav page-recent-fixture-pagination" aria-label="Recent fixture pages" hidden></nav>
       </section>
     </aside>
@@ -84,44 +84,15 @@
   let currentRecentPage = initialRecentPage > 0 ? initialRecentPage : 1;
   let favouriteRequestPending = false;
 
-  function readSessionStorage(key) {
-    try {
-      return window.sessionStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  }
-
-  function writeSessionStorage(key, value) {
-    try {
-      window.sessionStorage.setItem(key, value);
-    } catch {
-      // Storage can be unavailable in some deployed browser contexts.
-    }
-  }
-
-  function removeSessionStorage(key) {
-    try {
-      window.sessionStorage.removeItem(key);
-    } catch {
-      // Ignore storage cleanup failures and continue with network data.
-    }
-  }
-
   function getCachedTeamPayload() {
     if (!teamCacheKey) {
       return null;
     }
 
-    const cachedPayload = readSessionStorage(teamCacheKey);
-    if (!cachedPayload) {
-      return null;
-    }
-
     try {
-      return JSON.parse(cachedPayload);
+      const cachedPayload = window.sessionStorage.getItem(teamCacheKey);
+      return cachedPayload ? JSON.parse(cachedPayload) : null;
     } catch {
-      removeSessionStorage(teamCacheKey);
       return null;
     }
   }
@@ -131,7 +102,10 @@
       return;
     }
 
-    writeSessionStorage(teamCacheKey, JSON.stringify(payload));
+    try {
+      window.sessionStorage.setItem(teamCacheKey, JSON.stringify(payload));
+    } catch {
+    }
   }
 
   function renderFormDots(form) {
@@ -283,7 +257,7 @@
     return `/api/teams/${teamId}?${query.toString()}`;
   }
 
-  function setRecentFixturesLoading(message = "Loading recent fixtures...") {
+  function setRecentFixturesLoading(message = "Loading recent fixtures") {
     recentPaginationEl.hidden = true;
     recentPaginationEl.innerHTML = "";
     recentFixturesEl.innerHTML = `<div class="team-empty">${escapeHtml(message)}</div>`;
@@ -557,7 +531,10 @@
       try {
         renderTeamPage(cachedPayload);
       } catch {
-        removeSessionStorage(teamCacheKey);
+        try {
+          window.sessionStorage.removeItem(teamCacheKey);
+        } catch {
+        }
         loadTeamPage();
       }
     } else {

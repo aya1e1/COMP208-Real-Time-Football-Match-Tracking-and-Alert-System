@@ -15,26 +15,26 @@
   </header>
 
   <nav id="live-country-filter" class="fixture-h2h-nav leagues-country-filter" aria-label="Match countries">
-    <div class="fixture-empty">Loading countries...</div>
+    <div class="fixture-empty">Loading countries</div>
   </nav>
 
   <section class="dashboard-section">
     <h2 class="fixture-section-title">Live Matches</h2>
     <div id="live-fixtures" class="dashboard-fixture-stack">
-      <div class="dashboard-empty-card">Loading live matches...</div>
+      <div class="dashboard-empty-card">Loading live matches</div>
     </div>
     <nav id="live-pagination" class="fixture-h2h-nav" aria-label="Live match pages">
-      <div class="fixture-empty">Loading pages...</div>
+      <div class="fixture-empty">Loading pages</div>
     </nav>
   </section>
 
   <section class="dashboard-section">
     <h2 class="fixture-section-title">Recent Fixtures</h2>
     <div id="recent-fixtures" class="dashboard-fixture-stack">
-      <div class="dashboard-empty-card">Loading recent fixtures...</div>
+      <div class="dashboard-empty-card">Loading recent fixtures</div>
     </div>
     <nav id="recent-pagination" class="fixture-h2h-nav" aria-label="Recent fixture pages">
-      <div class="fixture-empty">Loading pages...</div>
+      <div class="fixture-empty">Loading pages</div>
     </nav>
   </section>
 </main>
@@ -236,8 +236,8 @@
   function loadAllSections(options = {}) {
     const preserveScroll = Boolean(options.preserveScroll);
     const scrollPosition = preserveScroll ? window.scrollY : null;
-    liveFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading live matches...</div>';
-    recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading recent fixtures...</div>';
+    liveFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading live matches</div>';
+    recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading recent fixtures</div>';
 
     return Promise.all([
       fetch("/api/leagues")

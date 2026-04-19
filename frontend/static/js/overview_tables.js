@@ -9,52 +9,41 @@
   }
 
   function renderAttributes(cell) {
-    const attributes = [];
+    let attributes = "";
 
     if (cell.colspan) {
-      attributes.push(`colspan="${escapeHtml(cell.colspan)}"`);
+      attributes += ` colspan="${escapeHtml(cell.colspan)}"`;
     }
 
     if (cell.rowspan) {
-      attributes.push(`rowspan="${escapeHtml(cell.rowspan)}"`);
+      attributes += ` rowspan="${escapeHtml(cell.rowspan)}"`;
     }
 
     if (cell.scope) {
-      attributes.push(`scope="${escapeHtml(cell.scope)}"`);
+      attributes += ` scope="${escapeHtml(cell.scope)}"`;
     }
 
-    return attributes.length ? ` ${attributes.join(" ")}` : "";
-  }
-
-  function normalizeCell(cell, defaultTag = "td") {
-    if (cell && typeof cell === "object" && !Array.isArray(cell)) {
-      return {
-        tag: cell.tag || defaultTag,
-        className: cell.className || "",
-        content: cell.content ?? "",
-        raw: Boolean(cell.raw),
-        colspan: cell.colspan,
-        rowspan: cell.rowspan,
-        scope: cell.scope
-      };
-    }
-
-    return {
-      tag: defaultTag,
-      className: "",
-      content: cell ?? "",
-      raw: false
-    };
+    return attributes;
   }
 
   function renderCell(cell, defaultTag) {
-    const normalized = normalizeCell(cell, defaultTag);
-    const className = normalized.className ? ` class="${escapeHtml(normalized.className)}"` : "";
-    const content = normalized.raw
-      ? String(normalized.content ?? "")
-      : escapeHtml(normalized.content);
+    let tag = defaultTag;
+    let className = "";
+    let content = cell ?? "";
+    let raw = false;
+    let attributes = "";
 
-    return `<${normalized.tag}${className}${renderAttributes(normalized)}>${content}</${normalized.tag}>`;
+    if (cell && typeof cell === "object" && !Array.isArray(cell)) {
+      tag = cell.tag || defaultTag;
+      className = cell.className || "";
+      content = cell.content ?? "";
+      raw = Boolean(cell.raw);
+      attributes = renderAttributes(cell);
+    }
+
+    const classAttribute = className ? ` class="${escapeHtml(className)}"` : "";
+    const cellContent = raw ? String(content) : escapeHtml(content);
+    return `<${tag}${classAttribute}${attributes}>${cellContent}</${tag}>`;
   }
 
   function renderHead(headers) {

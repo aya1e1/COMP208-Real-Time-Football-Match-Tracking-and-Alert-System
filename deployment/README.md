@@ -216,21 +216,6 @@ https://vps-eaa16051.vps.ovh.net/
 
 ```
 
-If the IP works but the domain still shows the Fedora page, check which service is answering on port `80` and which virtual host Nginx loaded:
-
-```bash
-
-sudo  ss  -ltnp  '( sport = :80 )'
-sudo  nginx  -T
-
-```
-
-Common causes are:
-
-- the domain is pointing to a different server than the one you tested by IP
-- the default Fedora site config is still enabled
-- `httpd` is still running and answering on port `80`
-- `server_name` was left as the template values instead of your real domain
 
 ## 10. Create a systemd service for Gunicorn
 

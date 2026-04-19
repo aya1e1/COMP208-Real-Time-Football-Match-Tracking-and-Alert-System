@@ -23,10 +23,12 @@
 
     <section class="league-layout">
       <div class="league-column">
-        <section class="card league-section">
-          <div class="card-body">
-            <h2 class="fixture-section-title">League Table</h2>
-            <div id="league-standings" class="fixture-empty">Loading standings...</div>
+        <section class="league-section league-standings-section">
+          <h2 class="fixture-section-title">League Table</h2>
+          <div id="league-standings">
+            <div class="league-standings-wrap is-empty">
+              <div class="league-standings-empty">Loading standings...</div>
+            </div>
           </div>
         </section>
       </div>
@@ -65,10 +67,72 @@
   let leagueSeasons = [];
   let selectedSeasonYear = null;
   let leagueName = "League";
+  let leagueCountry = "";
+  let leagueLogoUrl = "";
+  let selectedSeasonMeta = null;
+
+  function formatSeasonDate(value) {
+    if (!value) {
+      return "TBC";
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+  }
+
+  function renderStandingsMessage(message) {
+    return `
+      <div class="league-standings-wrap is-empty">
+        <div class="league-standings-empty">${escapeHtml(message)}</div>
+      </div>
+    `;
+  }
+
+  function renderStandingsTeamCell(row) {
+    const teamName = row.TeamName || "Team";
+    const description = row.Description || "";
+
+    return `
+      <a class="league-standings-team-link" href="/teams/${escapeHtml(row.TeamID)}">
+        ${renderTeamLogo(
+          row.TeamLogoURL,
+          `${teamName} logo`,
+          "league-standings-team-logo",
+          { width: 22, height: 22 }
+        )}
+        <span class="league-standings-team-text">
+          <span class="league-standings-team-name">${escapeHtml(teamName)}</span>
+          ${description ? `<span class="league-standings-team-meta">${escapeHtml(description)}</span>` : ""}
+        </span>
+      </a>
+    `;
+  }
 
   function renderHeader() {
+    const dateLabel = selectedSeasonMeta
+      ? `${formatSeasonDate(selectedSeasonMeta.StartDate)} - ${formatSeasonDate(selectedSeasonMeta.EndDate)}`
+      : "";
+    const logoMarkup = leagueLogoUrl
+      ? renderTeamLogo(leagueLogoUrl, `${leagueName} logo`, "league-header-logo", { width: 64, height: 64 })
+      : '<div class="league-header-logo-placeholder" aria-hidden="true"></div>';
+
     headerEl.innerHTML = `
-      <h1 class="league-headline">${escapeHtml(leagueName)}</h1>
+      <div class="league-header-shell">
+        ${logoMarkup}
+        <div class="league-header-copy">
+          <h1 class="league-headline">${escapeHtml(leagueName)}</h1>
+          ${leagueCountry ? `<div class="league-country">${escapeHtml(leagueCountry)}</div>` : ""}
+          ${dateLabel ? `<div class="league-season-dates">${escapeHtml(dateLabel)}</div>` : ""}
+        </div>
+      </div>
     `;
   }
 
@@ -114,39 +178,37 @@
 
   function renderStandings(standings) {
     if (!standings.length) {
-      standingsEl.innerHTML = `<div class="fixture-empty">No standings available for this season.</div>`;
+      standingsEl.innerHTML = renderStandingsMessage("No standings available for this season.");
       return;
     }
 
     standingsEl.innerHTML = window.KickoffOverviewTables.renderTable({
-      className: "overview-table",
+      className: "league-standings-table detailed",
       wrapClassName: "league-standings-wrap",
       headers: [
         { content: "Pos" },
-        { content: "" },
         { content: "Team" },
         { content: "MP" },
+        { content: "W" },
+        { content: "D" },
+        { content: "L" },
+        { content: "GF" },
+        { content: "GA" },
         { content: "GD" },
         { content: "Pts" }
       ],
       rows: standings.map((row) => ([
         { className: "team-value", content: row.Position },
         {
-          className: "team-value",
-          content: renderTeamLogo(
-            row.TeamLogoURL,
-            `${row.TeamName} logo`,
-            "league-standings-team-logo",
-            { width: 22, height: 22 }
-          ),
-          raw: true
-        },
-        {
-          className: "team-value",
-          content: `<a href="/teams/${escapeHtml(row.TeamID)}">${escapeHtml(row.TeamAbbreviation || row.TeamName)}</a>`,
+          content: renderStandingsTeamCell(row),
           raw: true
         },
         { className: "team-value", content: row.Played },
+        { className: "team-value", content: row.Won },
+        { className: "team-value", content: row.Drawn },
+        { className: "team-value", content: row.Lost },
+        { className: "team-value", content: row.GF },
+        { className: "team-value", content: row.GA },
         { className: "team-value", content: row.GD },
         { className: "team-value", content: row.Points }
       ]))
@@ -171,9 +233,12 @@
     const fixturesPayload = await fixturesResponse.json();
 
     leagueName = standingsPayload?.league?.Name || fixturesPayload?.league?.Name || leagueName;
+    leagueCountry = standingsPayload?.league?.Country || fixturesPayload?.league?.Country || leagueCountry;
+    leagueLogoUrl = standingsPayload?.league?.LogoURL || fixturesPayload?.league?.LogoURL || leagueLogoUrl;
+    const standings = Array.isArray(standingsPayload?.standings) ? standingsPayload.standings : [];
     pageError.clear();
     renderHeader();
-    renderStandings(Array.isArray(standingsPayload?.standings) ? standingsPayload.standings : []);
+    renderStandings(standings);
     window.KickoffRecentFixtures.render(
       recentFixturesEl,
       Array.isArray(fixturesPayload?.recent_fixtures) ? fixturesPayload.recent_fixtures : [],
@@ -186,9 +251,10 @@
     const previousStandingsHtml = standingsEl.innerHTML;
     const previousRecentFixturesHtml = recentFixturesEl.innerHTML;
     selectedSeasonYear = year;
+    selectedSeasonMeta = leagueSeasons.find((season) => Number(season.Year) === Number(year)) || null;
     renderHeader();
     renderSeasonSwitcher();
-    standingsEl.innerHTML = `<div class="fixture-empty">Loading standings...</div>`;
+    standingsEl.innerHTML = renderStandingsMessage("Loading standings...");
     recentFixturesEl.innerHTML = `<div class="dashboard-empty-card">Loading recent fixtures...</div>`;
 
     const url = new URL(window.location.href);
@@ -200,9 +266,11 @@
     } catch (error) {
       const message = window.KickoffUIErrors.resolveMessage(error, "Unable to load league details.");
       selectedSeasonYear = previousSelectedSeasonYear;
+      selectedSeasonMeta = leagueSeasons.find((season) => Number(season.Year) === Number(previousSelectedSeasonYear)) || null;
       renderSeasonSwitcher();
-      standingsEl.innerHTML = previousStandingsHtml || '<div class="fixture-empty">Standings unavailable.</div>';
+      standingsEl.innerHTML = previousStandingsHtml || renderStandingsMessage("Standings unavailable.");
       recentFixturesEl.innerHTML = previousRecentFixturesHtml || '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
+      renderHeader();
       pageError.render(message);
     }
   }
@@ -212,7 +280,7 @@
       pageError.render("Unable to load league details.");
       renderHeader();
       seasonSwitcherEl.innerHTML = '<div class="fixture-empty">Season data unavailable.</div>';
-      standingsEl.innerHTML = '<div class="fixture-empty">Standings unavailable.</div>';
+      standingsEl.innerHTML = renderStandingsMessage("Standings unavailable.");
       recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
       return;
     }
@@ -224,6 +292,8 @@
 
     const seasonsPayload = await seasonsResponse.json();
     leagueName = seasonsPayload?.league?.Name || leagueName;
+    leagueCountry = seasonsPayload?.league?.Country || leagueCountry;
+    leagueLogoUrl = seasonsPayload?.league?.LogoURL || leagueLogoUrl;
     leagueSeasons = Array.isArray(seasonsPayload?.seasons) ? seasonsPayload.seasons : [];
 
     const searchSeason = Number(new URLSearchParams(window.location.search).get("season"));
@@ -234,7 +304,7 @@
     if (!initialSeason) {
       renderHeader();
       renderSeasonSwitcher();
-      standingsEl.innerHTML = `<div class="fixture-empty">No seasons available for this league.</div>`;
+      standingsEl.innerHTML = renderStandingsMessage("No seasons available for this league.");
       recentFixturesEl.innerHTML = `<div class="dashboard-empty-card">No recent fixtures available.</div>`;
       return;
     }
@@ -247,7 +317,7 @@
     pageError.render(message);
     renderHeader();
     seasonSwitcherEl.innerHTML = '<div class="fixture-empty">Season data unavailable.</div>';
-    standingsEl.innerHTML = '<div class="fixture-empty">Standings unavailable.</div>';
+    standingsEl.innerHTML = renderStandingsMessage("Standings unavailable.");
     recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
   });
 </script>

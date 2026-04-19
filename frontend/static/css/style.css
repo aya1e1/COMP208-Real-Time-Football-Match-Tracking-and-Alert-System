@@ -12,6 +12,7 @@
   --live-dim: #dcfce7;
   --blue:    #3b82f6;
   --radius:  10px;
+  --card-radius: 14px;
 }
 
 /* ── Reset ───────────────────────────────────────────────── */
@@ -41,17 +42,19 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
   width: 250px;
   background: var(--bg);
   border-right: 1px solid var(--border);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .nav-inner {
-  height: 100%;
+  min-height: 100%;
   padding: 24px 18px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 24px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .nav-logo { font-size: 1.1rem; font-weight: 800; }
@@ -133,7 +136,7 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--card-radius);
   overflow: hidden;
 }
 
@@ -230,23 +233,30 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
 .section-link:hover { text-decoration: underline; }
 
 /* League table */
-.table-mini { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.table-mini {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .8rem;
+  line-height: 1.25;
+}
 
 .table-mini th {
   font-size: .67rem; font-weight: 600; text-transform: uppercase;
   letter-spacing: .3px; color: var(--text-3);
-  padding: 6px 8px; text-align: right;
+  padding: 8px 10px; text-align: right;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .table-mini th:nth-child(-n+2) { text-align: left; }
 
 .table-mini td {
-  padding: 8px; text-align: right;
+  padding: 10px; text-align: right;
   border-bottom: 1px solid var(--border); color: var(--text-2);
+  white-space: nowrap;
 }
 
-.table-mini td:first-child  { text-align: left; padding-left: 14px; }
+.table-mini td:first-child  { text-align: left; padding-left: 12px; }
 .table-mini td:nth-child(2) { text-align: left; font-weight: 500; color: var(--text-1); }
 .table-mini tr:last-child td { border-bottom: none; }
 .table-mini tr:hover td      { background: var(--surface-2); }

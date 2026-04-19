@@ -20,11 +20,6 @@
   gap: 20px;
 }
 
-.fixture-view-page .card,
-.dashboard-page .card {
-  border-radius: 0;
-}
-
 .fixture-scoreboard {
   background: #f5f5f5;
   border: 1px solid #ececec;
@@ -646,6 +641,7 @@
   display: block;
   background: #f7f7f6;
   border: 1px solid #ececec;
+  border-radius: calc(var(--card-radius) - 2px);
   color: inherit;
   transition: border-color .12s;
 }
@@ -792,6 +788,7 @@
   padding: 16px 18px;
   background: #f7f7f6;
   border: 1px solid #ececec;
+  border-radius: calc(var(--card-radius) - 2px);
   color: var(--text-2);
   font-size: 0.95rem;
 }

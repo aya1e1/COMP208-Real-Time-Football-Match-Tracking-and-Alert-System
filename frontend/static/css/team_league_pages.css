@@ -10,10 +10,6 @@
   gap: 20px;
 }
 
-.leagues-page .card {
-  border-radius: 0;
-}
-
 .leagues-page-header {
   padding: 4px 0 2px;
   text-align: center;
@@ -50,13 +46,52 @@
   justify-content: flex-start;
 }
 
-.league-view-page .card {
-  border-radius: 0;
+.league-page-header {
+  padding: 4px 0 6px;
+  text-align: center;
 }
 
-.league-page-header {
-  padding: 4px 0 2px;
+.league-header-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.league-header-logo,
+.league-header-logo-placeholder {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 14px;
+}
+
+.league-header-logo {
+  object-fit: contain;
+  object-position: center;
+}
+
+.league-header-logo-placeholder {
+  border: 1px solid var(--border);
+  background: #f5f5f5;
+}
+
+.league-header-copy {
+  min-width: 0;
   text-align: center;
+}
+
+.league-country {
+  margin-top: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.league-season-dates {
+  margin-top: 8px;
+  font-size: 0.88rem;
+  color: var(--text-2);
 }
 
 .league-headline {
@@ -94,32 +129,163 @@
   gap: 22px;
 }
 
-.league-section .card-body {
-  padding: 18px 20px;
-}
-
 .league-fixture-section {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
+.league-standings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.league-standings-section .fixture-section-title,
 .league-fixture-section .fixture-section-title {
   margin-bottom: 0;
 }
 
 .league-standings-wrap {
   overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--card-radius) - 2px);
+  background: var(--surface);
+}
+
+.league-standings-wrap.is-empty {
+  padding: 16px 18px;
+}
+
+.league-standings-empty {
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
+
+.league-standings-table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.league-standings-table thead th {
+  padding: 8px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+  background: #fbfbf9;
+  white-space: nowrap;
+}
+
+.league-standings-table tbody td {
+  padding: 9px 10px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.league-standings-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.league-standings-table th:first-child,
+.league-standings-table td:first-child {
+  width: 44px;
+  padding-left: 14px;
+  text-align: left;
+}
+
+.league-standings-table th:nth-child(2),
+.league-standings-table td:nth-child(2) {
+  text-align: left;
+}
+
+.league-standings-table th:nth-child(n + 3),
+.league-standings-table td:nth-child(n + 3) {
+  text-align: right;
+}
+
+.league-standings-table td:nth-child(2) {
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.league-standings-table td:last-child {
+  color: var(--text-1);
+  font-weight: 700;
+}
+
+.league-standings-table tbody tr:hover td {
+  background: #fafaf8;
+}
+
+.league-standings-table a {
+  color: inherit;
+}
+
+.league-standings-team-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.league-standings-team-logo {
+  display: block;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.league-standings-team-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.league-standings-team-name {
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.league-standings-team-meta {
+  color: var(--text-2);
+  font-size: 0.74rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.league-standings-table.compact .league-standings-team-link {
+  gap: 10px;
+}
+
+.league-standings-table.compact .league-standings-team-name {
+  font-size: 0.96rem;
+}
+
+.league-standings-table.compact .league-standings-team-meta {
+  display: none;
+}
+
+.league-standings-table.detailed th,
+.league-standings-table.detailed td {
+  white-space: nowrap;
 }
 
 .team-page {
   display: flex;
   flex-direction: column;
   gap: 22px;
-}
-
-.team-page .card {
-  border-radius: 0;
 }
 
 .team-page-header {
@@ -228,6 +394,17 @@
 }
 
 @media (max-width: 560px) {
+  .league-header-shell {
+    align-items: flex-start;
+  }
+
+  .league-header-logo,
+  .league-header-logo-placeholder {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+  }
+
   .team-header-crest {
     width: 60px;
     height: 60px;

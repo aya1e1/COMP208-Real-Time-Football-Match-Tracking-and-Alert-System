@@ -23,7 +23,7 @@ This guide assumes:
 
 - Project path: `/srv/football-app`
 
-- Public access by server IP, not a custom domain
+- Public access by server IP or a custom domain
 
   
 
@@ -153,57 +153,64 @@ Use only `-w 1` for now because this project uses SQLite and performs startup sy
 
 ## 6. Enable the Nginx config
 
-  
-
 This repository includes:
-
-  
 
 - [`nginx.conf`](./nginx.conf)
 
-  
+Before copying it, edit `deployment/nginx.conf` and replace:
+
+- `YOUR_DOMAIN` with your real domain name
+- `YOUR_SERVER_IP` with your VPS public IP
+
+If you only want to serve the app on a domain, you can remove `YOUR_SERVER_IP` from `server_name`.
 
 On Fedora, it is simplest to place the site config under `/etc/nginx/conf.d/`:
-
-  
 
 ```bash
 
 sudo  cp  /srv/football-app/deployment/nginx.conf  /etc/nginx/conf.d/football-app.conf
-
+sudo  rm  -f  /etc/nginx/conf.d/default.conf
 sudo  nginx  -t
-
 sudo  systemctl  reload  nginx
 
 ```
 
-  
+If `httpd` is installed, stop and disable it so it does not keep serving the Fedora test page on port `80`:
 
+```bash
 
+sudo  systemctl  disable  --now  httpd
 
+```
 
-  
+Make sure your DNS `A` or `AAAA` record points the domain to this same VPS before testing.
 
 ## 8. Visit the app
 
-  
-
 Open:
-
-  
 
 ```text
 
 http://YOUR_SERVER_IP/
+http://YOUR_DOMAIN/
 
 ```
 
-  
+If the IP works but the domain still shows the Fedora page, check which service is answering on port `80` and which virtual host Nginx loaded:
 
+```bash
+
+sudo  ss  -ltnp  '( sport = :80 )'
+sudo  nginx  -T
 
 ```
 
-  
+Common causes are:
+
+- the domain is pointing to a different server than the one you tested by IP
+- the default Fedora site config is still enabled
+- `httpd` is still running and answering on port `80`
+- `server_name` was left as the template values instead of your real domain
 
 ## 10. Create a systemd service for Gunicorn
 

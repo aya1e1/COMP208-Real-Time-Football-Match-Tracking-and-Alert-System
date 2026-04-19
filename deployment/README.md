@@ -157,12 +157,11 @@ This repository includes:
 
 - [`nginx.conf`](./nginx.conf)
 
-Before copying it, edit `deployment/nginx.conf` and replace:
+The checked-in config is set up for:
 
-- `YOUR_DOMAIN` with your real domain name
-- `YOUR_SERVER_IP` with your VPS public IP
-
-If you only want to serve the app on a domain, you can remove `YOUR_SERVER_IP` from `server_name`.
+- `vps-eaa16051.vps.ovh.net`
+- HTTP to HTTPS redirection
+- TLS certificates from Let's Encrypt at `/etc/letsencrypt/live/vps-eaa16051.vps.ovh.net/`
 
 On Fedora, it is simplest to place the site config under `/etc/nginx/conf.d/`:
 
@@ -185,14 +184,35 @@ sudo  systemctl  disable  --now  httpd
 
 Make sure your DNS `A` or `AAAA` record points the domain to this same VPS before testing.
 
+Before reloading Nginx with the HTTPS config, create the certificate on the VPS:
+
+```bash
+
+sudo  dnf  install  -y  certbot  python3-certbot-nginx
+sudo  certbot  certonly  --nginx  -d  vps-eaa16051.vps.ovh.net
+sudo  certbot  renew  --dry-run
+
+```
+
+On Fedora with SELinux enabled, allow Nginx to proxy to Gunicorn and read the static files:
+
+```bash
+
+sudo  setsebool  -P  httpd_can_network_connect  1
+sudo  dnf  install  -y  policycoreutils-python-utils
+sudo  semanage  fcontext  -a  -t  httpd_sys_content_t  '/srv/football-app/frontend/static(/.*)?'
+sudo  restorecon  -Rv  /srv/football-app/frontend/static
+
+```
+
 ## 8. Visit the app
 
 Open:
 
 ```text
 
-http://YOUR_SERVER_IP/
-http://YOUR_DOMAIN/
+http://vps-eaa16051.vps.ovh.net/
+https://vps-eaa16051.vps.ovh.net/
 
 ```
 

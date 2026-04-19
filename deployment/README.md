@@ -305,3 +305,84 @@ After that, Gunicorn will:
 - restart automatically if it crashes
 
 - run without keeping a terminal open
+
+## 11. Automate deployment from GitHub to the VPS
+
+This repository includes a GitHub Actions workflow at:
+
+- [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)
+
+It is set to deploy automatically when a commit is pushed to the `main` branch.
+
+### GitHub secrets
+
+In your GitHub repository, open:
+
+`Settings -> Secrets and variables -> Actions`
+
+Create these repository secrets:
+
+- `VPS_HOST` . your server IP or hostname
+- `VPS_USER` . the Linux user GitHub Actions should log in as
+- `VPS_PASSWORD` . the SSH password for that user
+- `VPS_PORT` . optional, only needed if SSH is not on port `22`
+
+### How the deploy workflow works
+
+On each push to `main`, GitHub Actions will:
+
+1. run the backend tests
+2. connect to the VPS over SSH
+3. update `/srv/football-app` to the latest `origin/main`
+4. install any updated Python dependencies
+5. restart the `football-app` service
+
+The deploy step runs these commands on the VPS:
+
+```bash
+cd /srv/football-app
+git fetch origin
+git reset --hard origin/main
+source venv/bin/activate
+pip install -r requirements.txt
+sudo systemctl restart football-app
+sudo systemctl status football-app --no-pager
+```
+
+### Important `sudo` note
+
+If the VPS user needs a password every time `sudo` is used, the deployment can fail because GitHub Actions cannot answer an interactive `sudo` prompt.
+
+The simplest fix is to allow this user to restart the service without a `sudo` password.
+
+Run:
+
+```bash
+sudo visudo
+```
+
+Add a line like this, replacing `YOUR_USERNAME` with the VPS username:
+
+```sudoers
+YOUR_USERNAME ALL=(ALL) NOPASSWD: /bin/systemctl restart football-app, /bin/systemctl status football-app
+```
+
+If your system uses a different `systemctl` path, check it with:
+
+```bash
+which systemctl
+```
+
+### First deployment checklist
+
+Before enabling automatic deployment, make sure:
+
+- the project is already cloned to `/srv/football-app`
+- the virtual environment exists at `/srv/football-app/venv`
+- the `.env` file exists on the VPS
+- `sudo systemctl status football-app` works on the server
+- the GitHub repository on the VPS points to the correct remote
+
+### Security note
+
+Password-based SSH automation works, but using an SSH key is usually more secure and easier to maintain long term.

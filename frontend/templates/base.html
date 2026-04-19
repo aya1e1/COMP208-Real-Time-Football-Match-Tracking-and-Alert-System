@@ -10,9 +10,27 @@
 <body>
 
 <div class="app-shell">
-  <nav class="nav">
+  <button
+    type="button"
+    class="nav-overlay"
+    id="nav-overlay"
+    aria-label="Close navigation"
+    hidden
+  ></button>
+
+  <nav class="nav" id="site-nav" aria-label="Primary">
     <div class="nav-inner">
-      <a href="/" class="nav-logo">Kick<span>off</span></a>
+      <div class="nav-topbar">
+        <a href="/" class="nav-logo">Kick<span>off</span></a>
+        <button
+          type="button"
+          class="nav-close"
+          id="nav-close"
+          aria-label="Close navigation menu"
+        >
+          Close
+        </button>
+      </div>
       <div class="nav-links">
         <a href="/" {% if request.endpoint == 'main.home' %}class="active"{% endif %}>Home</a>
         <a href="/leagues" {% if request.endpoint == 'leagues.leagues' %}class="active"{% endif %}>Leagues</a>
@@ -54,20 +72,101 @@
   </nav>
 
   <div class="app-main">
+    <div class="mobile-nav-bar">
+      <button
+        type="button"
+        class="nav-toggle"
+        id="nav-toggle"
+        aria-controls="site-nav"
+        aria-expanded="false"
+      >
+        Menu
+      </button>
+    </div>
     {% block content %}{% endblock %}
-
-    <footer>
-      Kickoff &copy; 2025 &middot; Real-time football tracking
-    </footer>
   </div>
 </div>
 
 <script>
+  const bodyEl = document.body;
+  const siteNavEl = document.getElementById("site-nav");
+  const navToggleEl = document.getElementById("nav-toggle");
+  const navCloseEl = document.getElementById("nav-close");
+  const navOverlayEl = document.getElementById("nav-overlay");
   const premierLeagueTeamsEl = document.getElementById("premier-league-teams");
   const premierLeagueTitleEl = document.getElementById("premier-league-title");
   const premierLeagueCacheKey = "kickoff-premier-league-teams-39-2024";
+  const previousPageCacheKey = "kickoff-previous-page";
   const currentPath = window.location.pathname;
   const hasServerRenderedTeams = premierLeagueTeamsEl.children.length > 0;
+  const mobileNavQuery = window.matchMedia("(max-width: 860px)");
+
+  if (siteNavEl) {
+    siteNavEl.setAttribute("aria-hidden", mobileNavQuery.matches ? "true" : "false");
+  }
+
+  function setNavOpen(isOpen) {
+    if (!navToggleEl || !navOverlayEl || !siteNavEl) {
+      return;
+    }
+
+    bodyEl.classList.toggle("nav-open", isOpen);
+    siteNavEl.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    navToggleEl.setAttribute("aria-expanded", String(isOpen));
+    navOverlayEl.hidden = !isOpen;
+  }
+
+  function closeNav() {
+    setNavOpen(false);
+  }
+
+  function openNav() {
+    setNavOpen(true);
+  }
+
+  if (navToggleEl) {
+    navToggleEl.addEventListener("click", () => {
+      const isOpen = bodyEl.classList.contains("nav-open");
+      setNavOpen(!isOpen);
+    });
+  }
+
+  if (navCloseEl) {
+    navCloseEl.addEventListener("click", closeNav);
+  }
+
+  if (navOverlayEl) {
+    navOverlayEl.addEventListener("click", closeNav);
+  }
+
+  if (siteNavEl) {
+    siteNavEl.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        if (mobileNavQuery.matches) {
+          closeNav();
+        }
+      });
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && bodyEl.classList.contains("nav-open")) {
+      closeNav();
+    }
+  });
+
+  if (typeof mobileNavQuery.addEventListener === "function") {
+    mobileNavQuery.addEventListener("change", (event) => {
+      if (!event.matches) {
+        closeNav();
+        siteNavEl.setAttribute("aria-hidden", "false");
+      }
+    });
+  }
+
+  if (!mobileNavQuery.matches && siteNavEl) {
+    siteNavEl.setAttribute("aria-hidden", "false");
+  }
 
   function readSessionStorage(key) {
     try {
@@ -92,6 +191,94 @@
 
     }
   }
+
+  function getPreviousInternalPage() {
+    const currentUrl = new URL(window.location.href);
+    const storedValue = readSessionStorage(previousPageCacheKey);
+    let candidateUrl = null;
+
+    if (storedValue) {
+      try {
+        candidateUrl = new URL(storedValue, window.location.origin);
+      } catch {
+        candidateUrl = null;
+      }
+    }
+
+    if (
+      !candidateUrl &&
+      document.referrer
+    ) {
+      try {
+        const referrerUrl = new URL(document.referrer);
+        if (referrerUrl.origin === window.location.origin) {
+          candidateUrl = referrerUrl;
+        }
+      } catch {
+        candidateUrl = null;
+      }
+    }
+
+    if (!candidateUrl || candidateUrl.origin !== currentUrl.origin) {
+      return null;
+    }
+
+    if (candidateUrl.pathname === currentUrl.pathname && candidateUrl.search === currentUrl.search) {
+      return null;
+    }
+
+    return candidateUrl;
+  }
+
+  function getBackLabel(url) {
+    const pathname = url.pathname || "";
+
+    if (pathname === "/") {
+      return "home";
+    }
+
+    if (pathname === "/fixtures") {
+      return "fixtures";
+    }
+
+    if (pathname === "/leagues") {
+      return "leagues";
+    }
+
+    if (pathname.startsWith("/leagues/")) {
+      return "league";
+    }
+
+    if (pathname.startsWith("/teams/")) {
+      return "team";
+    }
+
+    if (pathname.startsWith("/fixtures/")) {
+      return "match";
+    }
+
+    if (pathname === "/dashboard") {
+      return "dashboard";
+    }
+
+    return "previous page";
+  }
+
+  function syncBackLink() {
+    const backLinkEl = document.querySelector(".match-back a");
+    const previousInternalPage = getPreviousInternalPage();
+
+    if (!backLinkEl || !previousInternalPage) {
+      writeSessionStorage(previousPageCacheKey, window.location.href);
+      return;
+    }
+
+    backLinkEl.href = previousInternalPage.pathname + previousInternalPage.search + previousInternalPage.hash;
+    backLinkEl.textContent = `\u2190 Back to ${getBackLabel(previousInternalPage)}`;
+    writeSessionStorage(previousPageCacheKey, window.location.href);
+  }
+
+  syncBackLink();
 
   function renderPremierLeagueTeams(teams) {
     if (!teams.length) {

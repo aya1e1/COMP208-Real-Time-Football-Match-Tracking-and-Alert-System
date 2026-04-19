@@ -5,13 +5,12 @@
 <main class="page">
   <section class="auth-shell">
     <div class="auth-panel card">
-      <div class="auth-hero">
-        <span class="auth-kicker">Matchday Access</span>
-        <h1>Sign in to your Kickoff account</h1>
-        <p>Use your account to save favourites and manage alert preferences for the teams and players you track.</p>
-      </div>
-
       <div class="auth-form-wrap">
+        <div class="auth-intro">
+          <h1>Sign in to your Kickoff account</h1>
+          <p>Use your account to save favourites and manage alert preferences for the teams and players you track.</p>
+        </div>
+
         {% if error %}
         <div class="auth-alert" role="alert">{{ error }}</div>
         {% endif %}
@@ -37,49 +36,12 @@
 
 <style>
   .auth-shell {
-    max-width: 980px;
+    max-width: 560px;
     margin: 24px auto 48px;
   }
 
   .auth-panel {
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    min-height: 520px;
     overflow: hidden;
-  }
-
-  .auth-hero {
-    background:
-      radial-gradient(circle at top left, rgba(232, 41, 59, 0.22), transparent 34%),
-      linear-gradient(135deg, #111110 0%, #1f2b2b 100%);
-    color: #f8f8f6;
-    padding: 48px 42px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 18px;
-  }
-
-  .auth-kicker {
-    display: inline-block;
-    width: fit-content;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.1);
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .auth-hero h1 {
-    font-size: 2.2rem;
-    line-height: 1.05;
-  }
-
-  .auth-hero p {
-    max-width: 32ch;
-    color: rgba(248, 248, 246, 0.76);
-    line-height: 1.6;
   }
 
   .auth-form-wrap {
@@ -89,6 +51,17 @@
     justify-content: center;
     gap: 18px;
     background: var(--surface);
+  }
+
+  .auth-intro h1 {
+    font-size: 2rem;
+    line-height: 1.05;
+    margin-bottom: 10px;
+  }
+
+  .auth-intro p {
+    color: var(--text-2);
+    line-height: 1.6;
   }
 
   .auth-form {
@@ -149,16 +122,11 @@
   }
 
   @media (max-width: 860px) {
-    .auth-panel {
-      grid-template-columns: 1fr;
-    }
-
-    .auth-hero,
     .auth-form-wrap {
       padding: 28px 22px;
     }
 
-    .auth-hero h1 {
+    .auth-intro h1 {
       font-size: 1.8rem;
     }
   }

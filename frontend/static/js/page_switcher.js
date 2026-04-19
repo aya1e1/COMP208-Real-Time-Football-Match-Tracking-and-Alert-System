@@ -2,6 +2,22 @@
   const sharedCards = window.KickoffFixtureCards || {};
   const escapeHtml = sharedCards.escapeHtml || ((value) => String(value ?? ""));
 
+  function restoreScrollPosition(scrollState) {
+    if (!scrollState) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({
+          left: scrollState.left,
+          top: scrollState.top,
+          behavior: "auto"
+        });
+      });
+    });
+  }
+
   function render(container, pagination, options = {}) {
     if (!container) {
       return;
@@ -62,7 +78,19 @@
           return;
         }
 
-        onSelect(nextPage, link);
+        const scrollState = {
+          left: window.scrollX,
+          top: window.scrollY
+        };
+
+        Promise.resolve()
+          .then(() => onSelect(nextPage, link))
+          .catch(() => {
+            // Let page-specific handlers manage their own error UI.
+          })
+          .finally(() => {
+            restoreScrollPosition(scrollState);
+          });
       });
     });
   }

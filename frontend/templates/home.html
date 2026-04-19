@@ -14,26 +14,30 @@
     <h1 class="dashboard-title">Home</h1>
   </header>
 
-  <section class="dashboard-section-grid">
-    <section class="dashboard-section page-recent-fixture-section">
-      <h2 class="fixture-section-title">Recent Fixtures</h2>
-      <div id="home-fixtures" class="dashboard-fixture-stack">
-        <div class="dashboard-empty-card">Loading matches...</div>
-      </div>
-      <nav id="home-pagination" class="fixture-h2h-nav page-recent-fixture-pagination" aria-label="Match pages">
-        <div class="fixture-empty">Loading pages...</div>
-      </nav>
-    </section>
-
-    <section class="dashboard-section">
-      <h2 id="home-league-card-header" class="fixture-section-title">Premier League Table</h2>
-      <div id="home-league-error-banner" class="page-error-banner" aria-live="polite"></div>
-      <div id="home-league-standings">
-        <div class="league-standings-wrap is-empty">
-          <div class="league-standings-empty">Loading standings...</div>
+  <section class="league-layout">
+    <div class="league-column">
+      <section class="league-fixture-section page-recent-fixture-section">
+        <h2 class="fixture-section-title">Recent Fixtures</h2>
+        <div id="home-fixtures" class="dashboard-fixture-stack">
+          <div class="dashboard-empty-card">Loading matches...</div>
         </div>
-      </div>
-    </section>
+        <nav id="home-pagination" class="fixture-h2h-nav page-recent-fixture-pagination" aria-label="Match pages">
+          <div class="fixture-empty">Loading pages...</div>
+        </nav>
+      </section>
+    </div>
+
+    <aside class="league-column">
+      <section class="league-section league-standings-section">
+        <h2 id="home-league-card-header" class="fixture-section-title">Premier League Table</h2>
+        <div id="home-league-error-banner" class="page-error-banner" aria-live="polite"></div>
+        <div id="home-league-standings">
+          <div class="league-standings-wrap is-empty">
+            <div class="league-standings-empty">Loading standings...</div>
+          </div>
+        </div>
+      </section>
+    </aside>
   </section>
 
 
@@ -102,7 +106,7 @@
       onSelect: function(nextPage) {
         currentPage = nextPage;
         window.history.replaceState({}, '', buildPageHref(nextPage));
-        loadFixtures({ preserveScroll: true });
+        return loadFixtures({ preserveScroll: true });
       }
     });
   }

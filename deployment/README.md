@@ -345,6 +345,7 @@ git fetch origin
 git reset --hard origin/main
 source venv/bin/activate
 pip install -r requirements.txt
+test -x /srv/football-app/venv/bin/gunicorn
 sudo systemctl restart football-app
 sudo systemctl status football-app --no-pager
 ```
@@ -382,6 +383,41 @@ Before enabling automatic deployment, make sure:
 - the `.env` file exists on the VPS
 - `sudo systemctl status football-app` works on the server
 - the GitHub repository on the VPS points to the correct remote
+
+## 12. Troubleshooting `football-app.service`
+
+If `sudo systemctl status football-app` shows:
+
+```text
+Active: failed (Result: resources)
+```
+
+that usually means `systemd` could not launch the Gunicorn process at all. In this setup, the two most likely causes are:
+
+- `User=` or `Group=` in `/etc/systemd/system/football-app.service` still contains `YOUR_USERNAME` or another invalid account
+- `/srv/football-app/venv/bin/gunicorn` does not exist because Gunicorn was not installed into the virtual environment
+
+Run these checks on the VPS:
+
+```bash
+sudo systemctl cat football-app
+id YOUR_USERNAME
+ls -l /srv/football-app/venv/bin/gunicorn
+sudo journalctl -u football-app -n 50 --no-pager
+```
+
+What to fix:
+
+- if `User=` or `Group=` is wrong, edit the service and replace it with the real VPS username, then run `sudo systemctl daemon-reload`
+- if the Gunicorn binary is missing, activate the venv and run `pip install -r requirements.txt`
+- if the `.env` file is missing, recreate `/srv/football-app/.env` before restarting the service
+
+Then restart and recheck:
+
+```bash
+sudo systemctl restart football-app
+sudo systemctl status football-app --no-pager
+```
 
 ### Security note
 

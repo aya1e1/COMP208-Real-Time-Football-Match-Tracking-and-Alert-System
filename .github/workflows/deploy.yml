@@ -53,5 +53,6 @@ jobs:
             git reset --hard origin/main
             source venv/bin/activate
             pip install -r requirements.txt
+            test -x /srv/football-app/venv/bin/gunicorn
             sudo systemctl restart football-app
             sudo systemctl status football-app --no-pager

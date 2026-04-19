@@ -129,5 +129,5 @@ To do:
 - Implement user settings
     - Password changing
     - Account deletion
-- Add minimum username length to sign up
+- <s>Add minimum username length to sign up</s>
 

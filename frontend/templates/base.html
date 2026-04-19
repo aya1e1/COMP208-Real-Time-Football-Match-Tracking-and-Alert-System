@@ -27,9 +27,19 @@
           href="/leagues/39?season=2024"
           id="premier-league-title"
           {% if request.path == '/leagues/39' and request.args.get('season') == '2024' %}class="active"{% endif %}
-          hidden
+          {% if not premier_league_sidebar_teams %}hidden{% endif %}
         >Premier League</a>
-        <div id="premier-league-teams" class="nav-links" aria-live="polite" hidden>
+        <div
+          id="premier-league-teams"
+          class="nav-links"
+          aria-live="polite"
+          {% if not premier_league_sidebar_teams %}hidden{% endif %}
+        >
+          {% for team in premier_league_sidebar_teams %}
+          <a href="/teams/{{ team.TeamID }}" {% if request.path == '/teams/' ~ team.TeamID|string %}class="active"{% endif %}>
+            {{ team.Name }}
+          </a>
+          {% endfor %}
         </div>
       </div>
       <div class="nav-right">
@@ -59,6 +69,7 @@
   const premierLeagueTitleEl = document.getElementById("premier-league-title");
   const premierLeagueCacheKey = "kickoff-premier-league-teams-39-2024";
   const currentPath = window.location.pathname;
+  const hasServerRenderedTeams = premierLeagueTeamsEl.children.length > 0;
 
   function renderPremierLeagueTeams(teams) {
     if (!teams.length) {
@@ -79,7 +90,7 @@
 
   const cachedPremierLeagueTeams = sessionStorage.getItem(premierLeagueCacheKey);
 
-  if (cachedPremierLeagueTeams) {
+  if (!hasServerRenderedTeams && cachedPremierLeagueTeams) {
     try {
       renderPremierLeagueTeams(JSON.parse(cachedPremierLeagueTeams));
     } catch {
@@ -87,7 +98,7 @@
     }
   }
 
-  if (!cachedPremierLeagueTeams) {
+  if (!hasServerRenderedTeams && !cachedPremierLeagueTeams) {
     fetch("/api/leagues/39/seasons/2024/teams")
     .then((response) => {
       if (!response.ok) {

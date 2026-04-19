@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 
-from backend.db.database import init_db
+from backend.db.database import init_db, query
 from backend.db.users import init_login_manager
 
 load_dotenv()
@@ -78,5 +78,24 @@ def create_app():
     app.register_blueprint(auth_bp,      url_prefix="/auth")     # /auth/...
     app.register_blueprint(notif_bp,     url_prefix="/notifications") # /notifications/...
     app.register_blueprint(api_bp,       url_prefix="/api")      # /api/...
+
+    @app.context_processor
+    def inject_premier_league_sidebar():
+        teams = query(
+            """
+            SELECT DISTINCT
+                t.TeamID,
+                t.Name,
+                t.Abbreviation
+            FROM SeasonTeams st
+            JOIN Teams t
+                ON st.TeamID = t.TeamID
+            WHERE st.LeagueID = ?
+              AND st.Year = ?
+            ORDER BY t.Name
+            """,
+            (39, 2024),
+        )
+        return {"premier_league_sidebar_teams": teams}
 
     return app

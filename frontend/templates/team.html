@@ -74,8 +74,35 @@
     renderUpcomingFixtures
   } = window.KickoffFixtureCards;
   const pageError = createPageErrorController(errorBannerEl);
+  const teamCacheKey = Number.isFinite(teamId) ? `kickoff-team-page-${teamId}` : null;
   let currentTeamPayload = null;
   let favouriteRequestPending = false;
+
+  function getCachedTeamPayload() {
+    if (!teamCacheKey) {
+      return null;
+    }
+
+    const cachedPayload = sessionStorage.getItem(teamCacheKey);
+    if (!cachedPayload) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(cachedPayload);
+    } catch {
+      sessionStorage.removeItem(teamCacheKey);
+      return null;
+    }
+  }
+
+  function cacheTeamPayload(payload) {
+    if (!teamCacheKey || !payload?.data) {
+      return;
+    }
+
+    sessionStorage.setItem(teamCacheKey, JSON.stringify(payload));
+  }
 
   function renderFormDots(form) {
     if (!form) {
@@ -328,6 +355,7 @@
         }
 
         team.IsFavourite = shouldAdd;
+        cacheTeamPayload(currentTeamPayload);
         updateFavouriteButton();
       })
       .catch(() => {
@@ -365,9 +393,7 @@
     recentFixturesEl.innerHTML = '<div class="team-empty">Recent fixtures unavailable.</div>';
   }
 
-  if (!Number.isFinite(teamId)) {
-    renderErrorState("Unable to load team details.");
-  } else {
+  function loadTeamPage() {
     fetch(`/api/teams/${teamId}`)
       .then((response) => {
         if (!response.ok) {
@@ -377,11 +403,29 @@
         return response.json();
       })
       .then((payload) => {
+        cacheTeamPayload(payload);
         renderTeamPage(payload);
       })
       .catch(() => {
         renderErrorState("Unable to load team details.");
       });
+  }
+
+  if (!Number.isFinite(teamId)) {
+    renderErrorState("Unable to load team details.");
+  } else {
+    const cachedPayload = getCachedTeamPayload();
+
+    if (cachedPayload) {
+      try {
+        renderTeamPage(cachedPayload);
+      } catch {
+        sessionStorage.removeItem(teamCacheKey);
+        loadTeamPage();
+      }
+    } else {
+      loadTeamPage();
+    }
   }
 </script>
 {% endblock %}

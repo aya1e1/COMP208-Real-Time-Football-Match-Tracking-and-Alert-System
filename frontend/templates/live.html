@@ -1,202 +1,332 @@
 {% extends "base.html" %}
 {% block title %}Kickoff — Live Scores{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/team_league_pages.css') }}">
+{% endblock %}
 
 {% block content %}
-<main class="page">
+<main class="page dashboard-page live-page">
+  <div id="live-error-banner" class="page-error-banner" aria-live="polite"></div>
 
-  <div class="live-header">
-    <h1>Live Now</h1>
-    <span class="live-count">3 matches</span>
-    <span class="live-dot"></span>
-  </div>
+  <header class="dashboard-page-header">
 
-  <div class="filter-tabs">
-    <button class="filter-tab active">All</button>
-    <button class="filter-tab">Premier League</button>
-    <button class="filter-tab">La Liga</button>
-    <button class="filter-tab">Bundesliga</button>
-    <button class="filter-tab">Serie A</button>
-  </div>
+    <h1 class="dashboard-title">Live</h1>
+  </header>
 
-  <div class="live-grid">
+  <nav id="live-country-filter" class="fixture-h2h-nav leagues-country-filter" aria-label="Match countries">
+    <div class="fixture-empty">Loading countries...</div>
+  </nav>
 
-    <a href="/match/1" class="live-card">
-      <div class="live-card-header">
-        Premier League
-        <span class="badge badge-live">Live</span>
-      </div>
-      <div class="live-card-body">
-        <div class="match-teams">
-          <div class="team-block l"><span class="team-nm">Arsenal</span></div>
-          <div class="scoreboard">
-            <div class="score-main">2<span class="score-sep">–</span>1</div>
-            <div class="min-badge"><span class="min-dot"></span>67'</div>
-          </div>
-          <div class="team-block r"><span class="team-nm">Chelsea</span></div>
-        </div>
-        <div class="events-strip">
-          <div class="event-item">
-            <span class="event-min">45'</span>
-            <span class="event-icon">&#9917;</span>
-            <span class="event-name">Saka</span>
-          </div>
-          <div class="event-item">
-            <span class="event-min">61'</span>
-            <span class="event-icon">&#9917;</span>
-            <span class="event-name">Martinelli</span>
-          </div>
-          <div class="event-item away">
-            <span class="event-min">55'</span>
-            <span class="event-icon">&#9917;</span>
-            <span class="event-name">Palmer</span>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <a href="/match/2" class="live-card">
-      <div class="live-card-header">
-        Premier League
-        <span class="badge badge-live">Live</span>
-      </div>
-      <div class="live-card-body">
-        <div class="match-teams">
-          <div class="team-block l"><span class="team-nm">Liverpool</span></div>
-          <div class="scoreboard">
-            <div class="score-main">0<span class="score-sep">–</span>0</div>
-            <div class="min-badge"><span class="min-dot"></span>34'</div>
-          </div>
-          <div class="team-block r"><span class="team-nm">Man City</span></div>
-        </div>
-        <div class="events-strip">
-          <div class="event-item">
-            <span class="event-min">12'</span>
-            <span class="event-icon">&#127olean;</span>
-            <span class="event-name">Salah (yellow)</span>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <a href="/match/7" class="live-card">
-      <div class="live-card-header">
-        La Liga
-        <span class="badge badge-live">Live</span>
-      </div>
-      <div class="live-card-body">
-        <div class="match-teams">
-          <div class="team-block l"><span class="team-nm">Real Madrid</span></div>
-          <div class="scoreboard">
-            <div class="score-main">3<span class="score-sep">–</span>1</div>
-            <div class="min-badge"><span class="min-dot"></span>78'</div>
-          </div>
-          <div class="team-block r"><span class="team-nm">Barcelona</span></div>
-        </div>
-        <div class="events-strip">
-          <div class="event-item">
-            <span class="event-min">23'</span>
-            <span class="event-icon">&#9917;</span>
-            <span class="event-name">Vinicius Jr.</span>
-          </div>
-          <div class="event-item">
-            <span class="event-min">51'</span>
-            <span class="event-icon">&#9917;</span>
-            <span class="event-name">Mbappe</span>
-          </div>
-          <div class="event-item away">
-            <span class="event-min">40'</span>
-            <span class="event-icon">&#9917;</span>
-            <span class="event-name">Yamal</span>
-          </div>
-        </div>
-      </div>
-    </a>
-
-  </div>
-
-  <div class="upcoming-label">Recent Matches</div>
-  <div class="upcoming-list" id="recent-matches-list">
-    <div class="upcoming-item">
-      <div class="upcoming-team">Loading recent matches...</div>
-      <div class="upcoming-time">...</div>
-      <div class="upcoming-team r"></div>
+  <section class="dashboard-section">
+    <h2 class="fixture-section-title">Live Matches</h2>
+    <div id="live-fixtures" class="dashboard-fixture-stack">
+      <div class="dashboard-empty-card">Loading live matches...</div>
     </div>
-  </div>
+    <nav id="live-pagination" class="fixture-h2h-nav" aria-label="Live match pages">
+      <div class="fixture-empty">Loading pages...</div>
+    </nav>
+  </section>
 
+  <section class="dashboard-section">
+    <h2 class="fixture-section-title">Recent Fixtures</h2>
+    <div id="recent-fixtures" class="dashboard-fixture-stack">
+      <div class="dashboard-empty-card">Loading recent fixtures...</div>
+    </div>
+    <nav id="recent-pagination" class="fixture-h2h-nav" aria-label="Recent fixture pages">
+      <div class="fixture-empty">Loading pages...</div>
+    </nav>
+  </section>
 </main>
 
+<script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recent_fixtures.js') }}"></script>
+<script src="{{ url_for('static', filename='js/page_switcher.js') }}"></script>
 <script>
-  const recentMatchesList = document.getElementById("recent-matches-list");
+  const errorBannerEl = document.getElementById("live-error-banner");
+  const countryFilterEl = document.getElementById("live-country-filter");
+  const liveFixturesEl = document.getElementById("live-fixtures");
+  const livePaginationEl = document.getElementById("live-pagination");
+  const recentFixturesEl = document.getElementById("recent-fixtures");
+  const recentPaginationEl = document.getElementById("recent-pagination");
+  const {
+    createPageErrorController,
+    escapeHtml
+  } = window.KickoffFixtureCards;
+  const pageError = createPageErrorController(errorBannerEl);
+  const COUNTRY_CODE_MAP = {
+    Argentina: "ARG",
+    Belgium: "BEL",
+    Brazil: "BRA",
+    England: "ENG",
+    France: "FRA",
+    Germany: "GER",
+    Italy: "ITA",
+    Netherlands: "NED",
+    Portugal: "POR",
+    "Saudi-Arabia": "KSA",
+    Scotland: "SCO",
+    Spain: "ESP",
+    Turkey: "TUR",
+    USA: "USA"
+  };
 
-  function formatMatchSummary(fixture) {
-    const hasScore = fixture.HomeScore !== null && fixture.AwayScore !== null;
-    const matchDate = fixture.MatchDate ? new Date(fixture.MatchDate) : null;
-    const formattedDate = matchDate && !Number.isNaN(matchDate.getTime())
-      ? matchDate.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short"
-        })
-      : null;
-    const formattedTime = matchDate && !Number.isNaN(matchDate.getTime())
-      ? matchDate.toLocaleTimeString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })
-      : null;
-    const score = hasScore ? `${fixture.HomeScore}-${fixture.AwayScore}` : (fixture.Status || "TBD");
+  const params = new URLSearchParams(window.location.search);
+  const fixturesPerPage = 6;
+  let selectedCountryCode = (params.get("country") || "ALL").toUpperCase();
+  let currentLivePage = Number(params.get("live_page"));
+  let currentRecentPage = Number(params.get("recent_page"));
+  currentLivePage = Number.isFinite(currentLivePage) && currentLivePage > 0 ? currentLivePage : 1;
+  currentRecentPage = Number.isFinite(currentRecentPage) && currentRecentPage > 0 ? currentRecentPage : 1;
 
-    return {
-      date: formattedDate,
-      time: formattedTime,
-      score
-    };
+  function getCountryCode(countryName) {
+    if (!countryName) {
+      return "UNK";
+    }
+
+    return COUNTRY_CODE_MAP[countryName] || countryName.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
   }
 
-  function renderRecentMatches(fixtures) {
-    if (!fixtures.length) {
-      recentMatchesList.innerHTML = `
-        <div class="upcoming-item">
-          <div class="upcoming-team">No recent matches found.</div>
-          <div class="upcoming-time">-</div>
-          <div class="upcoming-team r"></div>
-        </div>
-      `;
+  function buildHref(overrides = {}) {
+    const url = new URL(window.location.href);
+    const countryCode = overrides.countryCode !== undefined ? overrides.countryCode : selectedCountryCode;
+    const livePage = overrides.livePage !== undefined ? overrides.livePage : currentLivePage;
+    const recentPage = overrides.recentPage !== undefined ? overrides.recentPage : currentRecentPage;
+
+    if (countryCode === "ALL") {
+      url.searchParams.delete("country");
+    } else {
+      url.searchParams.set("country", countryCode);
+    }
+
+    if (livePage <= 1) {
+      url.searchParams.delete("live_page");
+    } else {
+      url.searchParams.set("live_page", String(livePage));
+    }
+
+    if (recentPage <= 1) {
+      url.searchParams.delete("recent_page");
+    } else {
+      url.searchParams.set("recent_page", String(recentPage));
+    }
+
+    return `${url.pathname}${url.search}`;
+  }
+
+  function updateUrlState() {
+    window.history.replaceState({}, "", buildHref());
+  }
+
+  function renderCountryFilter(countryNames) {
+    const seen = new Set();
+    const countryOptions = [{ code: "ALL", name: "All countries" }, ...countryNames.map((countryName) => ({
+      code: getCountryCode(countryName),
+      name: countryName
+    }))].filter((country) => {
+      if (!country.name || seen.has(country.code)) {
+        return false;
+      }
+
+      seen.add(country.code);
+      return true;
+    });
+
+    if (!countryOptions.length) {
+      countryFilterEl.innerHTML = '<div class="fixture-empty">No country filters available.</div>';
       return;
     }
 
-    recentMatchesList.innerHTML = fixtures.map((fixture) => {
-      const summary = formatMatchSummary(fixture);
-      const dateTime = [summary.date, summary.time].filter(Boolean).join(" ");
+    countryFilterEl.innerHTML = `
+      <div class="fixture-h2h-group left">
+        ${countryOptions.map((country) => {
+          if (country.code === selectedCountryCode) {
+            return `
+              <span
+                class="fixture-h2h-link active"
+                aria-current="page"
+                title="${escapeHtml(country.name)}"
+              >
+                ${escapeHtml(country.code)}
+              </span>
+            `;
+          }
 
-      return `
-        <a href="/fixtures/${fixture.FixtureID}" class="upcoming-item">
-          <div class="upcoming-team">${fixture.HomeTeam}</div>
-          <div class="upcoming-time">
-            <span class="upcoming-date">${dateTime || "-"}</span>
-            <span class="upcoming-score">${summary.score}</span>
-          </div>
-          <div class="upcoming-team r">${fixture.AwayTeam}</div>
-        </a>
-      `;
-    }).join("");
+          return `
+            <a
+              class="fixture-h2h-link"
+              href="${buildHref({ countryCode: country.code, livePage: 1, recentPage: 1 })}"
+              data-country-code="${escapeHtml(country.code)}"
+              title="${escapeHtml(country.name)}"
+            >
+              ${escapeHtml(country.code)}
+            </a>
+          `;
+        }).join("")}
+      </div>
+    `;
+
+    countryFilterEl.querySelectorAll("[data-country-code]").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        const nextCountryCode = (link.dataset.countryCode || "ALL").toUpperCase();
+        if (!nextCountryCode || nextCountryCode === selectedCountryCode) {
+          return;
+        }
+
+        selectedCountryCode = nextCountryCode;
+        currentLivePage = 1;
+        currentRecentPage = 1;
+        updateUrlState();
+        loadAllSections({ preserveScroll: true });
+      });
+    });
   }
 
-  fetch("/api/fixtures")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Unable to load fixtures.");
+  function renderPagination(container, pagination, options = {}) {
+    const pageKey = options.pageKey;
+    window.KickoffPageSwitcher.render(container, pagination, {
+      showDisabledNext: true,
+      buildHref: (pageNumber) => buildHref(pageKey === "live" ? { livePage: pageNumber } : { recentPage: pageNumber }),
+      onSelect: (nextPage) => {
+        if (pageKey === "live" && nextPage !== currentLivePage) {
+          currentLivePage = nextPage;
+        } else if (pageKey === "recent" && nextPage !== currentRecentPage) {
+          currentRecentPage = nextPage;
+        } else {
+          return;
+        }
+
+        updateUrlState();
+        loadAllSections({ preserveScroll: true });
       }
-      return response.json();
-    })
-    .then((fixtures) => renderRecentMatches(fixtures))
-    .catch(() => {
-      recentMatchesList.innerHTML = `
-        <div class="upcoming-item">
-          <div class="upcoming-team">Unable to load recent matches.</div>
-          <div class="upcoming-time">-</div>
-          <div class="upcoming-team r"></div>
-        </div>
-      `;
     });
+  }
+
+  function renderFixtures(container, fixtures, options) {
+    window.KickoffRecentFixtures.render(
+      container,
+      Array.isArray(fixtures) ? fixtures : [],
+      options
+    );
+  }
+
+  function buildFixtureQuery(options = {}) {
+    const query = new URLSearchParams({
+      page: String(options.page),
+      per_page: String(fixturesPerPage)
+    });
+
+    if (selectedCountryCode !== "ALL") {
+      query.set("country", selectedCountryCode);
+    }
+
+    if (options.live) {
+      query.set("live", "1");
+    }
+
+    if (options.finished) {
+      query.set("finished", "1");
+    }
+
+    return query.toString();
+  }
+
+  function loadAllSections(options = {}) {
+    const preserveScroll = Boolean(options.preserveScroll);
+    const scrollPosition = preserveScroll ? window.scrollY : null;
+    liveFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading live matches...</div>';
+    recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading recent fixtures...</div>';
+
+    return Promise.all([
+      fetch("/api/leagues")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Unable to load countries.");
+          }
+
+          return response.json();
+        }),
+      fetch(`/api/fixtures?${buildFixtureQuery({ page: currentLivePage, live: true })}`)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Unable to load live matches.");
+          }
+
+          return response.json();
+        }),
+      fetch(`/api/fixtures?${buildFixtureQuery({ page: currentRecentPage, finished: true })}`)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Unable to load recent fixtures.");
+          }
+
+          return response.json();
+        })
+    ])
+      .then(([leaguesPayload, livePayload, recentPayload]) => {
+        const leagues = Array.isArray(leaguesPayload) ? leaguesPayload : [];
+        const countryNames = leagues
+          .map((league) => league.Country)
+          .filter((countryName, index, list) => countryName && list.indexOf(countryName) === index)
+          .sort((left, right) => left.localeCompare(right));
+        const availableCountryCodes = new Set(["ALL", ...countryNames.map((country) => getCountryCode(country))]);
+
+        if (selectedCountryCode !== "ALL" && !availableCountryCodes.has(selectedCountryCode)) {
+          selectedCountryCode = "ALL";
+          currentLivePage = 1;
+          currentRecentPage = 1;
+          updateUrlState();
+          return loadAllSections(options);
+        }
+
+        pageError.clear();
+        renderCountryFilter(countryNames);
+        renderPagination(livePaginationEl, livePayload && livePayload.pagination, { pageKey: "live" });
+        renderPagination(recentPaginationEl, recentPayload && recentPayload.pagination, { pageKey: "recent" });
+        renderFixtures(
+          liveFixturesEl,
+          livePayload && livePayload.fixtures,
+          {
+            fallbackLeagueName: "Live match",
+            emptyMessage: "No live matches found."
+          }
+        );
+        renderFixtures(
+          recentFixturesEl,
+          recentPayload && recentPayload.fixtures,
+          {
+            fallbackLeagueName: "Recent fixture",
+            emptyMessage: "No recent fixtures found."
+          }
+        );
+
+        if (preserveScroll && scrollPosition !== null) {
+          window.requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollPosition, behavior: "auto" });
+          });
+        }
+      })
+      .catch((error) => {
+        const message = window.KickoffUIErrors.resolveMessage(error, "Unable to load live page.");
+        pageError.render(message);
+        countryFilterEl.innerHTML = '<div class="fixture-empty">Country filters unavailable.</div>';
+        livePaginationEl.hidden = true;
+        livePaginationEl.innerHTML = "";
+        recentPaginationEl.hidden = true;
+        recentPaginationEl.innerHTML = "";
+        liveFixturesEl.innerHTML = '<div class="dashboard-empty-card">Live matches unavailable.</div>';
+        recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Recent fixtures unavailable.</div>';
+
+        if (preserveScroll && scrollPosition !== null) {
+          window.requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollPosition, behavior: "auto" });
+          });
+        }
+      });
+  }
+
+  loadAllSections();
 </script>
 {% endblock %}

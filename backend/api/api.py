@@ -517,18 +517,27 @@ def leagues():
     return jsonify(leagues)
 
 
-@api_bp.route("/leagues/<int:league_id>/teams")
-def league_teams(league_id):
+@api_bp.route("/leagues/<int:league_id>/seasons/<int:year>/teams")
+def league_teams(league_id, year):
 
     league_sql = """
-        SELECT LeagueID, Name, Country, LogoURL
-        FROM League
-        WHERE LeagueID = ?
+        SELECT
+            l.LeagueID,
+            l.Name,
+            l.Country,
+            l.LogoURL,
+            s.Year,
+            s.Current
+        FROM League l
+        JOIN Seasons s
+            ON l.LeagueID = s.LeagueID
+        WHERE l.LeagueID = ?
+          AND s.Year = ?
     """
-    league = database.query(league_sql, (league_id,))
+    league = database.query(league_sql, (league_id, year))
 
     if not league:
-        return jsonify({"error": "League not found"}), 404
+        return jsonify({"error": "League season not found"}), 404
 
     teams_sql = """
         SELECT DISTINCT
@@ -541,9 +550,10 @@ def league_teams(league_id):
         JOIN Teams t
             ON st.TeamID = t.TeamID
         WHERE st.LeagueID = ?
+          AND st.Year = ?
         ORDER BY t.Name
     """
-    teams = database.query(teams_sql, (league_id,))
+    teams = database.query(teams_sql, (league_id, year))
 
     return jsonify({
         "league": league[0],

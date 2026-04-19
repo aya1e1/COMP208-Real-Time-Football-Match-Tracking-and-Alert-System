@@ -534,11 +534,11 @@ class TestApiRoutes(MainModuleDatabaseTestCase):
         self.api_module.sync_team_statistics = self.original_sync_team_statistics
         super().tearDown()
 
-    def test_league_teams_returns_404_for_unknown_league(self):
-        response = self.client.get("/api/leagues/999999/teams")
+    def test_league_teams_returns_404_for_unknown_league_season(self):
+        response = self.client.get("/api/leagues/999999/seasons/2024/teams")
 
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.get_json(), {"error": "League not found"})
+        self.assertEqual(response.get_json(), {"error": "League season not found"})
 
     def test_fixtures_rejects_invalid_date_ranges(self):
         bad_format = self.client.get("/api/fixtures?start_date=2024/01/01")

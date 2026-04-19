@@ -9,38 +9,107 @@
 </head>
 <body>
 
-<nav class="nav">
-  <div class="nav-inner">
-    <a href="/" class="nav-logo">Kick<span>off</span></a>
-    <div class="nav-links">
-      <a href="/" {% if request.endpoint == 'main.home' %}class="active"{% endif %}>Home</a>
-      <a href="/leagues" {% if request.endpoint == 'leagues.leagues' %}class="active"{% endif %}>Leagues</a>
-      <a href="/live" {% if request.endpoint == 'main.live' %}class="active"{% endif %}>
-        Live <span class="nav-live-badge">3</span>
-      </a>
-      <a href="/fixtures" {% if request.endpoint == 'fixtures.show_fixtures' %}class="active"{% endif %}>Fixtures</a>
-      {% if current_user.is_authenticated %}
-      <a href="/dashboard" {% if request.endpoint == 'main.dashboard' %}class="active"{% endif %}>Dashboard</a>
-      {% endif %}
+<div class="app-shell">
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">Kick<span>off</span></a>
+      <div class="nav-links">
+        <a href="/" {% if request.endpoint == 'main.home' %}class="active"{% endif %}>Home</a>
+        <a href="/leagues" {% if request.endpoint == 'leagues.leagues' %}class="active"{% endif %}>Leagues</a>
+        <a href="/live" {% if request.endpoint == 'main.live' %}class="active"{% endif %}>
+          Live <span class="nav-live-badge">3</span>
+        </a>
+        <a href="/fixtures" {% if request.endpoint == 'fixtures.show_fixtures' %}class="active"{% endif %}>Fixtures</a>
+        {% if current_user.is_authenticated %}
+        <a href="/dashboard" {% if request.endpoint == 'main.dashboard' %}class="active"{% endif %}>Dashboard</a>
+        {% endif %}
+        <a
+          href="/leagues/39?season=2024"
+          id="premier-league-title"
+          {% if request.path == '/leagues/39' and request.args.get('season') == '2024' %}class="active"{% endif %}
+          hidden
+        >Premier League</a>
+        <div id="premier-league-teams" class="nav-links" aria-live="polite" hidden>
+        </div>
+      </div>
+      <div class="nav-right">
+        {% if current_user.is_authenticated %}
+        <span class="nav-user">Signed in as <strong>{{ current_user.username }}</strong></span>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="nav-signout-form">
+          <button type="submit" class="btn-ghost">Sign out</button>
+        </form>
+        {% else %}
+        <a href="/auth/login" class="btn-ghost">Sign in</a>
+        {% endif %}
+      </div>
     </div>
-    <div class="nav-right">
-      {% if current_user.is_authenticated %}
-      <span class="nav-user">Signed in as <strong>{{ current_user.username }}</strong></span>
-      <form method="post" action="{{ url_for('auth.logout') }}" class="nav-signout-form">
-        <button type="submit" class="btn-ghost">Sign out</button>
-      </form>
-      {% else %}
-      <a href="/auth/login" class="btn-ghost">Sign in</a>
-      {% endif %}
-    </div>
+  </nav>
+
+  <div class="app-main">
+    {% block content %}{% endblock %}
+
+    <footer>
+      Kickoff &copy; 2025 &middot; Real-time football tracking
+    </footer>
   </div>
-</nav>
+</div>
 
-{% block content %}{% endblock %}
+<script>
+  const premierLeagueTeamsEl = document.getElementById("premier-league-teams");
+  const premierLeagueTitleEl = document.getElementById("premier-league-title");
+  const premierLeagueCacheKey = "kickoff-premier-league-teams-39-2024";
+  const currentPath = window.location.pathname;
 
-<footer>
-  Kickoff &copy; 2025 &middot; Real-time football tracking
-</footer>
+  function renderPremierLeagueTeams(teams) {
+    if (!teams.length) {
+      premierLeagueTitleEl.hidden = true;
+      premierLeagueTeamsEl.hidden = true;
+      premierLeagueTeamsEl.innerHTML = "";
+      return;
+    }
+
+    premierLeagueTitleEl.hidden = false;
+    premierLeagueTeamsEl.hidden = false;
+    premierLeagueTeamsEl.innerHTML = teams.map((team) => `
+      <a href="/teams/${Number(team.TeamID)}" class="${currentPath === `/teams/${Number(team.TeamID)}` ? "active" : ""}">
+        ${team.Name}
+      </a>
+    `).join("");
+  }
+
+  const cachedPremierLeagueTeams = sessionStorage.getItem(premierLeagueCacheKey);
+
+  if (cachedPremierLeagueTeams) {
+    try {
+      renderPremierLeagueTeams(JSON.parse(cachedPremierLeagueTeams));
+    } catch {
+      sessionStorage.removeItem(premierLeagueCacheKey);
+    }
+  }
+
+  if (!cachedPremierLeagueTeams) {
+    fetch("/api/leagues/39/seasons/2024/teams")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Unable to load Premier League teams.");
+      }
+
+      return response.json();
+    })
+    .then((payload) => {
+      const teams = Array.isArray(payload?.teams) ? payload.teams : [];
+      if (teams.length) {
+        sessionStorage.setItem(premierLeagueCacheKey, JSON.stringify(teams));
+      }
+      renderPremierLeagueTeams(teams);
+    })
+    .catch(() => {
+      premierLeagueTitleEl.hidden = true;
+      premierLeagueTeamsEl.hidden = true;
+      premierLeagueTeamsEl.innerHTML = "";
+    });
+  }
+</script>
 
 </body>
 </html>

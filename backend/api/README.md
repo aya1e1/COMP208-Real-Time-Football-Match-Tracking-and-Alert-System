@@ -465,9 +465,9 @@ Response:
 ]
 ```
 
-### `GET /api/leagues/<league_id>/teams`
+### `GET /api/leagues/<league_id>/seasons/<year>/teams`
 
-Returns league details and the teams recorded for that league.
+Returns league details and the teams recorded for that specific league season.
 
 Auth required: no
 
@@ -477,7 +477,9 @@ Response:
 {
   "league": {
     "LeagueID": 39,
-    "Name": "Premier League"
+    "Name": "Premier League",
+    "Year": 2024,
+    "Current": 1
   },
   "teams": [
     {
@@ -494,7 +496,7 @@ Response:
 Status codes:
 
 - `200` on success
-- `404` if the league is not found
+- `404` if the league season is not found
 
 ### `GET /api/teams/<team_id>`
 

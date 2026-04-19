@@ -119,7 +119,7 @@ body.nav-open { overflow: hidden; }
 }
 
 .nav-links a.nav-primary-link {
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .nav-links a:hover { background: var(--surface-2); color: var(--text-1); }

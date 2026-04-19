@@ -13,6 +13,10 @@
     <h1 class="leagues-headline">Leagues</h1>
   </header>
 
+  <nav id="league-country-filter" class="fixture-h2h-nav leagues-country-filter" aria-label="League countries">
+    <div class="fixture-empty">Loading countries...</div>
+  </nav>
+
   <section>
     <div id="leagues-grid" class="dashboard-team-grid" aria-live="polite">
       <div class="dashboard-empty-card">Loading leagues...</div>
@@ -24,12 +28,32 @@
 <script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
 <script>
   const errorBannerEl = document.getElementById("leagues-error-banner");
+  const countryFilterEl = document.getElementById("league-country-filter");
   const leaguesGridEl = document.getElementById("leagues-grid");
   const {
     createPageErrorController,
     escapeHtml
   } = window.KickoffFixtureCards;
   const pageError = createPageErrorController(errorBannerEl);
+  const COUNTRY_CODE_MAP = {
+    Argentina: "ARG",
+    Belgium: "BEL",
+    Brazil: "BRA",
+    England: "ENG",
+    France: "FRA",
+    Germany: "GER",
+    Italy: "ITA",
+    Netherlands: "NED",
+    Portugal: "POR",
+    "Saudi-Arabia": "KSA",
+    Scotland: "SCO",
+    Spain: "ESP",
+    Turkey: "TUR",
+    USA: "USA"
+  };
+
+  let allLeagues = [];
+  let selectedCountryCode = "ALL";
 
   function renderLeagueLogo(logoUrl, altText) {
     if (!logoUrl) {
@@ -37,6 +61,78 @@
     }
 
     return `<img class="dashboard-team-logo" src="${escapeHtml(logoUrl)}" alt="${escapeHtml(altText)}" loading="lazy">`;
+  }
+
+  function getCountryCode(countryName) {
+    if (!countryName) {
+      return "UNK";
+    }
+
+    return COUNTRY_CODE_MAP[countryName] || countryName.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+  }
+
+  function getCountryOptions(leagues) {
+    const seen = new Set();
+    const options = [];
+
+    leagues.forEach((league) => {
+      const countryName = league.Country;
+      const countryCode = getCountryCode(countryName);
+      if (!countryName || seen.has(countryCode)) {
+        return;
+      }
+
+      seen.add(countryCode);
+      options.push({ code: countryCode, name: countryName });
+    });
+
+    return options.sort((left, right) => left.name.localeCompare(right.name));
+  }
+
+  function renderCountryFilter() {
+    const countryOptions = getCountryOptions(allLeagues);
+
+    if (!countryOptions.length) {
+      countryFilterEl.innerHTML = '<div class="fixture-empty">No country filters available.</div>';
+      return;
+    }
+
+    const countryLinks = [{ code: "ALL", name: "All countries" }, ...countryOptions];
+    countryFilterEl.innerHTML = `
+      <div class="fixture-h2h-group left">
+        ${countryLinks.map((country) => {
+          if (country.code === selectedCountryCode) {
+            return `
+              <span
+                class="fixture-h2h-link active"
+                aria-current="page"
+                title="${escapeHtml(country.name)}"
+              >
+                ${escapeHtml(country.code)}
+              </span>
+            `;
+          }
+
+          return `
+            <a
+              class="fixture-h2h-link"
+              href="${country.code === "ALL" ? "/leagues" : `/leagues?country=${encodeURIComponent(country.code)}`}"
+              data-country-code="${escapeHtml(country.code)}"
+              title="${escapeHtml(country.name)}"
+            >
+              ${escapeHtml(country.code)}
+            </a>
+          `;
+        }).join("")}
+      </div>
+    `;
+
+    countryFilterEl.querySelectorAll("[data-country-code]").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        selectCountry(link.dataset.countryCode || "ALL");
+      });
+    });
   }
 
   function renderLeagues(leagues) {
@@ -57,6 +153,28 @@
     `).join("");
   }
 
+  function renderFilteredLeagues() {
+    const leaguesToRender = selectedCountryCode === "ALL"
+      ? allLeagues
+      : allLeagues.filter((league) => getCountryCode(league.Country) === selectedCountryCode);
+
+    renderLeagues(leaguesToRender);
+  }
+
+  function selectCountry(countryCode) {
+    selectedCountryCode = countryCode;
+    renderCountryFilter();
+    renderFilteredLeagues();
+
+    const url = new URL(window.location.href);
+    if (countryCode === "ALL") {
+      url.searchParams.delete("country");
+    } else {
+      url.searchParams.set("country", countryCode);
+    }
+    window.history.replaceState({}, "", url);
+  }
+
   fetch("/api/leagues")
     .then((response) => {
       if (!response.ok) {
@@ -66,12 +184,18 @@
       return response.json();
     })
     .then((leagues) => {
+      allLeagues = Array.isArray(leagues) ? leagues : [];
+      const availableCountryCodes = new Set(["ALL", ...getCountryOptions(allLeagues).map((country) => country.code)]);
+      const searchCountry = (new URLSearchParams(window.location.search).get("country") || "ALL").toUpperCase();
+      selectedCountryCode = availableCountryCodes.has(searchCountry) ? searchCountry : "ALL";
       pageError.clear();
-      renderLeagues(Array.isArray(leagues) ? leagues : []);
+      renderCountryFilter();
+      renderFilteredLeagues();
     })
     .catch((error) => {
       const message = window.KickoffUIErrors.resolveMessage(error, "Unable to load leagues.");
       pageError.render(message);
+      countryFilterEl.innerHTML = '<div class="fixture-empty">Country filters unavailable.</div>';
       leaguesGridEl.innerHTML = '<div class="dashboard-empty-card">League data unavailable.</div>';
     });
 </script>

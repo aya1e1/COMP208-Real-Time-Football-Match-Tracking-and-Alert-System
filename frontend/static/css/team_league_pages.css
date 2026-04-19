@@ -35,6 +35,21 @@
   margin: 0;
 }
 
+.leagues-country-filter {
+  padding: 2px 0 2px;
+}
+
+.leagues-country-filter.fixture-h2h-nav {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+.leagues-country-filter .fixture-h2h-group,
+.leagues-country-filter .fixture-h2h-group.right {
+  justify-content: flex-start;
+}
+
 .league-view-page .card {
   border-radius: 0;
 }

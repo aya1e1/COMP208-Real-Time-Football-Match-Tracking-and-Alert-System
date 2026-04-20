@@ -21,8 +21,8 @@
 }
 
 .fixture-scoreboard {
-  background: #f5f5f5;
-  border: 1px solid #ececec;
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .fixture-h2h-nav {
@@ -372,8 +372,8 @@
 }
 
 .fixture-event-card {
-  background: #f6f6f6;
-  border: 1px solid #ececec;
+  background: var(--surface);
+  border: 1px solid var(--border);
   padding: 0;
   line-height: 1.4;
   display: grid;
@@ -589,8 +589,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: #f7f7f6;
-  border: 1px solid #ececec;
+  background: var(--surface);
+  border: 1px solid var(--border);
   color: inherit;
   transition: border-color .12s;
 }
@@ -639,15 +639,15 @@
 
 .dashboard-fixture-card {
   display: block;
-  background: #f7f7f6;
-  border: 1px solid #ececec;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: calc(var(--card-radius) - 2px);
   color: inherit;
   transition: border-color .12s;
 }
 
 .dashboard-fixture-card:hover {
-  border-color: #d8d8d8;
+  border-color: var(--text-2);
 }
 
 .dashboard-fixture-card .card-body {
@@ -786,8 +786,8 @@
 
 .dashboard-empty-card {
   padding: 16px 18px;
-  background: #f7f7f6;
-  border: 1px solid #ececec;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: calc(var(--card-radius) - 2px);
   color: var(--text-2);
   font-size: 0.95rem;

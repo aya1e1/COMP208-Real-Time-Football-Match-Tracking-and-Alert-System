@@ -1,12 +1,12 @@
 /* ── Tokens ──────────────────────────────────────────────── */
 :root {
-  --bg:      #fcfcf9;
-  --surface: #ffffff;
-  --surface-2: #f0f0ee;
-  --border:  #e4e4e0;
+  --bg:      #f8f8f7;
+  --surface: #fcfcfb;
+  --surface-2: #f2f3f2;
+  --border:  #e3e5e8;
   --text-1:  #111110;
-  --text-2:  #5a5a56;
-  --text-3:  #9a9a95;
+  --text-2:  #5f6670;
+  --text-3:  #9299a3;
   --accent:  #e8293b;
   --live:    #22c55e;
   --live-dim: #dcfce7;
@@ -562,7 +562,7 @@ body.nav-open { overflow: hidden; }
     justify-content: space-between;
     gap: 12px;
     padding: 14px 20px 10px;
-    background: rgba(252, 252, 249, 0.94);
+    background: rgba(248, 248, 247, 0.94);
     backdrop-filter: blur(10px);
   }
 

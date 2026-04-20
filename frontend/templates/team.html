@@ -10,6 +10,7 @@
   class="page team-page"
   data-team-id="{{ team_id }}"
   data-user-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}"
+  data-viewer-cache-key="{{ current_user.id if current_user.is_authenticated else 'anonymous' }}"
   data-login-url="{{ url_for('auth.login_page') }}"
 >
   <div class="match-back">
@@ -62,6 +63,7 @@
   const teamPage = document.querySelector(".team-page");
   const teamId = Number(teamPage?.dataset.teamId);
   const isUserAuthenticated = teamPage?.dataset.userAuthenticated === "true";
+  const viewerCacheKey = teamPage?.dataset.viewerCacheKey || "anonymous";
   const loginUrl = teamPage?.dataset.loginUrl || "/auth/login";
   const errorBannerEl = document.getElementById("team-error-banner");
   const teamHeaderEl = document.getElementById("team-header");
@@ -77,7 +79,9 @@
     renderUpcomingFixtures
   } = window.KickoffFixtureCards;
   const pageError = createPageErrorController(errorBannerEl);
-  const teamCacheKey = Number.isFinite(teamId) ? `kickoff-team-page-${teamId}` : null;
+  const teamCacheKey = Number.isFinite(teamId)
+    ? `kickoff-team-page-${viewerCacheKey}-${teamId}`
+    : null;
   const recentFixturesPerPage = 3;
   const initialRecentPage = Number(new URLSearchParams(window.location.search).get("recent_page")) || 1;
   let currentTeamPayload = null;
@@ -504,7 +508,7 @@
     recentFixturesEl.innerHTML = '<div class="team-empty">Recent fixtures unavailable.</div>';
   }
 
-  function loadTeamPage() {
+  function loadTeamPage({ preserveRenderedStateOnError = false } = {}) {
     fetch(buildTeamApiHref(currentRecentPage))
       .then((response) => {
         if (!response.ok) {
@@ -518,6 +522,11 @@
         renderTeamPage(payload);
       })
       .catch(() => {
+        if (preserveRenderedStateOnError && currentTeamPayload?.data) {
+          pageError.render("Unable to refresh team details.");
+          return;
+        }
+
         renderErrorState("Unable to load team details.");
       });
   }
@@ -530,6 +539,7 @@
     if (cachedPayload) {
       try {
         renderTeamPage(cachedPayload);
+        loadTeamPage({ preserveRenderedStateOnError: true });
       } catch {
         try {
           window.sessionStorage.removeItem(teamCacheKey);
@@ -541,5 +551,11 @@
       loadTeamPage();
     }
   }
+
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && Number.isFinite(teamId)) {
+      loadTeamPage({ preserveRenderedStateOnError: true });
+    }
+  });
 </script>
 {% endblock %}

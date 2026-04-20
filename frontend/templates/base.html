@@ -95,8 +95,10 @@
   const navOverlayEl = document.getElementById("nav-overlay");
   const premierLeagueTeamsEl = document.getElementById("premier-league-teams");
   const premierLeagueTitleEl = document.getElementById("premier-league-title");
+  const signOutForms = document.querySelectorAll(".nav-signout-form");
   const premierLeagueCacheKey = "kickoff-premier-league-teams-39-2024";
   const previousPageCacheKey = "kickoff-previous-page";
+  const teamPageCachePrefix = "kickoff-team-page-";
   const currentPath = window.location.pathname;
   const hasServerRenderedTeams = premierLeagueTeamsEl.children.length > 0;
   const mobileNavQuery = window.matchMedia("(max-width: 860px)");
@@ -192,6 +194,20 @@
     }
   }
 
+  function removeSessionStorageByPrefix(prefix) {
+    try {
+      for (let index = window.sessionStorage.length - 1; index >= 0; index -= 1) {
+        const key = window.sessionStorage.key(index);
+
+        if (key && key.startsWith(prefix)) {
+          window.sessionStorage.removeItem(key);
+        }
+      }
+    } catch {
+      // Ignore cleanup failures and allow logout to continue.
+    }
+  }
+
   function getPreviousInternalPage() {
     const currentUrl = new URL(window.location.href);
     const storedValue = readSessionStorage(previousPageCacheKey);
@@ -279,6 +295,12 @@
   }
 
   syncBackLink();
+
+  signOutForms.forEach((form) => {
+    form.addEventListener("submit", () => {
+      removeSessionStorageByPrefix(teamPageCachePrefix);
+    });
+  });
 
   function renderPremierLeagueTeams(teams) {
     if (!teams.length) {

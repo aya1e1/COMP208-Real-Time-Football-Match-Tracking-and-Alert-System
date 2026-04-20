@@ -1,0 +1,81 @@
+name: Toggle USE_MOCKS on VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Set USE_MOCKS to true, false, or toggle the current value
+        required: true
+        default: toggle
+        type: choice
+        options:
+          - toggle
+          - true
+          - false
+
+jobs:
+  toggle-use-mocks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update USE_MOCKS over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          USE_MOCKS_MODE: ${{ inputs.mode }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          envs: USE_MOCKS_MODE
+          script: |
+            set -euo pipefail
+
+            env_file="/etc/football-app.env"
+            service_name="football-app"
+            mode="${USE_MOCKS_MODE:-toggle}"
+
+            if [ ! -f "$env_file" ]; then
+              echo "Environment file not found: $env_file"
+              exit 1
+            fi
+
+            current_value="$(awk -F= '/^[[:space:]]*USE_MOCKS=/{value=$2} END{print value}' "$env_file" | tr '[:upper:]' '[:lower:]' | xargs)"
+
+            if [ -z "$current_value" ]; then
+              current_value="false"
+            fi
+
+            case "$mode" in
+              true|false)
+                new_value="$mode"
+                ;;
+              toggle)
+                if [ "$current_value" = "true" ]; then
+                  new_value="false"
+                else
+                  new_value="true"
+                fi
+                ;;
+              *)
+                echo "Unsupported mode: $mode"
+                exit 1
+                ;;
+            esac
+
+            tmp_file="$(mktemp)"
+            cp "$env_file" "$tmp_file"
+
+            if grep -q '^[[:space:]]*USE_MOCKS=' "$tmp_file"; then
+              sed -i "s/^[[:space:]]*USE_MOCKS=.*/USE_MOCKS=$new_value/" "$tmp_file"
+            else
+              printf '\nUSE_MOCKS=%s\n' "$new_value" >> "$tmp_file"
+            fi
+
+            sudo install -m 600 "$tmp_file" "$env_file"
+            rm -f "$tmp_file"
+
+            sudo systemctl restart "$service_name"
+
+            echo "USE_MOCKS=$new_value"
+            sudo systemctl status "$service_name" --no-pager

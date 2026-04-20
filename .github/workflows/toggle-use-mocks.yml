@@ -35,12 +35,12 @@ jobs:
             service_name="football-app"
             mode="${USE_MOCKS_MODE:-toggle}"
 
-            if [ ! -f "$env_file" ]; then
+            if ! sudo test -f "$env_file"; then
               echo "Environment file not found: $env_file"
               exit 1
             fi
 
-            current_value="$(awk -F= '/^[[:space:]]*USE_MOCKS=/{value=$2} END{print value}' "$env_file" | tr '[:upper:]' '[:lower:]' | xargs)"
+            current_value="$(sudo awk -F= '/^[[:space:]]*USE_MOCKS=/{value=$2} END{print value}' "$env_file" | tr '[:upper:]' '[:lower:]' | xargs)"
 
             if [ -z "$current_value" ]; then
               current_value="false"
@@ -64,7 +64,7 @@ jobs:
             esac
 
             tmp_file="$(mktemp)"
-            cp "$env_file" "$tmp_file"
+            sudo cp "$env_file" "$tmp_file"
 
             if grep -q '^[[:space:]]*USE_MOCKS=' "$tmp_file"; then
               sed -i "s/^[[:space:]]*USE_MOCKS=.*/USE_MOCKS=$new_value/" "$tmp_file"

@@ -108,7 +108,7 @@ All responses are cached in SQLite to stay within the free tier limit.
 ## Contributors
 | Name | Role | GitHub |
 |------|------|--------|
-| Jacob Daya | Database & Backend | @kedachii |
+| Jacob Daya | Database, Testing & Backend | @kedachii |
 | Aya El Khayat | API Integration, Database, Testing, DevOps | @aya1e1 |
 | Tom Sutton | Backend | @Thomas-Sutton-0 |
 | Best Boonthanomwong | Frontend | @nongbed |

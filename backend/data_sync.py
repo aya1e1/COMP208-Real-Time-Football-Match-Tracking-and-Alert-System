@@ -13,6 +13,89 @@ except ImportError:
 load_dotenv()
 USE_MOCKS = os.getenv("USE_MOCKS", "").strip().lower() == "true"
 
+IMPORTANT_LEAGUES_BY_COUNTRY = {
+    "England": {
+        "Premier League",
+        "Championship",
+        "League One",
+        "League Two",
+        "National League",
+    },
+    "Spain": {
+        "La Liga",
+        "Segunda División",
+    },
+    "Italy": {
+        "Serie A",
+        "Serie B",
+    },
+    "Germany": {
+        "Bundesliga",
+        "2. Bundesliga",
+        "3. Liga",
+    },
+    "France": {
+        "Ligue 1",
+        "Ligue 2",
+        "National 1",
+    },
+    "Netherlands": {
+        "Eredivisie",
+        "Eerste Divisie",
+    },
+    "Portugal": {
+        "Primeira Liga",
+        "Segunda Liga",
+        "Liga 3",
+    },
+    "Scotland": {
+        "Premiership",
+        "Championship",
+        "League One",
+        "League Two",
+    },
+    "Turkey": {
+        "Süper Lig",
+        "1. Lig",
+        "2. Lig",
+    },
+    "Belgium": {
+        "Jupiler Pro League",
+        "Challenger Pro League",
+    },
+    "USA": {
+        "Major League Soccer",
+        "USL Championship",
+        "USL League One",
+    },
+    "Brazil": {
+        "Serie A",
+        "Serie B",
+        "Serie C",
+        "Serie D",
+    },
+    "Argentina": {
+        "Liga Profesional Argentina",
+        "Primera Nacional",
+        "Primera B Metropolitana",
+        "Primera C",
+        "Primera D",
+        "Torneo Federal A",
+    },
+    "Saudi-Arabia": {
+        "Pro League",
+        "Division 1",
+        "Division 2",
+    },
+}
+
+
+def is_important_league(country: str | None, league_name: str | None) -> bool:
+    if not country or not league_name:
+        return False
+
+    return league_name in IMPORTANT_LEAGUES_BY_COUNTRY.get(country, set())
+
 
 def parse_leagues(data: dict) -> tuple[list[tuple], list[tuple]]:
     leagues = []
@@ -23,8 +106,6 @@ def parse_leagues(data: dict) -> tuple[list[tuple], list[tuple]]:
 
     for item in data["response"]:
         country = item.get("country", {}).get("name")
-        if country != "England":
-            continue
 
         league = item.get("league", {})
         league_id = league.get("id")
@@ -32,6 +113,9 @@ def parse_leagues(data: dict) -> tuple[list[tuple], list[tuple]]:
         league_logo = league.get("logo")
 
         if not league_id or not league_name:
+            continue
+
+        if not is_important_league(country, league_name):
             continue
 
         leagues.append((league_id, league_name, country, league_logo))
@@ -720,6 +804,9 @@ def sync_standings(league_id: int, season: int, force: bool = False) -> None:
             f"Skipped standings sync for league {league_id}, season {season}: records already exist."
         )
         return
+
+    # Standings rows reference Teams, so make sure the season's clubs exist first.
+    sync_teams(league_id=league_id, season=season)
 
     data = api_get(f"/standings?league={league_id}&season={season}")
     standings = parse_standings(data)

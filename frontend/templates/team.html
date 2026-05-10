@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Kickoff — Team{% endblock %}
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/fixture_cards.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/team_league_pages.css') }}">
+<link rel="stylesheet" href="{{ static_asset('css/fixture_cards.css') }}">
+<link rel="stylesheet" href="{{ static_asset('css/team_league_pages.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -10,6 +10,7 @@
   class="page team-page"
   data-team-id="{{ team_id }}"
   data-user-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}"
+  data-viewer-cache-key="{{ current_user.id if current_user.is_authenticated else 'anonymous' }}"
   data-login-url="{{ url_for('auth.login_page') }}"
 >
   <div class="match-back">
@@ -18,7 +19,7 @@
   <div id="team-error-banner" class="page-error-banner" aria-live="polite"></div>
 
   <header class="team-page-header" id="team-header">
-    <div class="team-empty">Loading team...</div>
+    <div class="team-empty">Loading team</div>
   </header>
 
   <section class="team-layout">
@@ -26,14 +27,14 @@
       <section class="card team-summary-card">
         <div class="card-body">
           <h2 class="fixture-section-title">Team Details</h2>
-          <div id="team-summary" class="team-empty">Loading team details...</div>
+          <div id="team-summary" class="team-empty">Loading team details</div>
         </div>
       </section>
 
       <section class="card team-section">
         <div class="card-body">
           <h2 class="fixture-section-title">Team Overview</h2>
-          <div id="team-overview" class="team-empty">Loading overview...</div>
+          <div id="team-overview" class="team-empty">Loading overview</div>
         </div>
       </section>
     </div>
@@ -41,31 +42,35 @@
     <aside class="team-column">
       <section class="dashboard-section">
         <h2 class="fixture-section-title">Upcoming Fixture</h2>
-        <div id="team-upcoming-fixture" class="team-empty">Loading upcoming fixture...</div>
+        <div id="team-upcoming-fixture" class="team-empty">Loading upcoming fixture</div>
       </section>
 
-      <section class="dashboard-section">
-        <h2 class="fixture-section-title">Recent Games</h2>
-        <div id="team-recent-fixtures" class="team-fixture-stack">Loading recent fixtures...</div>
+      <section class="dashboard-section page-recent-fixture-section">
+        <h2 class="fixture-section-title">Recent Fixtures</h2>
+        <div id="team-recent-fixtures" class="team-fixture-stack">Loading recent fixtures</div>
+        <nav id="team-recent-pagination" class="fixture-h2h-nav page-recent-fixture-pagination" aria-label="Recent fixture pages" hidden></nav>
       </section>
     </aside>
   </section>
 </main>
 
-<script src="{{ url_for('static', filename='js/ui_errors.js') }}"></script>
-<script src="{{ url_for('static', filename='js/fixture_cards.js') }}"></script>
-<script src="{{ url_for('static', filename='js/recent_fixtures.js') }}"></script>
-<script src="{{ url_for('static', filename='js/overview_tables.js') }}"></script>
+<script src="{{ static_asset('js/ui_errors.js') }}"></script>
+<script src="{{ static_asset('js/fixture_cards.js') }}"></script>
+<script src="{{ static_asset('js/recent_fixtures.js') }}"></script>
+<script src="{{ static_asset('js/page_switcher.js') }}"></script>
+<script src="{{ static_asset('js/overview_tables.js') }}"></script>
 <script>
   const teamPage = document.querySelector(".team-page");
   const teamId = Number(teamPage?.dataset.teamId);
   const isUserAuthenticated = teamPage?.dataset.userAuthenticated === "true";
+  const viewerCacheKey = teamPage?.dataset.viewerCacheKey || "anonymous";
   const loginUrl = teamPage?.dataset.loginUrl || "/auth/login";
   const errorBannerEl = document.getElementById("team-error-banner");
   const teamHeaderEl = document.getElementById("team-header");
   const teamSummaryEl = document.getElementById("team-summary");
   const teamOverviewEl = document.getElementById("team-overview");
   const upcomingFixtureEl = document.getElementById("team-upcoming-fixture");
+  const recentPaginationEl = document.getElementById("team-recent-pagination");
   const recentFixturesEl = document.getElementById("team-recent-fixtures");
   const {
     createPageErrorController,
@@ -74,8 +79,38 @@
     renderUpcomingFixtures
   } = window.KickoffFixtureCards;
   const pageError = createPageErrorController(errorBannerEl);
+  const teamCacheKey = Number.isFinite(teamId)
+    ? `kickoff-team-page-${viewerCacheKey}-${teamId}`
+    : null;
+  const recentFixturesPerPage = 3;
+  const initialRecentPage = Number(new URLSearchParams(window.location.search).get("recent_page")) || 1;
   let currentTeamPayload = null;
+  let currentRecentPage = initialRecentPage > 0 ? initialRecentPage : 1;
   let favouriteRequestPending = false;
+
+  function getCachedTeamPayload() {
+    if (!teamCacheKey) {
+      return null;
+    }
+
+    try {
+      const cachedPayload = window.sessionStorage.getItem(teamCacheKey);
+      return cachedPayload ? JSON.parse(cachedPayload) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function cacheTeamPayload(payload) {
+    if (!teamCacheKey || !payload?.data) {
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem(teamCacheKey, JSON.stringify(payload));
+    } catch {
+    }
+  }
 
   function renderFormDots(form) {
     if (!form) {
@@ -201,12 +236,107 @@
     });
   }
 
-  function renderRecentFixtures(fixtures) {
-    window.KickoffRecentFixtures.render(recentFixturesEl, fixtures, {
+  function buildRecentFixturesHref(pageNumber) {
+    const url = new URL(window.location.href);
+
+    if (pageNumber <= 1) {
+      url.searchParams.delete("recent_page");
+    } else {
+      url.searchParams.set("recent_page", String(pageNumber));
+    }
+
+    return `${url.pathname}${url.search}`;
+  }
+
+  function updateRecentFixturesUrl(pageNumber) {
+    window.history.replaceState({}, "", buildRecentFixturesHref(pageNumber));
+  }
+
+  function buildTeamApiHref(pageNumber = currentRecentPage) {
+    const query = new URLSearchParams({
+      recent_page: String(pageNumber),
+      recent_per_page: String(recentFixturesPerPage)
+    });
+
+    return `/api/teams/${teamId}?${query.toString()}`;
+  }
+
+  function setRecentFixturesLoading(message = "Loading recent fixtures") {
+    recentPaginationEl.hidden = true;
+    recentPaginationEl.innerHTML = "";
+    recentFixturesEl.innerHTML = `<div class="team-empty">${escapeHtml(message)}</div>`;
+  }
+
+  function renderRecentFixtures(fixtures, pagination) {
+    const resolvedPagination = pagination || {
+      page: 1,
+      total_pages: 1,
+      has_previous: false,
+      has_next: false
+    };
+
+    currentRecentPage = Number(resolvedPagination.page) || 1;
+    updateRecentFixturesUrl(currentRecentPage);
+    window.KickoffPageSwitcher.render(recentPaginationEl, resolvedPagination, {
+      showDisabledNext: true,
+      buildHref: buildRecentFixturesHref,
+      onSelect: (nextPage) => {
+        if (nextPage === currentRecentPage) {
+          return;
+        }
+
+        return loadRecentFixturesPage(nextPage);
+      }
+    });
+
+    window.KickoffRecentFixtures.render(recentFixturesEl, Array.isArray(fixtures) ? fixtures : [], {
       emptyMessage: "No recent fixtures found",
       emptyClassName: "team-empty",
       teamId
     });
+  }
+
+  function loadRecentFixturesPage(pageNumber) {
+    const previousRecentPage = currentRecentPage;
+    const previousPaginationHtml = recentPaginationEl.innerHTML;
+    const previousPaginationHidden = recentPaginationEl.hidden;
+    const previousFixturesHtml = recentFixturesEl.innerHTML;
+
+    currentRecentPage = pageNumber;
+    updateRecentFixturesUrl(currentRecentPage);
+    setRecentFixturesLoading();
+
+    return fetch(buildTeamApiHref(pageNumber))
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status === 404 ? "Team not found." : "Unable to load recent fixtures.");
+        }
+
+        return response.json();
+      })
+      .then((payload) => {
+        const recentFixtures = Array.isArray(payload?.recent_fixtures) ? payload.recent_fixtures : [];
+        const recentFixturesPagination = payload?.recent_fixtures_pagination || null;
+
+        if (currentTeamPayload?.data) {
+          currentTeamPayload.recent_fixtures = recentFixtures;
+          currentTeamPayload.recent_fixtures_pagination = recentFixturesPagination;
+        } else {
+          currentTeamPayload = payload;
+        }
+
+        pageError.clear();
+        cacheTeamPayload(currentTeamPayload);
+        renderRecentFixtures(recentFixtures, recentFixturesPagination);
+      })
+      .catch((error) => {
+        currentRecentPage = previousRecentPage;
+        updateRecentFixturesUrl(currentRecentPage);
+        recentPaginationEl.hidden = previousPaginationHidden;
+        recentPaginationEl.innerHTML = previousPaginationHtml;
+        recentFixturesEl.innerHTML = previousFixturesHtml;
+        pageError.render(window.KickoffUIErrors.resolveMessage(error, "Unable to load recent fixtures."));
+      });
   }
 
   function renderHeader(team) {
@@ -328,6 +458,7 @@
         }
 
         team.IsFavourite = shouldAdd;
+        cacheTeamPayload(currentTeamPayload);
         updateFavouriteButton();
       })
       .catch(() => {
@@ -353,7 +484,17 @@
     bindFavouriteAction();
     renderOverviewTable(team);
     renderUpcomingFixture(payload.upcoming_fixture || null);
-    renderRecentFixtures(Array.isArray(payload.recent_fixtures) ? payload.recent_fixtures : []);
+    const recentFixtures = Array.isArray(payload?.recent_fixtures) ? payload.recent_fixtures : [];
+    const recentFixturesPagination = payload?.recent_fixtures_pagination || null;
+    const payloadRecentPage = Number(recentFixturesPagination?.page) || 1;
+
+    if (payloadRecentPage === currentRecentPage) {
+      renderRecentFixtures(recentFixtures, recentFixturesPagination);
+      return;
+    }
+
+    setRecentFixturesLoading();
+    loadRecentFixturesPage(currentRecentPage);
   }
 
   function renderErrorState(message = "Unable to load team details.") {
@@ -362,13 +503,13 @@
     teamSummaryEl.innerHTML = '<div class="team-empty">Team details unavailable.</div>';
     teamOverviewEl.innerHTML = '<div class="team-empty">Overview unavailable.</div>';
     upcomingFixtureEl.innerHTML = '<div class="team-empty">Upcoming fixture unavailable.</div>';
+    recentPaginationEl.hidden = true;
+    recentPaginationEl.innerHTML = "";
     recentFixturesEl.innerHTML = '<div class="team-empty">Recent fixtures unavailable.</div>';
   }
 
-  if (!Number.isFinite(teamId)) {
-    renderErrorState("Unable to load team details.");
-  } else {
-    fetch(`/api/teams/${teamId}`)
+  function loadTeamPage({ preserveRenderedStateOnError = false } = {}) {
+    fetch(buildTeamApiHref(currentRecentPage))
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.status === 404 ? "Team not found." : "Unable to load team details.");
@@ -377,11 +518,44 @@
         return response.json();
       })
       .then((payload) => {
+        cacheTeamPayload(payload);
         renderTeamPage(payload);
       })
       .catch(() => {
+        if (preserveRenderedStateOnError && currentTeamPayload?.data) {
+          pageError.render("Unable to refresh team details.");
+          return;
+        }
+
         renderErrorState("Unable to load team details.");
       });
   }
+
+  if (!Number.isFinite(teamId)) {
+    renderErrorState("Unable to load team details.");
+  } else {
+    const cachedPayload = getCachedTeamPayload();
+
+    if (cachedPayload) {
+      try {
+        renderTeamPage(cachedPayload);
+        loadTeamPage({ preserveRenderedStateOnError: true });
+      } catch {
+        try {
+          window.sessionStorage.removeItem(teamCacheKey);
+        } catch {
+        }
+        loadTeamPage();
+      }
+    } else {
+      loadTeamPage();
+    }
+  }
+
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && Number.isFinite(teamId)) {
+      loadTeamPage({ preserveRenderedStateOnError: true });
+    }
+  });
 </script>
 {% endblock %}

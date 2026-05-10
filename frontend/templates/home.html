@@ -1,124 +1,223 @@
 {% extends "base.html" %}
-{% block title %}Kickoff — Today's Matches{% endblock %}
+{% block title %}Kickoff — Matches{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ static_asset('css/fixture_cards.css') }}">
+<link rel="stylesheet" href="{{ static_asset('css/team_league_pages.css') }}">
+{% endblock %}
 
 {% block content %}
-<main class="page">
-  <div class="two-col">
+<main class="page dashboard-page home-page">
+  <div id="home-error-banner" class="page-error-banner" aria-live="polite"></div>
 
-    <!-- current fixtures  -->
-    <div>
-      <div class="date-strip">
-        <div class="date-pill"><span>Fri</span><strong>11</strong></div>
-        <div class="date-pill"><span>Sat</span><strong>12</strong></div>
-        <div class="date-pill active"><span>Sun</span><strong>13</strong></div>
-        <div class="date-pill"><span>Mon</span><strong>14</strong></div>
-        <div class="date-pill"><span>Tue</span><strong>15</strong></div>
-      </div>
+  <header class="dashboard-page-header">
 
-      <div id="home-fixtures" class="comp-group card">
-        <div class="comp-label">Premier League</div>
-        <div class="match-loading" style="padding:20px;text-align:center;color:#888;">Loading fixtures...</div>
-      </div>
+    <h1 class="dashboard-title">Home</h1>
+  </header>
+
+  <section class="league-layout">
+    <div class="league-column">
+      <section class="league-fixture-section page-recent-fixture-section">
+        <h2 class="fixture-section-title">Recent Fixtures</h2>
+        <div id="home-fixtures" class="dashboard-fixture-stack">
+          <div class="dashboard-empty-card">Loading matches</div>
+        </div>
+        <nav id="home-pagination" class="fixture-h2h-nav page-recent-fixture-pagination" aria-label="Match pages">
+          <div class="fixture-empty">Loading pages</div>
+        </nav>
+      </section>
     </div>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-
-      <!-- league table random data for demo) -->
-      <div class="card">
-        <div class="card-header">Premier League Table</div>
-        <div class="card-body" style="padding:0;">
-          <table class="table-mini">
-            <thead>
-              <tr>
-                <th>#</th><th>Team</th><th>P</th><th>GD</th><th>Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>1</td><td>Liverpool</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>2</td><td>Arsenal</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>3</td><td>Chelsea</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>4</td><td>Nottm Forest</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr style="border-top:2px solid var(--blue);">
-                <td>5</td><td>Man City</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>6</td><td>Newcastle</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>7</td><td>Aston Villa</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>8</td><td>Bournemouth</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>9</td><td>Fulham</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>10</td><td>Man United</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>11</td><td>Tottenham</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>12</td><td>Brighton</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>13</td><td>Brentford</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>14</td><td>West Ham</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>15</td><td>Crystal Palace</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>16</td><td>Everton</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>17</td><td>Leicester</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr style="border-top:2px solid var(--accent);">
-                <td>18</td><td>Ipswich</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>19</td><td>Wolves</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-              <tr><td>20</td><td>Southampton</td><td>&ndash;</td><td>&ndash;</td><td class="pts">&ndash;</td></tr>
-            </tbody>
-          </table>
+    <aside class="league-column">
+      <section class="league-section league-standings-section">
+        <h2 id="home-league-card-header" class="fixture-section-title">Premier League Table</h2>
+        <div id="home-league-error-banner" class="page-error-banner" aria-live="polite"></div>
+        <div id="home-league-standings">
+          <div class="league-standings-wrap is-empty">
+            <div class="league-standings-empty">Loading standings</div>
+          </div>
         </div>
-      </div>
-
-      <div class="alert-card">
-        <h3>Get match alerts</h3>
-        <p>Instant notifications for goals, cards, and full time.</p>
-        <a href="/auth/register" class="alert-btn">Set up alerts &rarr;</a>
-      </div>
-
+      </section>
     </aside>
-  </div>
+  </section>
+
+
 </main>
 
+<script src="{{ static_asset('js/ui_errors.js') }}"></script>
+<script src="{{ static_asset('js/fixture_cards.js') }}"></script>
+<script src="{{ static_asset('js/overview_tables.js') }}"></script>
+<script src="{{ static_asset('js/recent_fixtures.js') }}"></script>
+<script src="{{ static_asset('js/page_switcher.js') }}"></script>
 <script>
 (function() {
-  fetch('/api/fixtures')
-    .then(function(r) { return r.json(); })
-    .then(function(fixtures) {
-      var container = document.getElementById('home-fixtures');
-      var html = '<div class="comp-label">Premier League</div>';
+  const premierLeagueId = 39;
+  const premierLeagueSeason = 2024;
+  const fixturesPerPage = 6;
+  const initialPage = Number(new URLSearchParams(window.location.search).get("page"));
+  let currentPage = Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1;
+  const homeErrorEl = document.getElementById("home-error-banner");
+  const paginationEl = document.getElementById("home-pagination");
+  const recentFixturesEl = document.getElementById("home-fixtures");
+  const standingsEl = document.getElementById("home-league-standings");
+  const standingsErrorEl = document.getElementById("home-league-error-banner");
+  const standingsHeaderEl = document.getElementById("home-league-card-header");
+  const homePageError = window.KickoffFixtureCards.createPageErrorController(homeErrorEl);
+  const standingsPageError = window.KickoffFixtureCards.createPageErrorController(standingsErrorEl);
+  const escapeHtml = window.KickoffFixtureCards.escapeHtml;
+  const renderTeamLogo = window.KickoffFixtureCards.renderTeamLogo;
 
-      fixtures.forEach(function(f) {
-        var isLive = ['1H','2H','HT','ET','P'].indexOf(f.Status) !== -1;
-        var isFinished = f.Status === 'FT' || f.Status === 'AET' || f.Status === 'PEN';
-        var notStarted = f.Status === 'NS' || f.Status === 'TBD';
+  function renderStandingsMessage(message) {
+    return `
+      <div class="league-standings-wrap is-empty">
+        <div class="league-standings-empty">${escapeHtml(message)}</div>
+      </div>
+    `;
+  }
 
-        var centerContent = '';
-        if (notStarted) {
-          var d = new Date(f.MatchDate);
-          var time = d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-          centerContent =
-            '<div class="score-box"><span class="score-dash">vs</span></div>' +
-            '<div class="match-time">' + time + '</div>';
-        } else {
-          centerContent =
-            '<div class="score-box">' +
-              '<span>' + f.HomeScore + '</span>' +
-              '<span class="score-dash">&ndash;</span>' +
-              '<span>' + f.AwayScore + '</span>' +
-            '</div>';
-          if (isLive) {
-            centerContent += '<div class="match-time live">&#9679; ' + f.Elapsed + '\'</div>';
-          }
+  function renderStandingsTeamCell(row) {
+    const teamLabel = row.TeamAbbreviation || row.TeamName || "Team";
+
+    return `
+      <a class="league-standings-team-link" href="/teams/${escapeHtml(row.TeamID)}">
+        ${renderTeamLogo(
+        row.TeamLogoURL,
+        `${row.TeamName || "Team"} logo`,
+        "league-standings-team-logo",
+        { width: 22, height: 22 }
+      )}
+        <span class="league-standings-team-text">
+          <span class="league-standings-team-name">${escapeHtml(teamLabel)}</span>
+        </span>
+      </a>
+    `;
+  }
+
+  function buildPageHref(pageNumber) {
+    const url = new URL(window.location.href);
+    if (pageNumber <= 1) {
+      url.searchParams.delete("page");
+    } else {
+      url.searchParams.set("page", String(pageNumber));
+    }
+
+    return url.pathname + url.search;
+  }
+
+  function renderPagination(pagination) {
+    window.KickoffPageSwitcher.render(paginationEl, pagination, {
+      showDisabledNext: true,
+      buildHref: buildPageHref,
+      onSelect(nextPage) {
+        currentPage = nextPage;
+        window.history.replaceState({}, "", buildPageHref(nextPage));
+        return loadFixtures({ preserveScroll: true });
+      }
+    });
+  }
+
+  function renderStandings(standings, seasonYear) {
+    if (!standings.length) {
+      standingsEl.innerHTML = renderStandingsMessage("No standings available for this season.");
+      return;
+    }
+
+    standingsEl.innerHTML = window.KickoffOverviewTables.renderTable({
+      className: "league-standings-table compact",
+      wrapClassName: "league-standings-wrap",
+      headers: [
+        { content: "Pos" },
+        { content: "Team" },
+        { content: "MP" },
+        { content: "GD" },
+        { content: "Pts" }
+      ],
+      rows: standings.map((row) => {
+        return [
+          { className: "team-value", content: row.Position },
+          {
+            content: renderStandingsTeamCell(row),
+            raw: true
+          },
+          { className: "team-value", content: row.Played },
+          { className: "team-value", content: row.GD },
+          { className: "team-value", content: row.Points }
+        ];
+      })
+    });
+
+    if (standingsHeaderEl && seasonYear) {
+      standingsHeaderEl.innerHTML = `<a href="/leagues/${premierLeagueId}?season=${seasonYear}">Premier League Table</a>`;
+    }
+  }
+
+  function loadStandings() {
+    return fetch(`/api/leagues/${premierLeagueId}/seasons/${premierLeagueSeason}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load league standings.");
+        }
+        return response.json();
+      })
+      .then((standingsPayload) => {
+        standingsPageError.clear();
+        renderStandings(
+          Array.isArray(standingsPayload && standingsPayload.standings) ? standingsPayload.standings : [],
+          premierLeagueSeason
+        );
+      });
+  }
+
+  loadStandings().catch((error) => {
+    const message = window.KickoffUIErrors.resolveMessage(error, "Unable to load league standings.");
+    standingsEl.innerHTML = renderStandingsMessage("Standings unavailable.");
+    standingsPageError.render(message);
+  });
+
+  function loadFixtures(options) {
+    const preserveScroll = Boolean(options && options.preserveScroll);
+    const scrollPosition = preserveScroll ? window.scrollY : null;
+    recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Loading matches</div>';
+
+    return fetch(`/api/fixtures?page=${currentPage}&per_page=${fixturesPerPage}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load matches.");
         }
 
-        html +=
-          '<a href="/fixtures/' + f.FixtureID + '" class="match-row">' +
-            '<div class="team-side"><span class="team-name">' + f.HomeTeam + '</span></div>' +
-            '<div class="match-center">' + centerContent + '</div>' +
-            '<div class="team-side away"><span class="team-name">' + f.AwayTeam + '</span></div>' +
-          '</a>';
-      });
+        return response.json();
+      })
+      .then((payload) => {
+        homePageError.clear();
+        renderPagination(payload && payload.pagination);
+        window.KickoffRecentFixtures.render(
+          recentFixturesEl,
+          Array.isArray(payload && payload.fixtures) ? payload.fixtures : [],
+          {
+            fallbackLeagueName: "Match"
+          }
+        );
 
-      container.innerHTML = html;
-    })
-    .catch(function() {
-      document.getElementById('home-fixtures').innerHTML =
-        '<div class="comp-label">Premier League</div>' +
-        '<div style="padding:20px;text-align:center;color:#888;">Unable to load fixtures</div>';
-    });
+        if (preserveScroll && scrollPosition !== null) {
+          window.requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollPosition, behavior: 'auto' });
+          });
+        }
+      })
+      .catch((error) => {
+        homePageError.render(window.KickoffUIErrors.resolveMessage(error, "Unable to load matches."));
+        paginationEl.hidden = true;
+        paginationEl.innerHTML = "";
+        recentFixturesEl.innerHTML = '<div class="dashboard-empty-card">Matches unavailable.</div>';
+
+        if (preserveScroll && scrollPosition !== null) {
+          window.requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollPosition, behavior: 'auto' });
+          });
+        }
+      });
+  }
+
+  loadFixtures();
 })();
 </script>
 {% endblock %}

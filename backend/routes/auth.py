@@ -79,6 +79,12 @@ def register():
             return jsonify(error), 400
         return render_template("register.html", error=error["error"]), 400
 
+    if len(username) < 3:
+        error = {"error": "Username must be at least 3 characters"}
+        if _wants_json_response():
+            return jsonify(error), 400
+        return render_template("register.html", error=error["error"]), 400
+
     try:
         user = users.create_user(username, email, password)
     except IntegrityError:

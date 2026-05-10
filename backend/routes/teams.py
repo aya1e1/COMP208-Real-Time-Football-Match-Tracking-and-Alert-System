@@ -1,13 +1,13 @@
-from flask import Blueprint, abort, render_template
+from flask import Blueprint, render_template
 
 teams_bp = Blueprint("teams", __name__)
 
-
+# all teams page
 @teams_bp.route("/")
-def show_teams():
-    abort(404)
+def teams():
+    return render_template("team.html")
 
-
-@teams_bp.route("/<int:team_id>")
-def team(team_id):
-    return render_template("team.html", team_id=team_id)
+# single team page
+@teams_bp.route("/<int:id>")
+def team_detail(id):
+    return render_template("team.html", team_id=id)

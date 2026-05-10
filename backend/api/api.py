@@ -27,6 +27,51 @@ from backend.data_sync import (
 
 api_bp = Blueprint("api", __name__)
 
+COUNTRY_CODE_MAP = {
+    "Argentina": "ARG",
+    "Belgium": "BEL",
+    "Brazil": "BRA",
+    "England": "ENG",
+    "France": "FRA",
+    "Germany": "GER",
+    "Italy": "ITA",
+    "Netherlands": "NED",
+    "Portugal": "POR",
+    "Saudi-Arabia": "KSA",
+    "Scotland": "SCO",
+    "Spain": "ESP",
+    "Turkey": "TUR",
+    "USA": "USA",
+}
+COUNTRY_NAME_BY_CODE = {code: name for name, code in COUNTRY_CODE_MAP.items()}
+LIVE_STATUSES = ("1H", "2H", "HT", "ET", "P")
+FINISHED_STATUSES = ("FT", "AET", "PEN")
+
+
+def _is_truthy_query_param(value: str | None) -> bool:
+    if value is None:
+        return False
+
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _normalize_country_filter(country_value: str | None) -> str | None:
+    if country_value is None:
+        return None
+
+    normalized = str(country_value).strip()
+    if not normalized:
+        return None
+
+    normalized_upper = normalized.upper()
+    if normalized_upper == "ALL":
+        return None
+
+    if len(normalized_upper) <= 3:
+        return COUNTRY_NAME_BY_CODE.get(normalized_upper, normalized)
+
+    return normalized
+
 
 def _last_five_form_chars(form: str | None) -> str:
     if not form:
@@ -175,6 +220,96 @@ def _get_fixtures_for_team_ids(
     return database.query(sql, tuple(params))
 
 
+def _get_paginated_fixtures_for_team_ids(
+    team_ids: list[int],
+    *,
+    page: int = 1,
+    per_page: int = 5,
+    match_date_before: str | None = None,
+    match_date_after: str | None = None,
+    order: str = "DESC",
+) -> tuple[list[dict], dict]:
+    if not team_ids:
+        return [], {
+            "page": 1,
+            "per_page": per_page,
+            "total_fixtures": 0,
+            "total_pages": 1,
+            "has_previous": False,
+            "has_next": False,
+        }
+
+    normalized_order = "ASC" if order.upper() == "ASC" else "DESC"
+    placeholders = ", ".join("?" for _ in team_ids)
+    from_sql = f"""
+        FROM Fixtures f
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+        WHERE (
+            f.HomeTeamID IN ({placeholders})
+            OR f.AwayTeamID IN ({placeholders})
+        )
+    """
+    params = [*team_ids, *team_ids]
+
+    if match_date_before:
+        from_sql += " AND f.MatchDate <= ?"
+        params.append(match_date_before)
+
+    if match_date_after:
+        from_sql += " AND f.MatchDate > ?"
+        params.append(match_date_after)
+
+    select_sql = f"""
+        SELECT
+            f.FixtureID,
+            f.LeagueID,
+            l.Name AS LeagueName,
+            f.Year,
+            f.HomeTeamID,
+            ht.Name AS HomeTeam,
+            ht.Abbreviation AS HomeTeamAbbreviation,
+            ht.LogoURL AS HomeTeamLogoURL,
+            f.AwayTeamID,
+            at.Name AS AwayTeam,
+            at.Abbreviation AS AwayTeamAbbreviation,
+            at.LogoURL AS AwayTeamLogoURL,
+            f.Location,
+            f.MatchDate,
+            f.HomeScore,
+            f.AwayScore,
+            f.Status,
+            f.Elapsed
+        {from_sql}
+        ORDER BY f.MatchDate {normalized_order}
+        LIMIT ? OFFSET ?
+    """
+    count_sql = f"""
+        SELECT COUNT(*) AS TotalFixtures
+        {from_sql}
+    """
+
+    total_count_row = database.query(count_sql, tuple(params))
+    total_fixtures = total_count_row[0]["TotalFixtures"] if total_count_row else 0
+    total_pages = max(1, (total_fixtures + per_page - 1) // per_page)
+    safe_page = min(max(1, page), total_pages)
+    offset = (safe_page - 1) * per_page
+    fixtures = database.query(select_sql, tuple([*params, per_page, offset]))
+
+    return fixtures, {
+        "page": safe_page,
+        "per_page": per_page,
+        "total_fixtures": total_fixtures,
+        "total_pages": total_pages,
+        "has_previous": safe_page > 1,
+        "has_next": safe_page < total_pages,
+    }
+
+
 def _get_recent_fixtures_for_league_season(
     league_id: int,
     year: int,
@@ -222,6 +357,77 @@ def _get_recent_fixtures_for_league_season(
     params.append(limit)
 
     return database.query(sql, tuple(params))
+
+
+def _get_paginated_recent_fixtures_for_league_season(
+    league_id: int,
+    year: int,
+    *,
+    page: int = 1,
+    per_page: int = 5,
+    match_date_before: str | None = None,
+) -> tuple[list[dict], dict]:
+    from_sql = """
+        FROM Fixtures f
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+        WHERE f.LeagueID = ?
+          AND f.Year = ?
+    """
+    params = [league_id, year]
+
+    if match_date_before:
+        from_sql += " AND f.MatchDate <= ?"
+        params.append(match_date_before)
+
+    select_sql = f"""
+        SELECT
+            f.FixtureID,
+            f.LeagueID,
+            l.Name AS LeagueName,
+            f.Year,
+            f.HomeTeamID,
+            ht.Name AS HomeTeam,
+            ht.Abbreviation AS HomeTeamAbbreviation,
+            ht.LogoURL AS HomeTeamLogoURL,
+            f.AwayTeamID,
+            at.Name AS AwayTeam,
+            at.Abbreviation AS AwayTeamAbbreviation,
+            at.LogoURL AS AwayTeamLogoURL,
+            f.Location,
+            f.MatchDate,
+            f.HomeScore,
+            f.AwayScore,
+            f.Status,
+            f.Elapsed
+        {from_sql}
+        ORDER BY f.MatchDate DESC
+        LIMIT ? OFFSET ?
+    """
+    count_sql = f"""
+        SELECT COUNT(*) AS TotalFixtures
+        {from_sql}
+    """
+
+    total_count_row = database.query(count_sql, tuple(params))
+    total_fixtures = total_count_row[0]["TotalFixtures"] if total_count_row else 0
+    total_pages = max(1, (total_fixtures + per_page - 1) // per_page)
+    safe_page = min(max(1, page), total_pages)
+    offset = (safe_page - 1) * per_page
+    fixtures = database.query(select_sql, tuple([*params, per_page, offset]))
+
+    return fixtures, {
+        "page": safe_page,
+        "per_page": per_page,
+        "total_fixtures": total_fixtures,
+        "total_pages": total_pages,
+        "has_previous": safe_page > 1,
+        "has_next": safe_page < total_pages,
+    }
 
 
 def _get_team(team_id: int) -> dict | None:
@@ -517,18 +723,27 @@ def leagues():
     return jsonify(leagues)
 
 
-@api_bp.route("/leagues/<int:league_id>/teams")
-def league_teams(league_id):
+@api_bp.route("/leagues/<int:league_id>/seasons/<int:year>/teams")
+def league_teams(league_id, year):
 
     league_sql = """
-        SELECT LeagueID, Name, Country, LogoURL
-        FROM League
-        WHERE LeagueID = ?
+        SELECT
+            l.LeagueID,
+            l.Name,
+            l.Country,
+            l.LogoURL,
+            s.Year,
+            s.Current
+        FROM League l
+        JOIN Seasons s
+            ON l.LeagueID = s.LeagueID
+        WHERE l.LeagueID = ?
+          AND s.Year = ?
     """
-    league = database.query(league_sql, (league_id,))
+    league = database.query(league_sql, (league_id, year))
 
     if not league:
-        return jsonify({"error": "League not found"}), 404
+        return jsonify({"error": "League season not found"}), 404
 
     teams_sql = """
         SELECT DISTINCT
@@ -541,9 +756,10 @@ def league_teams(league_id):
         JOIN Teams t
             ON st.TeamID = t.TeamID
         WHERE st.LeagueID = ?
+          AND st.Year = ?
         ORDER BY t.Name
     """
-    teams = database.query(teams_sql, (league_id,))
+    teams = database.query(teams_sql, (league_id, year))
 
     return jsonify({
         "league": league[0],
@@ -641,6 +857,27 @@ def league_standings(league_id, year):
 
 @api_bp.route("/leagues/<int:league_id>/seasons/<int:year>/recent-fixtures")
 def league_recent_fixtures(league_id, year):
+    page_param = request.args.get("page")
+    per_page_param = request.args.get("per_page")
+    page = 1
+    per_page = 5
+
+    try:
+        if page_param is not None:
+            page = int(page_param)
+        if per_page_param is not None:
+            per_page = int(per_page_param)
+    except ValueError:
+        return jsonify({
+            "error": "page and per_page must be integers."
+        }), 400
+
+    if page < 1 or per_page < 1:
+        return jsonify({
+            "error": "page and per_page must be greater than 0."
+        }), 400
+
+    per_page = min(per_page, 50)
     league_sql = """
         SELECT
             l.LeagueID,
@@ -664,16 +901,18 @@ def league_recent_fixtures(league_id, year):
     sync_fixtures(league_id=league_id, season=year)
 
     current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    recent_fixtures = _get_recent_fixtures_for_league_season(
+    recent_fixtures, pagination = _get_paginated_recent_fixtures_for_league_season(
         league_id,
         year,
-        limit=5,
+        page=page,
+        per_page=per_page,
         match_date_before=current_timestamp,
     )
 
     return jsonify({
         "league": league[0],
         "recent_fixtures": recent_fixtures,
+        "pagination": pagination,
     })
 
 
@@ -681,9 +920,19 @@ def league_recent_fixtures(league_id, year):
 def fixtures():
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
+    page_param = request.args.get("page")
+    per_page_param = request.args.get("per_page")
+    country_param = request.args.get("country")
+    include_country_options = _is_truthy_query_param(request.args.get("include_country_options"))
+    live_only = _is_truthy_query_param(request.args.get("live"))
+    finished_only = _is_truthy_query_param(request.args.get("finished"))
 
     parsed_start = None
     parsed_end = None
+    paginated_request = page_param is not None or per_page_param is not None
+    page = 1
+    per_page = 10
+    normalized_country = _normalize_country_filter(country_param)
 
     try:
         if start_date:
@@ -695,16 +944,93 @@ def fixtures():
             "error": "Invalid date format. Use YYYY-MM-DD for start_date and end_date."
         }), 400
 
+    if paginated_request:
+        try:
+            if page_param is not None:
+                page = int(page_param)
+            if per_page_param is not None:
+                per_page = int(per_page_param)
+        except ValueError:
+            return jsonify({
+                "error": "page and per_page must be integers."
+            }), 400
+
+        if page < 1 or per_page < 1:
+            return jsonify({
+                "error": "page and per_page must be greater than 0."
+            }), 400
+
+        per_page = min(per_page, 50)
+
     if parsed_start and parsed_end and parsed_start > parsed_end:
         return jsonify({
             "error": "start_date cannot be later than end_date."
         }), 400
 
-    sql = """
+    if live_only and finished_only:
+        return jsonify({
+            "error": "live and finished filters cannot be used together."
+        }), 400
+
+    from_sql = """
+        FROM Fixtures f
+        JOIN League l
+            ON f.LeagueID = l.LeagueID
+        JOIN Teams ht
+            ON f.HomeTeamID = ht.TeamID
+        JOIN Teams at
+            ON f.AwayTeamID = at.TeamID
+    """
+    conditions = []
+    params = []
+    country_option_conditions = []
+    country_option_params = []
+
+    if parsed_start:
+        conditions.append("DATE(f.MatchDate) >= DATE(?)")
+        params.append(parsed_start.isoformat())
+        country_option_conditions.append("DATE(f.MatchDate) >= DATE(?)")
+        country_option_params.append(parsed_start.isoformat())
+
+    if parsed_end:
+        conditions.append("DATE(f.MatchDate) <= DATE(?)")
+        params.append(parsed_end.isoformat())
+        country_option_conditions.append("DATE(f.MatchDate) <= DATE(?)")
+        country_option_params.append(parsed_end.isoformat())
+
+    if live_only:
+        live_status_placeholders = ", ".join("?" for _ in LIVE_STATUSES)
+        live_status_condition = f"f.Status IN ({live_status_placeholders})"
+        conditions.append(live_status_condition)
+        params.extend(LIVE_STATUSES)
+        country_option_conditions.append(live_status_condition)
+        country_option_params.extend(LIVE_STATUSES)
+
+    if finished_only:
+        finished_status_placeholders = ", ".join("?" for _ in FINISHED_STATUSES)
+        finished_status_condition = f"f.Status IN ({finished_status_placeholders})"
+        conditions.append(finished_status_condition)
+        params.extend(FINISHED_STATUSES)
+        country_option_conditions.append(finished_status_condition)
+        country_option_params.extend(FINISHED_STATUSES)
+
+    if normalized_country:
+        conditions.append("LOWER(l.Country) = LOWER(?)")
+        params.append(normalized_country)
+
+    where_sql = f" WHERE {' AND '.join(conditions)}" if conditions else ""
+    country_option_where_sql = (
+        f" WHERE {' AND '.join(country_option_conditions)}"
+        if country_option_conditions
+        else ""
+    )
+
+    select_sql = f"""
         SELECT
             f.FixtureID,
             f.LeagueID,
             l.Name AS LeagueName,
+            l.Country AS Country,
             f.Year,
             f.HomeTeamID,
             ht.Name AS HomeTeam,
@@ -720,36 +1046,82 @@ def fixtures():
             f.AwayScore,
             f.Status,
             f.Elapsed
-        FROM Fixtures f
-        JOIN League l
-            ON f.LeagueID = l.LeagueID
-        JOIN Teams ht
-            ON f.HomeTeamID = ht.TeamID
-        JOIN Teams at
-            ON f.AwayTeamID = at.TeamID
-        WHERE 1 = 1
+        {from_sql}
+        {where_sql}
+        ORDER BY f.MatchDate DESC
     """
-    params = []
+    count_sql = f"""
+        SELECT COUNT(*) AS TotalFixtures
+        {from_sql}
+        {where_sql}
+    """
+    country_options_sql = f"""
+        SELECT DISTINCT l.Country AS Country
+        {from_sql}
+        {country_option_where_sql}
+        ORDER BY l.Country ASC
+    """
 
-    if parsed_start:
-        sql += " AND DATE(f.MatchDate) >= DATE(?)"
-        params.append(parsed_start.isoformat())
+    if paginated_request:
+        offset = (page - 1) * per_page
+        select_sql += " LIMIT ? OFFSET ?"
+        select_params = [*params, per_page, offset]
+    elif not parsed_start and not parsed_end:
+        select_sql += " LIMIT 10"
+        select_params = params
+    else:
+        select_params = params
 
-    if parsed_end:
-        sql += " AND DATE(f.MatchDate) <= DATE(?)"
-        params.append(parsed_end.isoformat())
+    fixtures = database.query(select_sql, tuple(select_params))
 
-    sql += " ORDER BY f.MatchDate DESC"
+    if not paginated_request:
+        return jsonify(fixtures)
 
-    if not parsed_start and not parsed_end:
-        sql += " LIMIT 10"
+    total_count_row = database.query(count_sql, tuple(params))
+    total_fixtures = total_count_row[0]["TotalFixtures"] if total_count_row else 0
+    total_pages = max(1, (total_fixtures + per_page - 1) // per_page)
+    payload = {
+        "fixtures": fixtures,
+        "pagination": {
+            "page": page,
+            "per_page": per_page,
+            "total_fixtures": total_fixtures,
+            "total_pages": total_pages,
+            "has_previous": page > 1,
+            "has_next": page < total_pages,
+        }
+    }
 
-    fixtures = database.query(sql, tuple(params))
-    return jsonify(fixtures)
+    if include_country_options:
+        country_rows = database.query(country_options_sql, tuple(country_option_params))
+        payload["countries"] = [row["Country"] for row in country_rows if row.get("Country")]
+
+    return jsonify(payload)
 
 
 @api_bp.route("/teams/<int:team_id>")
 def team(team_id):
+    recent_page_param = request.args.get("recent_page")
+    recent_per_page_param = request.args.get("recent_per_page")
+    recent_page = 1
+    recent_per_page = 5
+
+    try:
+        if recent_page_param is not None:
+            recent_page = int(recent_page_param)
+        if recent_per_page_param is not None:
+            recent_per_page = int(recent_per_page_param)
+    except ValueError:
+        return jsonify({
+            "error": "recent_page and recent_per_page must be integers."
+        }), 400
+
+    if recent_page < 1 or recent_per_page < 1:
+        return jsonify({
+            "error": "recent_page and recent_per_page must be greater than 0."
+        }), 400
+
+    recent_per_page = min(recent_per_page, 50)
     team_data = _get_team(team_id)
 
     if not team_data:
@@ -771,9 +1143,10 @@ def team(team_id):
         match_date_after=current_timestamp,
         order="ASC",
     )
-    recent_fixtures = _get_fixtures_for_team_ids(
+    recent_fixtures, recent_fixtures_pagination = _get_paginated_fixtures_for_team_ids(
         [team_id],
-        limit=5,
+        page=recent_page,
+        per_page=recent_per_page,
         match_date_before=current_timestamp,
         order="DESC",
     )
@@ -801,6 +1174,7 @@ def team(team_id):
         "data": team_payload,
         "upcoming_fixture": upcoming_fixtures[0] if upcoming_fixtures else None,
         "recent_fixtures": recent_fixtures,
+        "recent_fixtures_pagination": recent_fixtures_pagination,
     })
 
 

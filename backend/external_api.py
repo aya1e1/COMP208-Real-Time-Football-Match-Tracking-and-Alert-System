@@ -15,6 +15,14 @@ SAVE_JSON = True
 USE_MOCKS = os.getenv("USE_MOCKS", "").strip().lower() == "true"
 
 
+def has_api_errors(data: dict | None) -> bool:
+    if not isinstance(data, dict):
+        return False
+
+    errors = data.get("errors")
+    return bool(errors)
+
+
 def save_api_json(path: str, data: dict) -> None:
     parsed_path = urlsplit(path)
     endpoint_name = parsed_path.path.strip("/").replace("/", "_") or "root"
@@ -27,6 +35,17 @@ def save_api_json(path: str, data: dict) -> None:
         filename = f"output_{endpoint_name}.json"
 
     file_path = DUMMY_DIR / filename
+
+    if file_path.exists():
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                existing_data = json.load(file)
+        except (OSError, json.JSONDecodeError):
+            existing_data = None
+
+        if has_api_errors(existing_data):
+            print(f"Skipped saving to {file_path}: existing file contains API errors.")
+            return
 
     with open(file_path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4)
@@ -49,13 +68,10 @@ def get_mock_file_path(path: str) -> Path:
 
 
 def log_api_errors(path: str, data: dict | None) -> None:
-    if not data:
+    if not has_api_errors(data):
         return
 
     errors = data.get("errors")
-    if not errors:
-        return
-
     print(f"API response contained errors for {path}: {errors}")
 
 

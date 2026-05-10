@@ -1,3 +1,7 @@
+Demo:
+
+https://vps-eaa16051.vps.ovh.net/
+
 
 # Real-Time Football Match Tracking and Alert System
 
@@ -104,7 +108,7 @@ All responses are cached in SQLite to stay within the free tier limit.
 ## Contributors
 | Name | Role | GitHub |
 |------|------|--------|
-| Jacob Daya | Database & Backend | @kedachii |
+| Jacob Daya | Database, Testing & Backend | @kedachii |
 | Aya El Khayat | API Integration, Database, Testing, DevOps | @aya1e1 |
 | Tom Sutton | Backend | @Thomas-Sutton-0 |
 | Best Boonthanomwong | Frontend | @nongbed |
@@ -129,5 +133,5 @@ To do:
 - Implement user settings
     - Password changing
     - Account deletion
-- Add minimum username length to sign up
+- <s>Add minimum username length to sign up</s> Done
 

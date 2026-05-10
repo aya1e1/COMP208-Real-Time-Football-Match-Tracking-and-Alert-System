@@ -5,8 +5,10 @@ import importlib.util
 import json
 import sqlite3
 import sys
+import tempfile
 import types
 import unittest
+from contextlib import closing
 from pathlib import Path
 from urllib.parse import parse_qsl, urlsplit
 from unittest.mock import patch
@@ -79,8 +81,8 @@ def _load_api_module():
     return importlib.import_module("backend.api.api")
 
 
-def _build_memory_db():
-    conn = sqlite3.connect(":memory:")
+def _initialise_database(db_path: Path) -> None:
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     if SCHEMA_DIR.exists():
@@ -112,7 +114,21 @@ def _build_memory_db():
             disk_conn.close()
 
         conn.executescript(";\n".join(statement[0] for statement in schema_statements) + ";")
+    conn.close()
+
+
+def _connect_db(db_path: Path):
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
+
+
+def _make_get_connection(db_path: Path):
+    def _get_connection():
+        return closing(_connect_db(db_path))
+
+    return _get_connection
 
 
 def _mock_api_get(path: str):
@@ -146,23 +162,27 @@ def _mock_api_get(path: str):
 
 class MainModuleDatabaseTestCase(unittest.TestCase):
     def setUp(self):
-        self.main_module = _load_main_module()
-        self.conn = _build_memory_db()
-        self.assertEqual(self.main_module.database.DB_PATH, CORE_DB_PATH)
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.test_db_path = Path(self.temp_dir.name) / "test_core.db"
+        _initialise_database(self.test_db_path)
 
+        self.main_module = _load_main_module()
+        self.conn = _connect_db(self.test_db_path)
+
+        self.original_db_path = self.main_module.database.DB_PATH
         self.original_get_connection = self.main_module.database.get_connection
-        self.original_init_db = self.main_module.database.init_db
         self.original_api_get = self.main_module.api_get
 
-        self.main_module.database.get_connection = lambda: self.conn
-        self.main_module.database.init_db = lambda: None
+        self.main_module.database.DB_PATH = self.test_db_path
+        self.main_module.database.get_connection = _make_get_connection(self.test_db_path)
         self.main_module.api_get = _mock_api_get
 
     def tearDown(self):
+        self.main_module.database.DB_PATH = self.original_db_path
         self.main_module.database.get_connection = self.original_get_connection
-        self.main_module.database.init_db = self.original_init_db
         self.main_module.api_get = self.original_api_get
         self.conn.close()
+        self.temp_dir.cleanup()
 
 
 class TestMainSyncScript(MainModuleDatabaseTestCase):
@@ -182,8 +202,8 @@ class TestMainSyncScript(MainModuleDatabaseTestCase):
         ).fetchone()[0]
         player_count = self.conn.execute("SELECT COUNT(*) FROM Player").fetchone()[0]
 
-        self.assertEqual(league_count, 46)
-        self.assertEqual(season_count, 329)
+        self.assertEqual(league_count, 45)
+        self.assertEqual(season_count, 613)
         self.assertEqual(team_count, 20)
         self.assertEqual(season_team_count, 20)
         self.assertEqual(fixture_count, 380)
@@ -254,7 +274,27 @@ class TestMainSyncScript(MainModuleDatabaseTestCase):
 
 
 class TestParserFunctions(MainModuleDatabaseTestCase):
-    def test_parse_teams_filters_non_english_and_builds_links(self):
+    def test_parse_leagues_keeps_only_important_english_competitions(self):
+        leagues_data = _mock_api_get("/leagues")
+
+        leagues, seasons = self.main_module.parse_leagues(leagues_data)
+
+        league_names = {league[1] for league in leagues}
+
+        self.assertIn("Premier League", league_names)
+        self.assertIn("Championship", league_names)
+        self.assertIn("La Liga", league_names)
+        self.assertIn("Serie A", league_names)
+        self.assertIn("Bundesliga", league_names)
+        self.assertIn("Major League Soccer", league_names)
+        self.assertIn("Liga Profesional Argentina", league_names)
+        self.assertNotIn("FA Cup", league_names)
+        self.assertNotIn("League Cup", league_names)
+        self.assertNotIn("Community Shield", league_names)
+        self.assertEqual(len(leagues), 45)
+        self.assertEqual(len(seasons), 613)
+
+    def test_parse_teams_keeps_available_teams_and_builds_links(self):
         data = {
             "parameters": {"league": 39, "season": 2024},
             "response": [
@@ -283,9 +323,12 @@ class TestParserFunctions(MainModuleDatabaseTestCase):
 
         self.assertEqual(
             teams,
-            [(1, "Liverpool", "LIV", None, "Liverpool", "Anfield")],
+            [
+                (1, "Liverpool", "LIV", None, "Liverpool", "Anfield"),
+                (2, "Barcelona", "BAR", None, "Barcelona", "Camp Nou"),
+            ],
         )
-        self.assertEqual(links, [(1, 2024, 39)])
+        self.assertEqual(links, [(1, 2024, 39), (2, 2024, 39)])
 
     def test_parse_events_normalises_substitutions(self):
         data = {
@@ -429,20 +472,58 @@ class TestExternalApiMocks(unittest.TestCase):
 
         self.assertIsNone(data)
 
+    def test_save_api_json_does_not_overwrite_existing_error_file(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            dummy_dir = Path(tmp_dir)
+            file_path = dummy_dir / "output_teams_league-528_season-2025.json"
+            existing_data = {
+                "get": "teams",
+                "parameters": {"league": "528", "season": "2025"},
+                "errors": {
+                    "plan": "Free plans do not have access to this season, try from 2022 to 2024."
+                },
+                "results": 0,
+                "paging": {"current": 1, "total": 1},
+                "response": [],
+            }
+            replacement_data = {
+                "get": "teams",
+                "parameters": {"league": "528", "season": "2025"},
+                "errors": [],
+                "results": 1,
+                "paging": {"current": 1, "total": 1},
+                "response": [{"team": {"id": 1, "name": "Example FC"}}],
+            }
+            file_path.write_text(json.dumps(existing_data, indent=4), encoding="utf-8")
+
+            with patch.object(self.external_api, "DUMMY_DIR", dummy_dir):
+                self.external_api.save_api_json(
+                    "/teams?league=528&season=2025",
+                    replacement_data,
+                )
+
+            saved_data = json.loads(file_path.read_text(encoding="utf-8"))
+            self.assertEqual(saved_data, existing_data)
+
 
 class TestUserRepository(unittest.TestCase):
     def setUp(self):
         _install_stub_modules()
         _ensure_import_paths()
-        self.conn = _build_memory_db()
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.test_db_path = Path(self.temp_dir.name) / "test_users.db"
+        _initialise_database(self.test_db_path)
+        self.conn = _connect_db(self.test_db_path)
 
         import backend.db.database as database_module
         import backend.db.users as users_module
 
         self.database_module = database_module
         self.users_module = users_module
+        self.original_db_path = self.database_module.DB_PATH
         self.original_get_connection = self.database_module.get_connection
-        self.database_module.get_connection = lambda: self.conn
+        self.database_module.DB_PATH = self.test_db_path
+        self.database_module.get_connection = _make_get_connection(self.test_db_path)
 
         self.database_module.execute(
             "INSERT INTO Teams (TeamID, Name) VALUES (?, ?)",
@@ -454,8 +535,10 @@ class TestUserRepository(unittest.TestCase):
         )
 
     def tearDown(self):
+        self.database_module.DB_PATH = self.original_db_path
         self.database_module.get_connection = self.original_get_connection
         self.conn.close()
+        self.temp_dir.cleanup()
 
     def test_create_and_authenticate_user(self):
         user = self.users_module.create_user("tom", "Tom@example.com", "SecurePass1!")
@@ -511,12 +594,14 @@ class TestApiRoutes(MainModuleDatabaseTestCase):
         self.main_module.main()
 
         self.api_module = _load_api_module()
-        self.original_api_db_get_connection = self.api_module.database.get_connection
         self.original_sync_events = self.api_module.sync_events
         self.original_sync_fixture_statistics = self.api_module.sync_fixture_statistics
         self.original_sync_team_statistics = self.api_module.sync_team_statistics
+        self.original_api_db_path = self.api_module.database.DB_PATH
+        self.original_api_db_get_connection = self.api_module.database.get_connection
 
-        self.api_module.database.get_connection = lambda: self.conn
+        self.api_module.database.DB_PATH = self.test_db_path
+        self.api_module.database.get_connection = _make_get_connection(self.test_db_path)
         self.api_module.sync_events = lambda fixture_id: None
         self.api_module.sync_fixture_statistics = lambda fixture_id: None
         self.api_module.sync_team_statistics = (
@@ -528,17 +613,18 @@ class TestApiRoutes(MainModuleDatabaseTestCase):
         self.client = app.test_client()
 
     def tearDown(self):
+        self.api_module.database.DB_PATH = self.original_api_db_path
         self.api_module.database.get_connection = self.original_api_db_get_connection
         self.api_module.sync_events = self.original_sync_events
         self.api_module.sync_fixture_statistics = self.original_sync_fixture_statistics
         self.api_module.sync_team_statistics = self.original_sync_team_statistics
         super().tearDown()
 
-    def test_league_teams_returns_404_for_unknown_league(self):
-        response = self.client.get("/api/leagues/999999/teams")
+    def test_league_teams_returns_404_for_unknown_league_season(self):
+        response = self.client.get("/api/leagues/999999/seasons/2024/teams")
 
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.get_json(), {"error": "League not found"})
+        self.assertEqual(response.get_json(), {"error": "League season not found"})
 
     def test_fixtures_rejects_invalid_date_ranges(self):
         bad_format = self.client.get("/api/fixtures?start_date=2024/01/01")

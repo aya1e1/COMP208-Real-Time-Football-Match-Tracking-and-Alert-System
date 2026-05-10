@@ -2,10 +2,10 @@
 tests/test_all.py - Unit and integration tests.
 """
 import sys
-import os
 import sqlite3
-import hashlib
 import unittest
+
+import bcrypt
 from pathlib import Path
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
@@ -45,13 +45,10 @@ def _unpatch_db(test_case):
 
 # -- 1. Auth Tests --
 def _hash_password(password):
-    salt = os.urandom(16).hex()
-    h = hashlib.sha256(f"{salt}{password}".encode()).hexdigest()
-    return f"{salt}${h}"
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 def _verify_password(password, stored):
-    salt, h = stored.split("$", 1)
-    return hashlib.sha256(f"{salt}{password}".encode()).hexdigest() == h
+    return bcrypt.checkpw(password.encode(), stored.encode())
 
 class TestAuth(unittest.TestCase):
 
@@ -69,8 +66,7 @@ class TestAuth(unittest.TestCase):
     
     def test_hash_format(self):
         h = _hash_password("test")
-        parts = h.split("$")
-        self.assertEqual(len(parts), 2, "Hash must be salt$hash format")
+        self.assertTrue(h.startswith("$2b$"), "Hash must be a bcrypt hash")
 
 
 # -- 2. Database tests --

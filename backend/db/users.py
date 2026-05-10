@@ -1,6 +1,6 @@
-import hashlib
-import os
 import sqlite3
+
+import bcrypt
 
 from backend.db import database
 
@@ -99,18 +99,16 @@ def _fetch_one(sql: str, params: tuple) -> dict | None:
 
 
 def hash_password(password: str) -> str:
-    salt = os.urandom(16).hex()
-    password_hash = hashlib.sha256(f"{salt}{password}".encode()).hexdigest()
-    return f"{salt}${password_hash}"
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(password: str, stored_hash: str) -> bool:
-    if not stored_hash or "$" not in stored_hash:
+    if not stored_hash:
         return False
-
-    salt, password_hash = stored_hash.split("$", 1)
-    calculated_hash = hashlib.sha256(f"{salt}{password}".encode()).hexdigest()
-    return calculated_hash == password_hash
+    try:
+        return bcrypt.checkpw(password.encode(), stored_hash.encode())
+    except Exception:
+        return False
 
 
 def create_user(username: str, email: str, password: str) -> User:

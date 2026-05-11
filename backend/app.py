@@ -33,6 +33,9 @@ def setup_data() -> None:
     sync_leagues()
     sync_teams(league_id=39, season=2024)
     sync_fixtures(league_id=39, season=2024)
+    for league_id in (40, 61, 71, 78, 88, 135, 180, 253, 255, 308):
+        sync_teams(league_id=league_id, season=2024)
+        sync_fixtures(league_id=league_id, season=2024)
     sync_standings(league_id=39, season=2024)
     sync_events(fixture_id=1208399)
     sync_fixture_statistics(fixture_id=1208399)

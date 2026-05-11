@@ -1,3 +1,4 @@
+import hashlib
 import sqlite3
 
 import bcrypt
@@ -37,6 +38,7 @@ except ModuleNotFoundError:
 
 
 login_manager = LoginManager()
+EMAIL_HASH_PREFIX = "sha256$"
 
 
 class User(UserMixin):
@@ -93,6 +95,11 @@ def _normalise_email(email: str) -> str:
     return email.strip().lower()
 
 
+def hash_email(email: str) -> str:
+    digest = hashlib.sha256(_normalise_email(email).encode("utf-8")).hexdigest()
+    return f"{EMAIL_HASH_PREFIX}{digest}"
+
+
 def _fetch_one(sql: str, params: tuple) -> dict | None:
     rows = database.query(sql, params)
     return rows[0] if rows else None
@@ -117,7 +124,7 @@ def create_user(username: str, email: str, password: str) -> User:
         INSERT INTO Users (Username, Email, PasswordHash)
         VALUES (?, ?, ?)
         """,
-        (username.strip(), _normalise_email(email), hash_password(password)),
+        (username.strip(), hash_email(email), hash_password(password)),
     )
     return get_user_by_id(user_id)
 
@@ -153,7 +160,7 @@ def get_user_by_email(email: str) -> User | None:
         FROM Users
         WHERE Email = ?
         """,
-        (_normalise_email(email),),
+        (hash_email(email),),
     )
     return User.from_row(row)
 

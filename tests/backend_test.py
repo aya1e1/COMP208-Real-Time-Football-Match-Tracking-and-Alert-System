@@ -542,14 +542,42 @@ class TestUserRepository(unittest.TestCase):
 
     def test_create_and_authenticate_user(self):
         user = self.users_module.create_user("tom", "Tom@example.com", "SecurePass1!")
+        expected_email_hash = self.users_module.hash_email("Tom@example.com")
 
         self.assertEqual(user.username, "tom")
-        self.assertEqual(user.email, "tom@example.com")
+        self.assertEqual(user.email, expected_email_hash)
+        self.assertTrue(user.email.startswith(self.users_module.EMAIL_HASH_PREFIX))
+        self.assertNotIn("@", user.email)
         self.assertNotEqual(user.password_hash, "SecurePass1!")
 
         authenticated = self.users_module.authenticate_user("tom", "SecurePass1!")
         self.assertIsNotNone(authenticated)
         self.assertEqual(authenticated.id, user.id)
+
+        email_authenticated = self.users_module.authenticate_user("Tom@example.com", "SecurePass1!")
+        self.assertIsNotNone(email_authenticated)
+        self.assertEqual(email_authenticated.id, user.id)
+
+        stored_user = self.database_module.query(
+            "SELECT Email FROM Users WHERE UserID = ?",
+            (user.id,),
+        )[0]
+        self.assertEqual(stored_user["Email"], expected_email_hash)
+
+    def test_plaintext_email_rows_are_not_supported_for_email_login(self):
+        self.database_module.execute(
+            "INSERT INTO Users (Username, Email, PasswordHash) VALUES (?, ?, ?)",
+            (
+                "legacy",
+                "legacy@example.com",
+                self.users_module.hash_password("SecurePass1!"),
+            ),
+        )
+
+        self.assertIsNone(self.users_module.get_user_by_email("legacy@example.com"))
+        self.assertIsNone(
+            self.users_module.authenticate_user("legacy@example.com", "SecurePass1!")
+        )
 
     def test_favourite_team_and_player_round_trip(self):
         user = self.users_module.create_user("mia", "mia@example.com", "Pass123!")

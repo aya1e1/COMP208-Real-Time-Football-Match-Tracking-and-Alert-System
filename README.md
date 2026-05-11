@@ -85,6 +85,7 @@ Visit `http://localhost:5000` in your browser.
 |-- run.py                # App entry point
 |-- requirements.txt      # Python dependencies
 `-- README.md             # Project documentation
+```
 
 ## Running Tests
 

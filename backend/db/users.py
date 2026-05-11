@@ -175,6 +175,35 @@ def authenticate_user(identifier: str, password: str) -> User | None:
     return user
 
 
+def delete_user(user_id: int) -> bool:
+    with database.get_connection() as conn:
+        try:
+            for table_name in (
+                "EventVotes",
+                "UserNotificationPreferences",
+                "UserFavouritePlayers",
+                "UserFavouriteTeams",
+            ):
+                conn.execute(
+                    f"DELETE FROM {table_name} WHERE UserID = ?",
+                    (user_id,),
+                )
+
+            cursor = conn.execute(
+                """
+                DELETE FROM Users
+                WHERE UserID = ?
+                """,
+                (user_id,),
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+
+    return cursor.rowcount > 0
+
+
 def list_favourite_teams(user_id: int) -> list[dict]:
     return database.query(
         """

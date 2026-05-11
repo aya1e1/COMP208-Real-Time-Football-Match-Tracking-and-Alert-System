@@ -40,6 +40,17 @@
       </div>
     </section>
   </section>
+
+  <footer class="dashboard-section">
+    <form
+      method="post"
+      action="{{ url_for('auth.delete_account') }}"
+      class="dashboard-fixture-league"
+      onsubmit="return window.confirm('Delete your account? This cannot be undone.');"
+    >
+      <button type="submit" class="fixture-h2h-link nav-logo"><span>Delete Account</span></button>
+    </form>
+  </footer>
 </main>
 
 <script src="{{ static_asset('js/ui_errors.js') }}"></script>

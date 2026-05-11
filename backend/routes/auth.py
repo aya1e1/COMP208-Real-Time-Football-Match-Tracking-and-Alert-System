@@ -110,3 +110,15 @@ def logout():
         return jsonify({"success": True})
 
     return redirect(url_for("main.home"))
+
+
+@auth_bp.route("/delete-account", methods=["POST"])
+@login_required
+def delete_account():
+    users.delete_user(current_user.id)
+    logout_user()
+
+    if _wants_json_response():
+        return jsonify({"success": True})
+
+    return redirect(url_for("main.home"))

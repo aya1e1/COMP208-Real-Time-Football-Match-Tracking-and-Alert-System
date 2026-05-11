@@ -534,6 +534,36 @@ class TestUserRepository(unittest.TestCase):
             (100, "Mohamed Salah"),
         )
 
+    def _insert_fixture_event(self):
+        self.database_module.execute(
+            "INSERT INTO League (LeagueID, Name) VALUES (?, ?)",
+            (39, "Premier League"),
+        )
+        self.database_module.execute(
+            "INSERT INTO Teams (TeamID, Name) VALUES (?, ?)",
+            (41, "Everton"),
+        )
+        self.database_module.execute(
+            "INSERT INTO Seasons (LeagueID, Year) VALUES (?, ?)",
+            (39, 2024),
+        )
+        self.database_module.execute(
+            """
+            INSERT INTO Fixtures
+                (FixtureID, LeagueID, Year, HomeTeamID, AwayTeamID, MatchDate)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (5001, 39, 2024, 40, 41, "2024-08-17 12:30:00"),
+        )
+        self.database_module.execute(
+            """
+            INSERT INTO Events
+                (FixtureID, EventID, TeamID, EventType, EventMinute)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (5001, 1, 40, "Goal", 12),
+        )
+
     def tearDown(self):
         self.database_module.DB_PATH = self.original_db_path
         self.database_module.get_connection = self.original_get_connection
@@ -613,6 +643,65 @@ class TestUserRepository(unittest.TestCase):
         self.assertEqual(preference["NotifyGoals"], 1)
         self.assertEqual(preference["NotifyCards"], 0)
         self.assertEqual(preference["NotifySubstitutions"], 0)
+
+    def test_delete_user_removes_owned_rows(self):
+        user = self.users_module.create_user("bea", "bea@example.com", "Pass123!")
+
+        self.users_module.add_favourite_team(user.id, 40)
+        self.users_module.add_favourite_player(user.id, 100)
+        self.users_module.upsert_notification_preference(user.id, 40)
+
+        self.assertTrue(self.users_module.delete_user(user.id))
+        self.assertIsNone(self.users_module.get_user_by_id(user.id))
+        self.assertEqual(
+            self.database_module.query(
+                "SELECT COUNT(*) AS total FROM UserFavouriteTeams WHERE UserID = ?",
+                (user.id,),
+            )[0]["total"],
+            0,
+        )
+        self.assertEqual(
+            self.database_module.query(
+                "SELECT COUNT(*) AS total FROM UserFavouritePlayers WHERE UserID = ?",
+                (user.id,),
+            )[0]["total"],
+            0,
+        )
+        self.assertEqual(
+            self.database_module.query(
+                "SELECT COUNT(*) AS total FROM UserNotificationPreferences WHERE UserID = ?",
+                (user.id,),
+            )[0]["total"],
+            0,
+        )
+
+    def test_user_owned_rows_cascade_on_direct_user_delete(self):
+        user = self.users_module.create_user("ivy", "ivy@example.com", "Pass123!")
+        self._insert_fixture_event()
+
+        self.users_module.add_favourite_team(user.id, 40)
+        self.users_module.add_favourite_player(user.id, 100)
+        self.users_module.upsert_notification_preference(user.id, 40)
+        self.users_module.update_event_vote(user.id, 5001, 1, "like")
+
+        self.database_module.execute(
+            "DELETE FROM Users WHERE UserID = ?",
+            (user.id,),
+        )
+
+        for table_name in (
+            "UserFavouriteTeams",
+            "UserFavouritePlayers",
+            "UserNotificationPreferences",
+            "EventVotes",
+        ):
+            self.assertEqual(
+                self.database_module.query(
+                    f"SELECT COUNT(*) AS total FROM {table_name} WHERE UserID = ?",
+                    (user.id,),
+                )[0]["total"],
+                0,
+            )
 
 
 @unittest.skipIf(Flask is None, "Flask is not installed in this test environment")

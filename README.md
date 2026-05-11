@@ -8,6 +8,8 @@ Team: Hamza Al Zudi Garcia-Olalla, Ziad Azmi, Balqis Binti Abdul Halim, Best Boo
 
 https://vps-eaa16051.vps.ovh.net/
 
+Available until 18 May 2026
+
 ## About
 
 This project is a real-time football match tracking and alert system. It provides live scores, match events, league standings, player statistics, and personalised notifications for registered users.

@@ -505,6 +505,29 @@ class TestExternalApiMocks(unittest.TestCase):
             saved_data = json.loads(file_path.read_text(encoding="utf-8"))
             self.assertEqual(saved_data, existing_data)
 
+    def test_save_api_json_does_not_create_rate_limit_file(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            dummy_dir = Path(tmp_dir)
+            file_path = dummy_dir / "output_fixtures_events_fixture-1223965.json"
+            rate_limit_data = {
+                "get": "fixtures/events",
+                "parameters": {"fixture": "1223965"},
+                "errors": {
+                    "rateLimit": "Too many requests. Your rate limit is 10 requests per minute."
+                },
+                "results": 0,
+                "paging": {"current": 1, "total": 1},
+                "response": [],
+            }
+
+            with patch.object(self.external_api, "DUMMY_DIR", dummy_dir):
+                self.external_api.save_api_json(
+                    "/fixtures/events?fixture=1223965",
+                    rate_limit_data,
+                )
+
+            self.assertFalse(file_path.exists())
+
 
 class TestUserRepository(unittest.TestCase):
     def setUp(self):

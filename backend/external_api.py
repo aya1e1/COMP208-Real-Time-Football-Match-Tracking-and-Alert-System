@@ -23,6 +23,31 @@ def has_api_errors(data: dict | None) -> bool:
     return bool(errors)
 
 
+def has_rate_limit_error(data: dict | None) -> bool:
+    if not isinstance(data, dict):
+        return False
+
+    errors = data.get("errors")
+    if not errors:
+        return False
+
+    return _contains_rate_limit_text(errors)
+
+
+def _contains_rate_limit_text(value: object) -> bool:
+    if isinstance(value, dict):
+        return any(
+            _contains_rate_limit_text(key) or _contains_rate_limit_text(item)
+            for key, item in value.items()
+        )
+
+    if isinstance(value, (list, tuple, set)):
+        return any(_contains_rate_limit_text(item) for item in value)
+
+    text = "".join(char for char in str(value).lower() if char.isalnum())
+    return "ratelimit" in text
+
+
 def save_api_json(path: str, data: dict) -> None:
     parsed_path = urlsplit(path)
     endpoint_name = parsed_path.path.strip("/").replace("/", "_") or "root"
@@ -35,6 +60,10 @@ def save_api_json(path: str, data: dict) -> None:
         filename = f"output_{endpoint_name}.json"
 
     file_path = DUMMY_DIR / filename
+
+    if has_rate_limit_error(data):
+        print(f"Skipped saving to {file_path}: API response hit the rate limit.")
+        return
 
     if file_path.exists():
         try:

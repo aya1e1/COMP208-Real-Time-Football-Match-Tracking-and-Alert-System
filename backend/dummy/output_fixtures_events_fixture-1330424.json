@@ -1,0 +1,124 @@
+{
+    "get": "fixtures/events",
+    "parameters": {
+        "fixture": "1330424"
+    },
+    "errors": [],
+    "results": 5,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "time": {
+                "elapsed": 20,
+                "extra": null
+            },
+            "team": {
+                "id": 10524,
+                "name": "Al Zulfi",
+                "logo": "https://media.api-sports.io/football/teams/10524.png"
+            },
+            "player": {
+                "id": 47977,
+                "name": "S. Karim"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 43,
+                "extra": null
+            },
+            "team": {
+                "id": 10513,
+                "name": "Al Suqoor",
+                "logo": "https://media.api-sports.io/football/teams/10513.png"
+            },
+            "player": {
+                "id": 44329,
+                "name": "M. Al Burayk"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Card",
+            "detail": "Red Card",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 61,
+                "extra": null
+            },
+            "team": {
+                "id": 10513,
+                "name": "Al Suqoor",
+                "logo": "https://media.api-sports.io/football/teams/10513.png"
+            },
+            "player": {
+                "id": 41190,
+                "name": "Carlos Junior"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 80,
+                "extra": null
+            },
+            "team": {
+                "id": 10524,
+                "name": "Al Zulfi",
+                "logo": "https://media.api-sports.io/football/teams/10524.png"
+            },
+            "player": {
+                "id": null,
+                "name": "A. M. Al Khaibari"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 90,
+                "extra": 2
+            },
+            "team": {
+                "id": 10513,
+                "name": "Al Suqoor",
+                "logo": "https://media.api-sports.io/football/teams/10513.png"
+            },
+            "player": {
+                "id": 19361,
+                "name": "S. Benrahma"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        }
+    ]
+}

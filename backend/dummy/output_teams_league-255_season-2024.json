@@ -1,0 +1,495 @@
+{
+    "get": "teams",
+    "parameters": {
+        "league": "255",
+        "season": "2024"
+    },
+    "errors": [],
+    "results": 24,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "team": {
+                "id": 3989,
+                "name": "Birmingham Legion",
+                "code": null,
+                "country": "USA",
+                "founded": 2017,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/3989.png"
+            },
+            "venue": {
+                "id": 20751,
+                "name": "Protective Stadium",
+                "address": "1020 24th Street North",
+                "city": "Birmingham, Alabama",
+                "capacity": 47100,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/20751.png"
+            }
+        },
+        {
+            "team": {
+                "id": 3990,
+                "name": "Charleston Battery",
+                "code": "CHA",
+                "country": "USA",
+                "founded": 1993,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/3990.png"
+            },
+            "venue": {
+                "id": 11933,
+                "name": "Patriots Point",
+                "address": "Patriots Point Road",
+                "city": "Mount Pleasant, South Carolina",
+                "capacity": 5094,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11933.png"
+            }
+        },
+        {
+            "team": {
+                "id": 3992,
+                "name": "Colorado Springs",
+                "code": null,
+                "country": "USA",
+                "founded": 2013,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/3992.png"
+            },
+            "venue": {
+                "id": 3045,
+                "name": "Weidner Field",
+                "address": "6303 Barnes Road",
+                "city": "Colorado Springs",
+                "capacity": 8023,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3045.png"
+            }
+        },
+        {
+            "team": {
+                "id": 3993,
+                "name": "El Paso Locomotive",
+                "code": null,
+                "country": "USA",
+                "founded": 2018,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/3993.png"
+            },
+            "venue": {
+                "id": 3046,
+                "name": "Southwest University Park",
+                "address": "505 N Santa Fe Street",
+                "city": "El Paso",
+                "capacity": 10000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3046.png"
+            }
+        },
+        {
+            "team": {
+                "id": 3995,
+                "name": "Hartford Athletic",
+                "code": null,
+                "country": "USA",
+                "founded": 2018,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/3995.png"
+            },
+            "venue": {
+                "id": 19451,
+                "name": "Trinity Health Stadium",
+                "address": "250 Huyshope Avenue",
+                "city": "Hartford",
+                "capacity": 10000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19451.png"
+            }
+        },
+        {
+            "team": {
+                "id": 3996,
+                "name": "Indy Eleven",
+                "code": "IND",
+                "country": "USA",
+                "founded": 2013,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/3996.png"
+            },
+            "venue": {
+                "id": 19452,
+                "name": "Michael A. Carroll Stadium",
+                "address": "1001 West New York Street",
+                "city": "Indianapolis, Indiana",
+                "capacity": 12531,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/19452.png"
+            }
+        },
+        {
+            "team": {
+                "id": 3998,
+                "name": "Las Vegas Lights",
+                "code": null,
+                "country": "USA",
+                "founded": 2018,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/3998.png"
+            },
+            "venue": {
+                "id": 3049,
+                "name": "Cashman Field",
+                "address": "850 N Las Vegas Blvd",
+                "city": "Las Vegas, Nevada",
+                "capacity": 12500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3049.png"
+            }
+        },
+        {
+            "team": {
+                "id": 3999,
+                "name": "Loudoun United",
+                "code": null,
+                "country": "USA",
+                "founded": 2018,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/3999.png"
+            },
+            "venue": {
+                "id": 3050,
+                "name": "Segra Field",
+                "address": "42095 Loudoun United Drive",
+                "city": "Leesburg, Virginia",
+                "capacity": 5015,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/3050.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4000,
+                "name": "Louisville City",
+                "code": null,
+                "country": "USA",
+                "founded": 2014,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4000.png"
+            },
+            "venue": {
+                "id": 3051,
+                "name": "Lynn Family Stadium",
+                "address": null,
+                "city": "Louisville, Kentucky",
+                "capacity": 15304,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3051.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4001,
+                "name": "Memphis 901",
+                "code": null,
+                "country": "USA",
+                "founded": 2018,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4001.png"
+            },
+            "venue": {
+                "id": 3052,
+                "name": "AutoZone Park",
+                "address": "200 Union Avenue",
+                "city": "Memphis",
+                "capacity": 10000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3052.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4003,
+                "name": "New Mexico United",
+                "code": null,
+                "country": "USA",
+                "founded": 2018,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4003.png"
+            },
+            "venue": {
+                "id": 22767,
+                "name": "Rio Grande Credit Union Field at Isotopes Park",
+                "address": "1601 Avenida Cesar Chavez SE",
+                "city": "Albuquerque, New Mexico",
+                "capacity": 15247,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/22767.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4005,
+                "name": "North Carolina",
+                "code": null,
+                "country": "USA",
+                "founded": 2006,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4005.png"
+            },
+            "venue": {
+                "id": 11588,
+                "name": "WakeMed Soccer Park",
+                "address": "201 Soccer Park Drive",
+                "city": "Cary, North Carolina",
+                "capacity": 10434,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11588.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4007,
+                "name": "Orange County SC",
+                "code": null,
+                "country": "USA",
+                "founded": 2010,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4007.png"
+            },
+            "venue": {
+                "id": 11934,
+                "name": "Championship Soccer Stadium",
+                "address": "Great Park Bikeway",
+                "city": "Irvine, California",
+                "capacity": 6000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11934.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4009,
+                "name": "Phoenix Rising",
+                "code": "ARI",
+                "country": "USA",
+                "founded": 2014,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4009.png"
+            },
+            "venue": {
+                "id": 19706,
+                "name": "Phoenix Rising Stadium at 38th St/Washington",
+                "address": "3801 E. Washington Street",
+                "city": "Phoenix, Arizona",
+                "capacity": 10437,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19706.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4010,
+                "name": "Pittsburgh Riverhounds",
+                "code": "PIT",
+                "country": "USA",
+                "founded": 1999,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4010.png"
+            },
+            "venue": {
+                "id": 3060,
+                "name": "Highmark Stadium",
+                "address": "510 Station Square Drive",
+                "city": "Pittsburgh, Pennsylvania",
+                "capacity": 10000,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/3060.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4015,
+                "name": "Sacramento Republic",
+                "code": null,
+                "country": "USA",
+                "founded": 2012,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4015.png"
+            },
+            "venue": {
+                "id": 11936,
+                "name": "Heart Health Park",
+                "address": "1600 Exposition Boulevard",
+                "city": "Sacramento, California",
+                "capacity": 11659,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/11936.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4017,
+                "name": "San Antonio",
+                "code": null,
+                "country": "USA",
+                "founded": 2016,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4017.png"
+            },
+            "venue": {
+                "id": 3067,
+                "name": "Toyota Field",
+                "address": "5106 David Edwards Drive",
+                "city": "San Antonio, Texas",
+                "capacity": 13000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3067.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4021,
+                "name": "Tampa Bay Rowdies",
+                "code": null,
+                "country": "USA",
+                "founded": 2008,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4021.png"
+            },
+            "venue": {
+                "id": 3069,
+                "name": "Al Lang Stadium",
+                "address": "180 2nd Avenue SE",
+                "city": "St. Petersburg, Florida",
+                "capacity": 7851,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3069.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4022,
+                "name": "FC Tulsa",
+                "code": null,
+                "country": "USA",
+                "founded": 2013,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4022.png"
+            },
+            "venue": {
+                "id": 3070,
+                "name": "ONEOK Field",
+                "address": "201 North Elgin Avenue",
+                "city": "Tulsa, Oklahoma",
+                "capacity": 10018,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/3070.png"
+            }
+        },
+        {
+            "team": {
+                "id": 9030,
+                "name": "Miami FC",
+                "code": null,
+                "country": "USA",
+                "founded": 2015,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/9030.png"
+            },
+            "venue": {
+                "id": 21618,
+                "name": "South Dade Kia Field at Pitbull Stadium",
+                "address": "11200 SW 8th Street",
+                "city": "Miami, Florida",
+                "capacity": 22682,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/21618.png"
+            }
+        },
+        {
+            "team": {
+                "id": 9043,
+                "name": "Detroit City",
+                "code": null,
+                "country": "USA",
+                "founded": 0,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/9043.png"
+            },
+            "venue": {
+                "id": 6281,
+                "name": "Keyworth Stadium",
+                "address": "3201 Roosevelt Street",
+                "city": "Hamtramck, Michigan",
+                "capacity": 9000,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/6281.png"
+            }
+        },
+        {
+            "team": {
+                "id": 10874,
+                "name": "Oakland Roots",
+                "code": null,
+                "country": "USA",
+                "founded": null,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/10874.png"
+            },
+            "venue": {
+                "id": 20450,
+                "name": "Pioneer Stadium",
+                "address": "California State University, 25800 Carlos Bee Boulevard, East Bay",
+                "city": "Hayward, California",
+                "capacity": 6135,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/20450.png"
+            }
+        },
+        {
+            "team": {
+                "id": 18375,
+                "name": "Monterey Bay",
+                "code": null,
+                "country": "USA",
+                "founded": 2021,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/18375.png"
+            },
+            "venue": {
+                "id": 18522,
+                "name": "Cardinale Stadium",
+                "address": "4111 2nd Avenue",
+                "city": "Seaside, California",
+                "capacity": 6000,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/18522.png"
+            }
+        },
+        {
+            "team": {
+                "id": 22855,
+                "name": "Rhode Island",
+                "code": null,
+                "country": "USA",
+                "founded": 2022,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/22855.png"
+            },
+            "venue": {
+                "id": 22768,
+                "name": "Centreville Bank Stadium",
+                "address": "200 Taft Street",
+                "city": "Pawtucket, Rhode Island",
+                "capacity": 11000,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/22768.png"
+            }
+        }
+    ]
+}

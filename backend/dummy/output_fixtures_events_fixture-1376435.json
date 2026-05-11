@@ -1,0 +1,124 @@
+{
+    "get": "fixtures/events",
+    "parameters": {
+        "fixture": "1376435"
+    },
+    "errors": [],
+    "results": 5,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "time": {
+                "elapsed": 20,
+                "extra": null
+            },
+            "team": {
+                "id": 2945,
+                "name": "Al-Hazm",
+                "logo": "https://media.api-sports.io/football/teams/2945.png"
+            },
+            "player": {
+                "id": null,
+                "name": "A. Al Dakheel"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 47,
+                "extra": null
+            },
+            "team": {
+                "id": 2945,
+                "name": "Al-Hazm",
+                "logo": "https://media.api-sports.io/football/teams/2945.png"
+            },
+            "player": {
+                "id": 1940,
+                "name": "Z. Gano"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 71,
+                "extra": null
+            },
+            "team": {
+                "id": 2945,
+                "name": "Al-Hazm",
+                "logo": "https://media.api-sports.io/football/teams/2945.png"
+            },
+            "player": {
+                "id": 310832,
+                "name": "B. Al Sayyali"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 77,
+                "extra": null
+            },
+            "team": {
+                "id": 2950,
+                "name": "Al-Adalah",
+                "logo": "https://media.api-sports.io/football/teams/2950.png"
+            },
+            "player": {
+                "id": 383183,
+                "name": "M. Abo Abd"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Card",
+            "detail": "Red Card",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 82,
+                "extra": null
+            },
+            "team": {
+                "id": 2945,
+                "name": "Al-Hazm",
+                "logo": "https://media.api-sports.io/football/teams/2945.png"
+            },
+            "player": {
+                "id": 310832,
+                "name": "B. Al Sayyali"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Card",
+            "detail": "Red Card",
+            "comments": null
+        }
+    ]
+}

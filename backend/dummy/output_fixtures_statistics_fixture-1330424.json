@@ -1,11 +1,9 @@
 {
     "get": "fixtures/statistics",
     "parameters": {
-        "fixture": "1078221"
+        "fixture": "1330424"
     },
-    "errors": {
-        "rateLimit": "Too many requests. Your rate limit is 10 requests per minute."
-    },
+    "errors": [],
     "results": 0,
     "paging": {
         "current": 1,

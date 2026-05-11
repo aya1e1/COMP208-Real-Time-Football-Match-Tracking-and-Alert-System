@@ -1,0 +1,275 @@
+{
+    "get": "teams",
+    "parameters": {
+        "league": "180",
+        "season": "2024"
+    },
+    "errors": [],
+    "results": 13,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "team": {
+                "id": 248,
+                "name": "Hamilton Academical",
+                "code": "HAM",
+                "country": "Scotland",
+                "founded": 1874,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/248.png"
+            },
+            "venue": {
+                "id": 19937,
+                "name": "ZLX Stadium",
+                "address": "Cadzow Avenue",
+                "city": "Hamilton",
+                "capacity": 6078,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/19937.png"
+            }
+        },
+        {
+            "team": {
+                "id": 255,
+                "name": "Livingston",
+                "code": "LIV",
+                "country": "Scotland",
+                "founded": 1943,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/255.png"
+            },
+            "venue": {
+                "id": 1397,
+                "name": "Tony Macaroni Arena",
+                "address": "Almondvale Stadium Road",
+                "city": "Livingston",
+                "capacity": 9672,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/1397.png"
+            }
+        },
+        {
+            "team": {
+                "id": 901,
+                "name": "Partick",
+                "code": "PAR",
+                "country": "Scotland",
+                "founded": 1876,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/901.png"
+            },
+            "venue": {
+                "id": 19938,
+                "name": "Wyre Stadium at Firhill",
+                "address": "80 Firhill Road",
+                "city": "Glasgow",
+                "capacity": 13079,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19938.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1383,
+                "name": "Morton",
+                "code": "MOR",
+                "country": "Scotland",
+                "founded": 1874,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1383.png"
+            },
+            "venue": {
+                "id": 1391,
+                "name": "Cappielow Park",
+                "address": "Sinclair Street",
+                "city": "Greenock",
+                "capacity": 11612,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/1391.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1384,
+                "name": "Queen of the South",
+                "code": "QUE",
+                "country": "Scotland",
+                "founded": 1919,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1384.png"
+            },
+            "venue": {
+                "id": 1400,
+                "name": "Palmerston Park",
+                "address": "Terregles Street",
+                "city": "Dumfries",
+                "capacity": 8690,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/1400.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1385,
+                "name": "Raith Rovers",
+                "code": "RAI",
+                "country": "Scotland",
+                "founded": 1883,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1385.png"
+            },
+            "venue": {
+                "id": 2907,
+                "name": "Stark's Park",
+                "address": "Pratt Street",
+                "city": "Kirkcaldy",
+                "capacity": 10104,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/2907.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1387,
+                "name": "Ayr Utd",
+                "code": "AYR",
+                "country": "Scotland",
+                "founded": 1910,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1387.png"
+            },
+            "venue": {
+                "id": 1385,
+                "name": "Somerset Park",
+                "address": "Somerset Road",
+                "city": "Ayr",
+                "capacity": 10128,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/1385.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1388,
+                "name": "Dunfermline",
+                "code": "DUN",
+                "country": "Scotland",
+                "founded": 1885,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1388.png"
+            },
+            "venue": {
+                "id": 19936,
+                "name": "KDM Group East End Park",
+                "address": "Halbeath Road",
+                "city": "Dunfermline",
+                "capacity": 11998,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/19936.png"
+            }
+        },
+        {
+            "team": {
+                "id": 1389,
+                "name": "Falkirk",
+                "code": "FAL",
+                "country": "Scotland",
+                "founded": 1876,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/1389.png"
+            },
+            "venue": {
+                "id": 1390,
+                "name": "Falkirk Community Stadium",
+                "address": "Westfield",
+                "city": "Falkirk",
+                "capacity": 9008,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/1390.png"
+            }
+        },
+        {
+            "team": {
+                "id": 4668,
+                "name": "Airdrie United",
+                "code": "AIR",
+                "country": "Scotland",
+                "founded": 2002,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/4668.png"
+            },
+            "venue": {
+                "id": 19749,
+                "name": "Excelsior Stadium",
+                "address": "Craigneuk Avenue",
+                "city": "Airdrie",
+                "capacity": 10171,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/19749.png"
+            }
+        },
+        {
+            "team": {
+                "id": 6763,
+                "name": "Cove Rangers",
+                "code": null,
+                "country": "Scotland",
+                "founded": 1922,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/6763.png"
+            },
+            "venue": {
+                "id": 4943,
+                "name": "Balmoral Stadium",
+                "address": "Avc Wellington Circle, Cove",
+                "city": "Aberdeen",
+                "capacity": 2602,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/4943.png"
+            }
+        },
+        {
+            "team": {
+                "id": 6778,
+                "name": "Queen's Park",
+                "code": "QUE",
+                "country": "Scotland",
+                "founded": 1867,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/6778.png"
+            },
+            "venue": {
+                "id": 2617,
+                "name": "Hampden Park",
+                "address": "Letherby Drive",
+                "city": "Glasgow",
+                "capacity": 52500,
+                "surface": "grass",
+                "image": "https://media.api-sports.io/football/venues/2617.png"
+            }
+        },
+        {
+            "team": {
+                "id": 6784,
+                "name": "Stenhousemuir",
+                "code": "STE",
+                "country": "Scotland",
+                "founded": 1884,
+                "national": false,
+                "logo": "https://media.api-sports.io/football/teams/6784.png"
+            },
+            "venue": {
+                "id": 4952,
+                "name": "Ochilview Park",
+                "address": "Gladstone Road",
+                "city": "Stenhousemuir",
+                "capacity": 5267,
+                "surface": "artificial turf",
+                "image": "https://media.api-sports.io/football/venues/4952.png"
+            }
+        }
+    ]
+}

@@ -1,0 +1,278 @@
+{
+    "get": "fixtures/events",
+    "parameters": {
+        "fixture": "1316663"
+    },
+    "errors": [],
+    "results": 12,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "time": {
+                "elapsed": 46,
+                "extra": null
+            },
+            "team": {
+                "id": 1605,
+                "name": "Los Angeles Galaxy",
+                "logo": "https://media.api-sports.io/football/teams/1605.png"
+            },
+            "player": {
+                "id": 25,
+                "name": "M. Reus"
+            },
+            "assist": {
+                "id": 50814,
+                "name": "M. Delgado"
+            },
+            "type": "subst",
+            "detail": "Substitution 1",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 55,
+                "extra": null
+            },
+            "team": {
+                "id": 1595,
+                "name": "Seattle Sounders",
+                "logo": "https://media.api-sports.io/football/teams/1595.png"
+            },
+            "player": {
+                "id": 6200,
+                "name": "Pedro de la Vega"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Card",
+            "detail": "Yellow Card",
+            "comments": "Foul"
+        },
+        {
+            "time": {
+                "elapsed": 61,
+                "extra": null
+            },
+            "team": {
+                "id": 1595,
+                "name": "Seattle Sounders",
+                "logo": "https://media.api-sports.io/football/teams/1595.png"
+            },
+            "player": {
+                "id": 51114,
+                "name": "Cristian Rold\u00e1n"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Card",
+            "detail": "Yellow Card",
+            "comments": "Foul"
+        },
+        {
+            "time": {
+                "elapsed": 70,
+                "extra": null
+            },
+            "team": {
+                "id": 1595,
+                "name": "Seattle Sounders",
+                "logo": "https://media.api-sports.io/football/teams/1595.png"
+            },
+            "player": {
+                "id": 51212,
+                "name": "A. Rusn\u00e1k"
+            },
+            "assist": {
+                "id": 10068,
+                "name": "Jo\u00e3o Paulo"
+            },
+            "type": "subst",
+            "detail": "Substitution 1",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 74,
+                "extra": null
+            },
+            "team": {
+                "id": 1595,
+                "name": "Seattle Sounders",
+                "logo": "https://media.api-sports.io/football/teams/1595.png"
+            },
+            "player": {
+                "id": 51107,
+                "name": "Nouhou Tolo"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Card",
+            "detail": "Yellow Card",
+            "comments": "Foul"
+        },
+        {
+            "time": {
+                "elapsed": 82,
+                "extra": null
+            },
+            "team": {
+                "id": 1595,
+                "name": "Seattle Sounders",
+                "logo": "https://media.api-sports.io/football/teams/1595.png"
+            },
+            "player": {
+                "id": 6200,
+                "name": "P. de la Vega"
+            },
+            "assist": {
+                "id": 51119,
+                "name": "R. Ruid\u00edaz"
+            },
+            "type": "subst",
+            "detail": "Substitution 2",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 85,
+                "extra": null
+            },
+            "team": {
+                "id": 1605,
+                "name": "Los Angeles Galaxy",
+                "logo": "https://media.api-sports.io/football/teams/1605.png"
+            },
+            "player": {
+                "id": 364,
+                "name": "D. Jovelji\u0107"
+            },
+            "assist": {
+                "id": 148,
+                "name": "Riqui Puig"
+            },
+            "type": "Goal",
+            "detail": "Normal Goal",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 88,
+                "extra": null
+            },
+            "team": {
+                "id": 1605,
+                "name": "Los Angeles Galaxy",
+                "logo": "https://media.api-sports.io/football/teams/1605.png"
+            },
+            "player": {
+                "id": 364,
+                "name": "D. Jovelji\u0107"
+            },
+            "assist": {
+                "id": 31489,
+                "name": "G. Brugman"
+            },
+            "type": "subst",
+            "detail": "Substitution 2",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 88,
+                "extra": null
+            },
+            "team": {
+                "id": 1595,
+                "name": "Seattle Sounders",
+                "logo": "https://media.api-sports.io/football/teams/1595.png"
+            },
+            "player": {
+                "id": 51113,
+                "name": "A. Roldan"
+            },
+            "assist": {
+                "id": 180926,
+                "name": "L\u00e9o Ch\u00fa"
+            },
+            "type": "subst",
+            "detail": "Substitution 3",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 90,
+                "extra": 6
+            },
+            "team": {
+                "id": 1595,
+                "name": "Seattle Sounders",
+                "logo": "https://media.api-sports.io/football/teams/1595.png"
+            },
+            "player": {
+                "id": 103292,
+                "name": "Jackson Ragen"
+            },
+            "assist": {
+                "id": null,
+                "name": null
+            },
+            "type": "Card",
+            "detail": "Yellow Card",
+            "comments": "Foul"
+        },
+        {
+            "time": {
+                "elapsed": 90,
+                "extra": 2
+            },
+            "team": {
+                "id": 1605,
+                "name": "Los Angeles Galaxy",
+                "logo": "https://media.api-sports.io/football/teams/1605.png"
+            },
+            "player": {
+                "id": 1944,
+                "name": "J. Paintsil"
+            },
+            "assist": {
+                "id": 51010,
+                "name": "D. Fag\u00fandez"
+            },
+            "type": "subst",
+            "detail": "Substitution 3",
+            "comments": null
+        },
+        {
+            "time": {
+                "elapsed": 90,
+                "extra": 5
+            },
+            "team": {
+                "id": 1595,
+                "name": "Seattle Sounders",
+                "logo": "https://media.api-sports.io/football/teams/1595.png"
+            },
+            "player": {
+                "id": 48572,
+                "name": "Nathan"
+            },
+            "assist": {
+                "id": 73863,
+                "name": "J. Atencio"
+            },
+            "type": "subst",
+            "detail": "Substitution 4",
+            "comments": null
+        }
+    ]
+}

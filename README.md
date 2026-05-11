@@ -16,12 +16,12 @@ This project is a real-time football match tracking and alert system. It provide
 
 ## Features
 
-- Live match scores updated every 30 seconds
 - Match event timelines for goals, cards, and substitutions
-- Premier League standings table
-- User accounts with personalised team alerts
-- Player and team statistics
-- SQLite-backed API caching to stay within rate limits
+- League standing tables
+- Team statistics
+- User accounts with the ability to favoruite teams
+- Voting on fixture events
+- Caching of data fetched from the exterrnal API
 
 ## Quick Start
 
